@@ -217,7 +217,7 @@
     </script>
 
     <script type="text/babel">
-        const { useState, useMemo, useEffect } = React;
+        const { useState, useMemo, useEffect, useId } = React;
 
         // --- Icons (Inline SVGs to prevent dependency issues) ---
         const IconBase = ({ children, size = 24, className = "", ...props }) => (
@@ -400,6 +400,7 @@
         // --- Common Components ---
         const NumberInput = ({ label, value, onChange, unit = '원', placeholder = '0', color = 'blue', enableUnitToggle = true, showKorean = true }) => {
             const [unitMode, setUnitMode] = useState(() => getSafeLocalStorage('unitMode', '만원'));
+            const inputId = useId();
 
             // Save unit mode preference
             useEffect(() => {
@@ -444,7 +445,7 @@
             return (
                 <div className="flex flex-col space-y-1.5">
                     <div className="flex justify-between items-center">
-                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">{label}</label>
+                        <label htmlFor={inputId} className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">{label}</label>
                         {enableUnitToggle && (
                             <div className="flex text-[10px] font-bold">
                                 <button
@@ -462,6 +463,7 @@
                     </div>
                     <div className="relative group">
                         <input
+                            id={inputId}
                             type="text"
                             inputMode="numeric"
                             value={displayValue}
@@ -491,9 +493,11 @@
             };
 
             return (
-                <div className="flex bg-slate-100/80 p-1.5 rounded-2xl">
+                <div role="radiogroup" className="flex bg-slate-100/80 p-1.5 rounded-2xl">
                     {options.map((option) => (
                         <button
+                            role="radio"
+                            aria-checked={value === option}
                             key={option}
                             onClick={() => onChange(option)}
                             className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all ${value === option
@@ -1309,6 +1313,8 @@
         const UnitConverter = () => {
             const [pyung, setPyung] = useState('');
             const [sqm, setSqm] = useState('');
+            const sqmId = useId();
+            const pyungId = useId();
 
             const handleSqmChange = (val) => {
                 setSqm(val);
@@ -1327,26 +1333,28 @@
                     <div className="flex items-center gap-6 relative">
                         <div className="flex-1 text-center group">
                             <input
+                                id={sqmId}
                                 type="number"
                                 value={sqm}
                                 onChange={e => handleSqmChange(e.target.value)}
                                 className="w-full py-6 bg-slate-50 rounded-3xl text-center font-black text-3xl outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 transition-all group-hover:bg-indigo-50 group-hover:text-indigo-600"
                                 placeholder="0"
                             />
-                            <span className="text-xs font-bold text-slate-400 mt-3 block uppercase tracking-widest">제곱미터 (㎡)</span>
+                            <label htmlFor={sqmId} className="text-xs font-bold text-slate-400 mt-3 block uppercase tracking-widest">제곱미터 (㎡)</label>
                         </div>
                         <div className="bg-slate-100 p-3 rounded-full text-slate-400">
                             <ArrowRightLeft size={20} />
                         </div>
                         <div className="flex-1 text-center group">
                             <input
+                                id={pyungId}
                                 type="number"
                                 value={pyung}
                                 onChange={e => handlePyungChange(e.target.value)}
                                 className="w-full py-6 bg-slate-50 rounded-3xl text-center font-black text-3xl outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 transition-all group-hover:bg-indigo-50 group-hover:text-indigo-600"
                                 placeholder="0"
                             />
-                            <span className="text-xs font-bold text-slate-400 mt-3 block uppercase tracking-widest">평 (py)</span>
+                            <label htmlFor={pyungId} className="text-xs font-bold text-slate-400 mt-3 block uppercase tracking-widest">평 (py)</label>
                         </div>
                     </div>
                 </div>
