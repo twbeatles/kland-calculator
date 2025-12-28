@@ -9,7 +9,7 @@
 
 ## 🌐 라이브 데모
 
-👉 [GitHub Pages에서 바로 사용하기](https://yourusername.github.io/real-estate-calculator)
+👉 [GitHub Pages에서 바로 사용하기](https://twbeatles.github.io/kland-calculator/)
 
 ## ✨ 주요 기능
 
@@ -201,3 +201,4 @@ MIT License - 자유롭게 사용, 수정, 배포 가능
   Made with ❤️ for Korean real estate<br>
   <sub>Copyright © 2024-2025</sub>
 </p>
+
