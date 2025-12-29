@@ -217,7 +217,7 @@
     </script>
 
     <script type="text/babel">
-        const { useState, useMemo, useEffect } = React;
+        const { useState, useMemo, useEffect, useCallback } = React;
 
         // --- Icons (Inline SVGs to prevent dependency issues) ---
         const IconBase = ({ children, size = 24, className = "", ...props }) => (
@@ -398,7 +398,7 @@
         );
 
         // --- Common Components ---
-        const NumberInput = ({ label, value, onChange, unit = '원', placeholder = '0', color = 'blue', enableUnitToggle = true, showKorean = true }) => {
+        const NumberInput = React.memo(({ label, value, onChange, unit = '원', placeholder = '0', color = 'blue', enableUnitToggle = true, showKorean = true }) => {
             const [unitMode, setUnitMode] = useState(() => getSafeLocalStorage('unitMode', '만원'));
 
             // Save unit mode preference
@@ -483,7 +483,7 @@
             );
         };
 
-        const ToggleGroup = ({ options, value, onChange, color = 'blue' }) => {
+        const ToggleGroup = React.memo(({ options, value, onChange, color = 'blue' }) => {
             const activeClasses = {
                 blue: 'bg-white text-blue-600 shadow-sm ring-1 ring-black/5',
                 green: 'bg-white text-emerald-600 shadow-sm ring-1 ring-black/5',
@@ -508,6 +508,14 @@
             );
         };
 
+        // --- Constants for ToggleGroups ---
+        const OPTIONS_PROP_TYPE = ['주택', '오피스텔', '상가'];
+        const OPTIONS_DEAL_TYPE = ['임대차', '매매'];
+        const OPTIONS_LOAN_METHOD = ['만기일시', '원리금균등', '원금균등'];
+        const OPTIONS_REGION = ['비규제', '규제(조정)'];
+        const OPTIONS_COUNT = ['1채', '2채', '3채+'];
+        const OPTIONS_YEARS = ['1', '2', '3'];
+
         // --- Tabs ---
         // 1. Cost Comparison
         const CostCompareTab = () => {
@@ -530,7 +538,7 @@
             useEffect(() => { localStorage.setItem('income', income); }, [income]);
 
             // 대출금액 입력시 자동 대출비율 계산
-            const handleLoanAmountChange = (value) => {
+            const handleLoanAmountChange = useCallback((value) => {
                 setJLoanAmount(value);
                 const depVal = parseNumber(jDeposit);
                 const loanVal = parseNumber(value);
@@ -538,10 +546,10 @@
                     const ratio = Math.round((loanVal / depVal) * 100);
                     setJRatio(String(Math.min(ratio, 100)));
                 }
-            };
+            }, [jDeposit]);
 
             // 대출비율 입력시 자동 대출금액 계산
-            const handleRatioChange = (value) => {
+            const handleRatioChange = useCallback((value) => {
                 setJRatio(value);
                 const depVal = parseNumber(jDeposit);
                 const ratioVal = parseFloat(value) || 0;
@@ -549,7 +557,7 @@
                     const loanAmount = Math.round(depVal * (ratioVal / 100));
                     setJLoanAmount(String(loanAmount));
                 }
-            };
+            }, [jDeposit]);
 
             // 보증금 변경시 대출금액 재계산
             useEffect(() => {
@@ -904,22 +912,12 @@
                         <div className="space-y-6">
                             <div>
                                 <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">물건 종류</label>
-                                <div className="flex gap-2 bg-slate-100/50 p-1.5 rounded-2xl">
-                                    {['주택', '오피스텔', '상가'].map(type => (
-                                        <button
-                                            key={type}
-                                            onClick={() => setPropType(type)}
-                                            className={`flex-1 py-3 rounded-xl font-bold text-xs transition-all ${propType === type ? 'bg-white text-emerald-700 shadow-sm ring-1 ring-black/5' : 'text-slate-400 hover:text-slate-600'}`}
-                                        >
-                                            {type}
-                                        </button>
-                                    ))}
-                                </div>
+                                <ToggleGroup options={OPTIONS_PROP_TYPE} value={propType} onChange={setPropType} color="green" />
                             </div>
 
                             <div>
                                 <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">거래 종류</label>
-                                <ToggleGroup options={['임대차', '매매']} value={dealType} onChange={setDealType} color="green" />
+                                <ToggleGroup options={OPTIONS_DEAL_TYPE} value={dealType} onChange={setDealType} color="green" />
                             </div>
 
                             <NumberInput label="거래 금액 (보증금/매매가)" value={amount} onChange={setAmount} color="green" />
@@ -1025,7 +1023,7 @@
 
                             <div>
                                 <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">상환 방식</label>
-                                <ToggleGroup options={['만기일시', '원리금균등', '원금균등']} value={method} onChange={setMethod} color="violet" />
+                                <ToggleGroup options={OPTIONS_LOAN_METHOD} value={method} onChange={setMethod} color="violet" />
                             </div>
                         </div>
                     </div>
@@ -1119,11 +1117,11 @@
                             <div className="flex gap-3">
                                 <div className="flex-1">
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">지역 구분</label>
-                                    <ToggleGroup options={['비규제', '규제(조정)']} value={region === 'non-adj' ? '비규제' : '규제(조정)'} onChange={(v) => setRegion(v === '비규제' ? 'non-adj' : 'adj')} color="blue" />
+                                    <ToggleGroup options={OPTIONS_REGION} value={region === 'non-adj' ? '비규제' : '규제(조정)'} onChange={(v) => setRegion(v === '비규제' ? 'non-adj' : 'adj')} color="blue" />
                                 </div>
                                 <div className="flex-1">
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">주택 수</label>
-                                    <ToggleGroup options={['1채', '2채', '3채+']} value={count === '1' ? '1채' : count === '2' ? '2채' : '3채+'} onChange={(v) => setCount(v === '1채' ? '1' : v === '2채' ? '2' : '3')} color="blue" />
+                                    <ToggleGroup options={OPTIONS_COUNT} value={count === '1' ? '1채' : count === '2' ? '2채' : '3채+'} onChange={(v) => setCount(v === '1채' ? '1' : v === '2채' ? '2' : '3')} color="blue" />
                                 </div>
                             </div>
                         </div>
@@ -1617,7 +1615,7 @@
                         <div>
                             <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2 block ml-1">계약 기간 (년)</label>
                             <div className="flex gap-2">
-                                {['1', '2', '3'].map(y => (
+                                {OPTIONS_YEARS.map(y => (
                                     <button
                                         key={y}
                                         onClick={() => setYears(y)}
