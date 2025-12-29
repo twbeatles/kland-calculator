@@ -1,204 +1,174 @@
-# 🏠 부동산 마스터 Pro v2.1
+# 부동산 마스터 Pro 🏠
 
-> 전월세 계산, 안전 진단, 중개보수, 대출 계산 등 부동산 임대차 필수 도구 모음
+> 대한민국 No.1 부동산 종합 계산기 - 전월세, 매매, 대출, 세금까지 한 번에!
 
-![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
-![React](https://img.shields.io/badge/React-18-61DAFB.svg?logo=react)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC.svg?logo=tailwind-css)
-
-## 🌐 라이브 데모
-
-👉 [GitHub Pages에서 바로 사용하기](https://twbeatles.github.io/kland-calculator/)
+![React](https://img.shields.io/badge/React-18.x-61DAFB?logo=react)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?logo=tailwind-css)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 ## ✨ 주요 기능
 
-### 🏘️ 전월세
+### 📋 전월세 계산기
 | 기능 | 설명 |
 |------|------|
-| **비용 비교** | 전세 vs 월세 월 비용 비교 및 추천 |
-| **안전 진단** | 깡통전세 위험도 분석 |
-| **중개보수 계산** | 주거/비주거용 중개보수 자동 계산 |
+| **비용 비교** | 전세 vs 월세 실질 비용 비교 분석 |
+| **안전 진단** | 전세가율 기반 보증금 안전도 평가 |
+| **중개보수** | 법정 중개수수료 자동 계산 |
 
-### 🏢 매매
+### 🏢 매매 계산기
 | 기능 | 설명 |
 |------|------|
-| **취득세 계산** | 주택 취득 시 예상 세금 계산 |
-| **채권 계산** | 국민주택채권 매입 금액 계산 |
+| **취득세/채권** | 부동산 취득 시 세금 및 국민주택채권 계산 |
+| **임대수익률** | 수익형 부동산 투자수익률 분석 (NEW) |
+| **중개보수** | 매매 거래 중개수수료 계산 |
 
-### 💰 대출/세금
+### 💰 대출 계산기
 | 기능 | 설명 |
 |------|------|
-| **대출 계산기** | 원리금균등, 원금균등, 만기일시상환 |
-| **DSR 계산기** | 총부채원리금상환비율 계산 |
-| **LTV 계산기** | 주택담보대출비율 계산 |
+| **대출 계산** | 만기일시/원리금균등/원금균등 상환 시뮬레이션 |
+| **DSR 계산** | 총부채원리금상환비율 계산 |
+| **LTV 계산** | 담보인정비율 계산 |
 
-### 🧰 도구 모음 (7종)
-| 도구 | 설명 |
+### 🧾 세금 계산기 (NEW)
+| 기능 | 설명 |
 |------|------|
-| **평수 계산기** | 평 ⟷ ㎡ 단위 변환 |
-| **전월세 전환 계산기** | 보증금 ⟷ 월세 전환 (법정 전환율 6.0% 반영) |
-| **보증보험료 계산기** | HUG/SGI 전세보증보험 예상 보험료 |
-| **문자 마법사** | 수리 요청, 퇴거 통보 등 템플릿 |
-| **이사 체크리스트** | 이사 준비 항목 체크 |
-| **용어 사전** | 부동산 필수 용어 설명 |
-| **계산 히스토리** | 최근 20건 계산 결과 저장 |
+| **양도소득세** | 부동산 매도 시 예상 세금 계산 (장기보유특별공제 포함) |
+| **재산세/종부세** | 연간 보유세 계산 (1세대1주택 공제 지원) |
 
-## 🆕 v2.1 신규 기능
-
-### 🔢 한국어 금액 표시
-- 모든 금액 입력필드에서 **"≈ 3억 5천만원"** 형식으로 즉시 표시
-- 억, 천만, 만, 천 단위 자동 변환
-
-### 🔄 만원 단위 입력
-- 원/만원 단위 토글 버튼
-- 사용자 설정이 localStorage에 저장됨
-- 큰 금액 입력 시 편의성 향상
-
-### 🏦 기준금리 확인
-- 한국은행 기준금리 **2.50%** (2025.12.28)
-- 새로고침 버튼으로 현재 금리 상태 확인
-- 한국은행 공식 홈페이지 직접 연결
-
-## 🚀 빠른 시작
-
-### 방법 1: 직접 실행
-```bash
-# 다운로드 후 브라우저에서 열기
-index.html → 더블클릭
-```
-
-### 방법 2: Live Server (개발용)
-```bash
-# VS Code Live Server 확장 사용
-1. VS Code에서 폴더 열기
-2. index.html 우클릭 → "Open with Live Server"
-```
-
-## 🌐 GitHub Pages 배포
-
-### 1단계: 저장소 준비
-```bash
-git init
-git add .
-git commit -m "v2.1.0: 부동산 마스터 Pro"
-git remote add origin https://github.com/username/repo-name.git
-git push -u origin main
-```
-
-### 2단계: Pages 활성화
-1. GitHub 저장소 → **Settings** → **Pages**
-2. Source: **Deploy from a branch**
-3. Branch: **main** / **(root)**
-4. **Save**
-
-### 3단계: 배포 확인
-```
-https://username.github.io/repo-name
-```
-
-> 💡 **참고**: 단일 HTML 파일이므로 별도 빌드 과정 없이 바로 배포됩니다.
-
-## 📁 프로젝트 구조
-
-```
-📦 real-estate-calculator/
-├── 📄 index.html          # 메인 애플리케이션
-├── 📄 README.md           # 프로젝트 문서
-└── 📄 LICENSE             # MIT 라이선스
-```
-
-## 🛠️ 기술 스택
-
-| 기술 | 버전 | 용도 |
-|------|------|------|
-| React | 18.x (CDN) | UI 라이브러리 |
-| Tailwind CSS | 3.x (CDN) | 스타일링 |
-| Babel | 7.x (CDN) | JSX 변환 |
-| Pretendard | 1.3.8 | 한글 폰트 |
-
-## ⚙️ 주요 설정값
-
-| 항목 | 값 | 기준일 |
-|------|------|---------|
-| 한국은행 기준금리 | **2.50%** | 2025.12.28 |
-| 법정 전환율 상한 | **6.00%** | 기준금리 + 3.5% |
-| HUG 보증보험료율 | 0.128% | 2024년 평균 |
-| SGI 보증보험료율 | 0.115% | 2024년 평균 |
-
-## 🎨 주요 특징
-
-| 특징 | 설명 |
+### 🛠 도구 모음
+| 기능 | 설명 |
 |------|------|
-| 🌙 **다크 모드** | 시스템 설정과 별개로 독립적인 테마 전환 |
-| 🔢 **한국어 금액** | 3억 5천만원 형식으로 실시간 표시 |
-| 📱 **모바일 최적화** | 반응형 디자인으로 모든 기기 지원 |
-| 💾 **로컬 저장** | 입력값, 설정, 히스토리 자동 저장 |
-| 📤 **결과 공유** | 계산 결과를 클립보드에 복사 |
-| ♿ **접근성** | ARIA 레이블 및 키보드 내비게이션 |
-| 🖨️ **인쇄 최적화** | 깔끔한 인쇄 레이아웃 |
-
-## 📋 브라우저 지원
-
-| 브라우저 | 지원 버전 |
-|---------|----------|
-| Chrome | 80+ |
-| Firefox | 75+ |
-| Safari | 13+ |
-| Edge | 80+ |
-| Samsung Internet | 13+ |
-
-## 🔧 경량화 옵션 (선택)
-
-더 빠른 로딩이 필요한 경우:
-
-1. **Preact로 교체**: React → Preact (3KB)
-2. **Tailwind JIT**: 사용하지 않는 CSS 제거
-3. **CDN 지역화**: 국내 CDN 사용
-
-```html
-<!-- Preact CDN 예시 -->
-<script src="https://unpkg.com/preact@10/dist/preact.min.js"></script>
-<script src="https://unpkg.com/preact@10/hooks/dist/hooks.umd.js"></script>
-```
-
-## 📄 라이선스
-
-MIT License - 자유롭게 사용, 수정, 배포 가능
-
-## 📝 변경 이력
-
-### v2.1.1 (2025-12-28)
-- 🏦 기준금리 2.50% 업데이트
-- 🔗 한국은행 공식 금리 페이지 링크 수정
-- 법정 전환율 6.0% 동적 계산 적용
-
-### v2.1.0 (2025-12-28)
-- 🔢 한국어 금액 표시 (억/만원 형식)
-- 🔄 만원 단위 입력 토글 (전 필드 적용)
-- 🏦 기준금리 확인 버튼 추가
-- ⚡ 코드 최적화 및 버그 수정
-
-### v2.0.0 (2025-12-28)
-- 🌙 다크 모드 지원
-- 📊 전월세 전환 계산기
-- 🛡️ 보증보험료 계산기
-- 📜 계산 히스토리
-
-### v1.0.0 (2025-12-27)
-- 🎉 최초 릴리즈
-
-## 🙏 감사의 글
-
-- [React](https://react.dev) - Meta
-- [Tailwind CSS](https://tailwindcss.com) - Tailwind Labs
-- [Pretendard](https://github.com/orioncactus/pretendard) - 길형진
-- [한국은행](https://www.bok.or.kr) - 기준금리 데이터
+| **평수 계산기** | ㎡ ↔ 평 상호 변환 |
+| **전월세 전환** | 보증금 ↔ 월세 전환 계산 |
+| **보증보험료** | HUG 전세보증보험료 예상 |
+| **인상률 계산** | 5% 상한 적법 임대료 인상액 계산 (NEW) |
+| **등기비용** | 소유권이전등기 비용 예상 (NEW) |
+| **문자 마법사** | 임대차 관련 알림 문자 템플릿 |
+| **체크리스트** | 이사 준비 체크리스트 |
+| **용어 사전** | 부동산 용어 검색 |
+| **히스토리** | 최근 계산 기록 조회 |
 
 ---
 
-<p align="center">
-  Made with ❤️ for Korean real estate<br>
-  <sub>Copyright © 2024-2025</sub>
-</p>
+## 🚀 시작하기
 
+### 실행 방법
+```bash
+# 저장소 클론
+git clone https://github.com/your-repo/kland-calculator.git
+
+# 폴더로 이동
+cd kland-calculator
+
+# 브라우저에서 실행 (별도 빌드 불필요)
+open index.html  # macOS
+start index.html # Windows
+```
+
+> 📌 **참고**: CDN 기반으로 동작하므로 별도의 npm install이나 빌드 과정이 필요하지 않습니다.
+
+---
+
+## 🎨 주요 특징
+
+### 💡 사용자 경험
+- **다크 모드** 지원 (시스템 설정 연동)
+- **반응형 디자인** (모바일 최적화)
+- **한글 금액 표시** (예: 3억 5천만원)
+- **단위 토글** (원 ↔ 만원 빠른 전환)
+- **실시간 계산** (입력 즉시 결과 표시)
+
+### ⚡ 성능 최적화
+- **localStorage 캐싱** - 중복 접근 최소화
+- **Debounced 저장** - 입력 완료 후 저장
+- **React.memo 적용** - 불필요한 리렌더링 방지
+
+### 🔒 안정성
+- **ErrorBoundary** - 오류 발생 시 안전한 폴백 UI
+- **입력 유효성 검사** - 범위 검증 및 시각적 피드백
+- **Try-Catch 보호** - localStorage 접근 예외 처리
+
+---
+
+## 📊 기준 정보
+
+| 항목 | 값 | 기준일 |
+|------|-----|--------|
+| 한국은행 기준금리 | 2.50% | 2025.12.28 |
+| 전월세 전환율 상한 | 6.0% | 2025 상반기 |
+| 임대료 인상률 상한 | 5.0% | 주택임대차보호법 |
+| HUG 보증보험료율 | 약 0.128% | 2024 평균 |
+
+---
+
+## 🗂 프로젝트 구조
+
+```
+kland-calculator-main/
+├── index.html          # 메인 애플리케이션 (SPA)
+├── README.md           # 프로젝트 문서
+└── .Jules/
+    └── palette.md      # 디자인 팔레트 참조
+```
+
+---
+
+## 🛠 기술 스택
+
+| 기술 | 버전 | 용도 |
+|------|------|------|
+| React | 18.x | UI 프레임워크 |
+| Tailwind CSS | 3.x | 스타일링 |
+| Babel | 7.x | JSX 트랜스파일링 |
+| CDN | - | 의존성 로딩 |
+
+---
+
+## 📝 업데이트 내역
+
+### v2.0.0 (2025.12.29)
+#### 🆕 신규 기능
+- **양도소득세 계산기** - 장기보유특별공제, 누진세율 적용
+- **재산세/종부세 계산기** - 1세대1주택 공제 지원
+- **임대수익률 계산기** - 레버리지 수익률 분석
+- **월세 인상률 계산기** - 5% 상한 기준
+- **등기비용 계산기** - 법무사 수수료 포함
+
+#### ⚡ 성능 최적화
+- localStorage 캐싱 및 debounced 저장
+- React.memo 컴포넌트 최적화
+
+#### 🔧 버그 수정
+- `useId` Hook import 누락 수정
+- React.memo 구문 오류 수정
+- 다크 모드 스타일 완성
+
+#### 🎨 UI/UX 개선
+- 입력 유효성 검사 및 시각적 피드백
+- 공통 컴포넌트 (LoadingSpinner, EmptyState, ResultCard)
+- ErrorBoundary 추가
+
+### v1.0.0 (2025.12.01)
+- 초기 릴리즈
+
+---
+
+## 📄 라이선스
+
+MIT License © 2025
+
+---
+
+## 🤝 기여하기
+
+1. Fork this repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📞 문의
+
+버그 리포트 및 기능 제안은 GitHub Issues를 이용해 주세요.
