@@ -10,6 +10,14 @@
     <meta property="og:title" content="부동산 마스터 Pro">
     <meta property="og:description" content="전월세 비용 비교, 안전 진단, 대출 계산 등 부동산 필수 도구">
     <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="부동산마스터">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%234f46e5' rx='20' width='100' height='100'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='white'>🏠</text></svg>">
 
     <!-- React & DOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -63,7 +71,30 @@
                             '10%': { transform: 'translateY(0)', opacity: '1' },
                             '90%': { transform: 'translateY(0)', opacity: '1' },
                             '100%': { transform: 'translateY(100%)', opacity: '0' },
+                        },
+                        countUp: {
+                            '0%': { transform: 'scale(0.8)', opacity: '0' },
+                            '50%': { transform: 'scale(1.05)' },
+                            '100%': { transform: 'scale(1)', opacity: '1' },
+                        },
+                        pulse: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0.6' },
+                        },
+                        shimmer: {
+                            '0%': { backgroundPosition: '-200% 0' },
+                            '100%': { backgroundPosition: '200% 0' },
                         }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-out',
+                        'slide-up': 'slideUp 0.4s ease-out',
+                        'result-pop': 'resultPop 0.3s ease-out',
+                        'number-pop': 'numberPop 0.2s ease-out',
+                        'toast': 'toast 3s ease-in-out',
+                        'count-up': 'countUp 0.4s ease-out',
+                        'pulse-slow': 'pulse 2s ease-in-out infinite',
+                        'shimmer': 'shimmer 2s linear infinite',
                     }
                 }
             }
@@ -151,6 +182,55 @@
             background: #94a3b8;
         }
 
+        /* Scroll fade indicator for horizontal scrollable areas */
+        .scroll-fade-container {
+            position: relative;
+        }
+
+        .scroll-fade-container::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 40px;
+            background: linear-gradient(to left, white, transparent);
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .dark .scroll-fade-container::after {
+            background: linear-gradient(to left, #1e293b, transparent);
+        }
+
+        /* Hide scrollbar but keep functionality */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Enhanced focus styles for accessibility */
+        input:focus-visible,
+        button:focus-visible {
+            outline: 2px solid #6366f1;
+            outline-offset: 2px;
+        }
+
+        /* Shimmer loading effect */
+        .shimmer {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+        }
+
+        .dark .shimmer {
+            background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
+            background-size: 200% 100%;
+        }
+
         @media print {
             body {
                 background: white !important;
@@ -196,6 +276,17 @@
         input[type=number] {
             -moz-appearance: textfield;
         }
+
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
 
@@ -229,6 +320,19 @@
         window.addEventListener('unhandledrejection', function (event) {
             console.error('Unhandled promise rejection:', event.reason);
         });
+
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(function (registration) {
+                        console.log('[PWA] Service Worker registered:', registration.scope);
+                    })
+                    .catch(function (error) {
+                        console.warn('[PWA] Service Worker registration failed:', error);
+                    });
+            });
+        }
     </script>
 
     <script type="text/babel">
@@ -264,6 +368,7 @@
         const ArrowRightLeft = (props) => <IconBase {...props}><path d="m16 3 4 4-4 4" /><path d="M20 7H4" /><path d="m8 21-4-4 4-4" /><path d="M4 17h16" /></IconBase>;
         const MessageCircle = (props) => <IconBase {...props}><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z" /></IconBase>;
         const Copy = (props) => <IconBase {...props}><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></IconBase>;
+        const Check = (props) => <IconBase {...props}><polyline points="20 6 9 17 4 12" /></IconBase>;
         const Grid = (props) => <IconBase {...props}><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M3 9h18" /><path d="M9 21V9" /></IconBase>;
         const ClipboardList = (props) => <IconBase {...props}><rect width="8" height="4" x="8" y="2" rx="1" ry="1" /><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><path d="M12 11h4" /><path d="M12 16h4" /><path d="M8 11h.01" /><path d="M8 16h.01" /></IconBase>;
         const BookOpen = (props) => <IconBase {...props}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></IconBase>;
@@ -281,6 +386,13 @@
         const Trash2 = (props) => <IconBase {...props}><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></IconBase>;
         const RefreshCw = (props) => <IconBase {...props}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" /></IconBase>;
         const Percent = (props) => <IconBase {...props}><line x1="19" y1="5" x2="5" y2="19" /><circle cx="6.5" cy="6.5" r="2.5" /><circle cx="17.5" cy="17.5" r="2.5" /></IconBase>;
+        const Users = (props) => <IconBase {...props}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></IconBase>;
+        const Building = (props) => <IconBase {...props}><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M12 6h.01" /><path d="M12 10h.01" /><path d="M12 14h.01" /><path d="M16 10h.01" /><path d="M16 14h.01" /><path d="M8 10h.01" /><path d="M8 14h.01" /></IconBase>;
+        const Link2 = (props) => <IconBase {...props}><path d="M9 17H7A5 5 0 0 1 7 7h2" /><path d="M15 7h2a5 5 0 1 1 0 10h-2" /><line x1="8" x2="16" y1="12" y2="12" /></IconBase>;
+        const FileDown = (props) => <IconBase {...props}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><path d="M12 18v-6" /><path d="m9 15 3 3 3-3" /></IconBase>;
+        const Award = (props) => <IconBase {...props}><circle cx="12" cy="8" r="6" /><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" /></IconBase>;
+        const Banknote = (props) => <IconBase {...props}><rect width="20" height="12" x="2" y="6" rx="2" /><circle cx="12" cy="12" r="2" /><path d="M6 12h.01M18 12h.01" /></IconBase>;
+        const BarChart3 = (props) => <IconBase {...props}><path d="M3 3v18h18" /><path d="M18 17V9" /><path d="M13 17V5" /><path d="M8 17v-3" /></IconBase>;
 
         // --- Constants ---
         // 한국은행 기준금리 (2025.12.28 기준)
@@ -414,6 +526,31 @@
             return result.trim() + '원';
         };
 
+        // 축약 숫자 표시 (큰 숫자용)
+        const formatCompactNumber = (num) => {
+            if (!num && num !== 0) return '';
+            const value = Math.abs(parseFloat(num) || 0);
+            const sign = parseFloat(num) < 0 ? '-' : '';
+
+            if (value >= 1e16) return sign + (value / 1e16).toFixed(1) + '경';
+            if (value >= 1e12) return sign + (value / 1e12).toFixed(1) + '조';
+            if (value >= 1e8) return sign + (value / 1e8).toFixed(1) + '억';
+            if (value >= 1e4) return sign + (value / 1e4).toFixed(1) + '만';
+            return sign + formatNumber(value);
+        };
+
+        // 클립보드 복사 유틸리티
+        const copyToClipboard = async (text, showToastFn) => {
+            try {
+                await navigator.clipboard.writeText(text);
+                if (showToastFn) showToastFn('클립보드에 복사되었습니다!');
+                return true;
+            } catch (err) {
+                console.error('Failed to copy:', err);
+                return false;
+            }
+        };
+
         const parseNumber = (str) => {
             if (!str) return 0;
             return parseInt(str.toString().replace(/,/g, ''), 10) || 0;
@@ -527,21 +664,64 @@
             );
         };
 
-        // Empty State Component
-        const EmptyState = ({ message, icon: Icon = Info }) => (
-            <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">
-                <Icon className="w-8 h-8 mx-auto mb-3 opacity-50" />
-                <p>{message}</p>
+        // Empty State Component with hint support
+        const EmptyState = ({ message, hint, icon: Icon = Info, action, actionLabel }) => (
+            <div className="text-center py-16 text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600 animate-fade-in">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                    <Icon className="w-8 h-8 opacity-60" />
+                </div>
+                <p className="font-bold text-slate-500 dark:text-slate-400">{message}</p>
+                {hint && (
+                    <p className="text-sm mt-2 text-slate-400 dark:text-slate-500 max-w-xs mx-auto">{hint}</p>
+                )}
+                {action && (
+                    <button
+                        onClick={action}
+                        className="mt-4 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold rounded-xl transition-all active:scale-95"
+                    >
+                        {actionLabel || '시작하기'}
+                    </button>
+                )}
             </div>
         );
 
-        // Result Card Component (reusable for calculation results)
-        const ResultCard = ({ title, value, subtitle, colorClass = 'from-blue-50 to-indigo-50 dark:from-blue-900/40 dark:to-indigo-900/40', borderClass = 'border-blue-100 dark:border-blue-800', children }) => (
-            <div className={`bg-gradient-to-br ${colorClass} p-6 rounded-[2.5rem] border ${borderClass} shadow-lg relative`}>
+        // Copy Button Component
+        const CopyButton = ({ text, showToast, className = '' }) => {
+            const [copied, setCopied] = useState(false);
+
+            const handleCopy = async () => {
+                const success = await copyToClipboard(text, showToast);
+                if (success) {
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                }
+            };
+
+            return (
+                <button
+                    onClick={handleCopy}
+                    className={`p-2 rounded-xl transition-all active:scale-95 ${copied
+                        ? 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400'
+                        : 'bg-white/60 dark:bg-slate-700/60 text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700'} ${className}`}
+                    title="결과 복사"
+                >
+                    {copied ? <Check size={16} /> : <Copy size={16} />}
+                </button>
+            );
+        };
+
+        // Result Card Component (reusable for calculation results) - with animation and copy
+        const ResultCard = ({ title, value, subtitle, copyText, showToast, colorClass = 'from-blue-50 to-indigo-50 dark:from-blue-900/40 dark:to-indigo-900/40', borderClass = 'border-blue-100 dark:border-blue-800', children, animate = true }) => (
+            <div className={`bg-gradient-to-br ${colorClass} p-6 rounded-[2.5rem] border ${borderClass} shadow-lg relative ${animate ? 'animate-fade-in' : ''}`}>
+                {copyText && showToast && (
+                    <div className="absolute top-4 right-4">
+                        <CopyButton text={copyText} showToast={showToast} />
+                    </div>
+                )}
                 {title && (
                     <div className="text-center mb-4">
                         <p className="text-sm font-bold opacity-60 uppercase tracking-widest mb-1">{title}</p>
-                        <p className="text-4xl font-black">{value}</p>
+                        <p className="text-4xl font-black animate-count-up">{value}</p>
                         {subtitle && <p className="text-xs opacity-50 mt-1">{subtitle}</p>}
                     </div>
                 )}
@@ -641,16 +821,16 @@
                             {required && <span className="text-red-500 ml-0.5">*</span>}
                         </label>
                         {enableUnitToggle && (
-                            <div className="flex text-[10px] font-bold">
+                            <div className="flex text-[11px] font-bold">
                                 <button
                                     onClick={() => setUnitMode('원')}
                                     type="button"
-                                    className={`px-2 py-0.5 rounded-l-md transition-colors ${unitMode === '원' ? 'bg-slate-800 dark:bg-slate-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}
+                                    className={`px-3 py-1.5 min-h-[32px] rounded-l-lg transition-all active:scale-95 ${unitMode === '원' ? 'bg-slate-800 dark:bg-slate-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'}`}
                                 >원</button>
                                 <button
                                     onClick={() => setUnitMode('만원')}
                                     type="button"
-                                    className={`px-2 py-0.5 rounded-r-md transition-colors ${unitMode === '만원' ? 'bg-slate-800 dark:bg-slate-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}
+                                    className={`px-3 py-1.5 min-h-[32px] rounded-r-lg transition-all active:scale-95 ${unitMode === '만원' ? 'bg-slate-800 dark:bg-slate-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'}`}
                                 >만원</button>
                             </div>
                         )}
@@ -663,6 +843,7 @@
                             value={displayValue}
                             onChange={handleChange}
                             onBlur={handleBlur}
+                            onFocus={(e) => e.target.select()}
                             placeholder={placeholder}
                             aria-label={label}
                             aria-invalid={hasError}
@@ -688,9 +869,10 @@
 
         const ToggleGroup = React.memo(({ options, value, onChange, color = 'blue' }) => {
             const activeClasses = {
-                blue: 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-black/5 dark:ring-white/10',
-                green: 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm ring-1 ring-black/5 dark:ring-white/10',
-                violet: 'bg-white dark:bg-slate-700 text-violet-600 dark:text-violet-400 shadow-sm ring-1 ring-black/5 dark:ring-white/10',
+                blue: 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-md ring-1 ring-black/5 dark:ring-white/10',
+                green: 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-md ring-1 ring-black/5 dark:ring-white/10',
+                violet: 'bg-white dark:bg-slate-700 text-violet-600 dark:text-violet-400 shadow-md ring-1 ring-black/5 dark:ring-white/10',
+                orange: 'bg-white dark:bg-slate-700 text-orange-600 dark:text-orange-400 shadow-md ring-1 ring-black/5 dark:ring-white/10',
             };
 
             return (
@@ -701,9 +883,9 @@
                             aria-checked={value === option}
                             key={option}
                             onClick={() => onChange(option)}
-                            className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all ${value === option
+                            className={`flex-1 py-3 min-h-[44px] text-xs font-bold rounded-xl transition-all active:scale-95 ${value === option
                                 ? activeClasses[color] || activeClasses.blue
-                                : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+                                : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-600/50'
                                 }`}
                         >
                             {option}
@@ -733,14 +915,14 @@
             const [wRate, setWRate] = useState(() => getSafeLocalStorage('wRate', '5.0'));
             const [income, setIncome] = useState(() => getSafeLocalStorage('income'));
 
-            useEffect(() => { localStorage.setItem('jDeposit', jDeposit); }, [jDeposit]);
-            useEffect(() => { localStorage.setItem('jLoanAmount', jLoanAmount); }, [jLoanAmount]);
-            useEffect(() => { localStorage.setItem('jRate', jRate); }, [jRate]);
-            useEffect(() => { localStorage.setItem('jRatio', jRatio); }, [jRatio]);
-            useEffect(() => { localStorage.setItem('wDeposit', wDeposit); }, [wDeposit]);
-            useEffect(() => { localStorage.setItem('wMonthly', wMonthly); }, [wMonthly]);
-            useEffect(() => { localStorage.setItem('wRate', wRate); }, [wRate]);
-            useEffect(() => { localStorage.setItem('income', income); }, [income]);
+            useEffect(() => { debouncedSetStorage('jDeposit', jDeposit); }, [jDeposit]);
+            useEffect(() => { debouncedSetStorage('jLoanAmount', jLoanAmount); }, [jLoanAmount]);
+            useEffect(() => { debouncedSetStorage('jRate', jRate); }, [jRate]);
+            useEffect(() => { debouncedSetStorage('jRatio', jRatio); }, [jRatio]);
+            useEffect(() => { debouncedSetStorage('wDeposit', wDeposit); }, [wDeposit]);
+            useEffect(() => { debouncedSetStorage('wMonthly', wMonthly); }, [wMonthly]);
+            useEffect(() => { debouncedSetStorage('wRate', wRate); }, [wRate]);
+            useEffect(() => { debouncedSetStorage('income', income); }, [income]);
 
             // 대출금액 입력시 자동 대출비율 계산
             const handleLoanAmountChange = useCallback((value) => {
@@ -1274,6 +1456,7 @@
             const [price, setPrice] = useState('');
             const [region, setRegion] = useState('non-adj'); // adj (jojeong), non-adj
             const [count, setCount] = useState('1'); // 1, 2, 3+
+            const [isFirstTimeBuyer, setIsFirstTimeBuyer] = useState(false); // 생애최초 감면
 
             const result = useMemo(() => {
                 const p = parseNumber(price);
@@ -1299,16 +1482,24 @@
                 const eduTax = taxRate * 0.1; // Local Education Tax (Simplified)
                 const specialTax = p > 850000000 ? 0.002 : 0; // Rural Special Tax (Simplified condition)
 
-                const acquisitionTax = Math.floor(p * taxRate);
-                const totalTax = Math.floor(p * (taxRate + eduTax + specialTax));
+                let acquisitionTax = Math.floor(p * taxRate);
+                let totalTax = Math.floor(p * (taxRate + eduTax + specialTax));
+
+                // 생애최초 감면 적용 (12억 이하, 최대 200만원 감면)
+                let firstTimeBuyerDiscount = 0;
+                if (isFirstTimeBuyer && count === '1' && p <= 1200000000) {
+                    firstTimeBuyerDiscount = Math.min(acquisitionTax, 2000000);
+                    acquisitionTax = acquisitionTax - firstTimeBuyerDiscount;
+                    totalTax = totalTax - firstTimeBuyerDiscount;
+                }
 
                 // Bond Discount (Simplified 10% burden of 2.6% bond rate roughly)
                 const bondRate = 0.026; // Approx
                 const discountRate = 0.12; // 12% discount cost
                 const bondCost = Math.floor(p * bondRate * discountRate);
 
-                return { acquisitionTax, totalTax, bondCost, taxRate: (taxRate * 100).toFixed(2) };
-            }, [price, region, count]);
+                return { acquisitionTax, totalTax, bondCost, taxRate: (taxRate * 100).toFixed(2), firstTimeBuyerDiscount };
+            }, [price, region, count, isFirstTimeBuyer]);
 
             return (
                 <div className="space-y-6 pb-32 animate-slide-up px-1">
@@ -1329,6 +1520,14 @@
                                     <ToggleGroup options={OPTIONS_COUNT} value={count === '1' ? '1채' : count === '2' ? '2채' : '3채+'} onChange={(v) => setCount(v === '1채' ? '1' : v === '2채' ? '2' : '3')} color="blue" />
                                 </div>
                             </div>
+
+                            <label className="flex items-center gap-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 rounded-2xl cursor-pointer border border-green-100 dark:border-green-800 hover:shadow-md transition-all">
+                                <input type="checkbox" checked={isFirstTimeBuyer} onChange={(e) => setIsFirstTimeBuyer(e.target.checked)} className="w-5 h-5 rounded accent-green-500" />
+                                <div>
+                                    <span className="text-sm font-bold text-green-800 dark:text-green-200">🏠 생애최초 주택 구입</span>
+                                    <p className="text-xs text-green-600 dark:text-green-400">12억 이하 주택, 최대 200만원 취득세 감면</p>
+                                </div>
+                            </label>
                         </div>
                     </div>
 
@@ -1344,6 +1543,12 @@
                                     <span>취득세 ({result.taxRate}%)</span>
                                     <span>{formatNumber(result.acquisitionTax)}원</span>
                                 </div>
+                                {result.firstTimeBuyerDiscount > 0 && (
+                                    <div className="flex justify-between text-sm font-bold text-green-600 dark:text-green-400">
+                                        <span>🎉 생애최초 감면</span>
+                                        <span>-{formatNumber(result.firstTimeBuyerDiscount)}원</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between text-sm font-medium text-slate-600 dark:text-slate-300">
                                     <span>지방교육세 등</span>
                                     <span>{formatNumber(result.totalTax - result.acquisitionTax)}원</span>
@@ -1905,6 +2110,542 @@
                         <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">
                             주택 공시가격을 입력해주세요
                         </div>
+                    )}
+                </div>
+            );
+        };
+
+        // NEW: 청약 점수 계산기 (가점제)
+        const SubscriptionScoreTab = () => {
+            const [noHouseYears, setNoHouseYears] = useState('10');
+            const [dependents, setDependents] = useState('3');
+            const [accountYears, setAccountYears] = useState('5');
+
+            const result = useMemo(() => {
+                const years = parseInt(noHouseYears) || 0;
+                const deps = parseInt(dependents) || 0;
+                const accYears = parseInt(accountYears) || 0;
+
+                // 무주택 기간 점수 (최대 32점)
+                let noHouseScore = 0;
+                if (years >= 15) noHouseScore = 32;
+                else if (years >= 14) noHouseScore = 30;
+                else if (years >= 13) noHouseScore = 28;
+                else if (years >= 12) noHouseScore = 26;
+                else if (years >= 11) noHouseScore = 24;
+                else if (years >= 10) noHouseScore = 22;
+                else if (years >= 9) noHouseScore = 20;
+                else if (years >= 8) noHouseScore = 18;
+                else if (years >= 7) noHouseScore = 16;
+                else if (years >= 6) noHouseScore = 14;
+                else if (years >= 5) noHouseScore = 12;
+                else if (years >= 4) noHouseScore = 10;
+                else if (years >= 3) noHouseScore = 8;
+                else if (years >= 2) noHouseScore = 6;
+                else if (years >= 1) noHouseScore = 2;
+
+                // 부양가족 수 점수 (최대 35점)
+                let dependentScore = 5; // 0명도 5점
+                if (deps >= 6) dependentScore = 35;
+                else if (deps === 5) dependentScore = 30;
+                else if (deps === 4) dependentScore = 25;
+                else if (deps === 3) dependentScore = 20;
+                else if (deps === 2) dependentScore = 15;
+                else if (deps === 1) dependentScore = 10;
+
+                // 청약통장 가입기간 점수 (최대 17점)
+                let accountScore = 1;
+                if (accYears >= 15) accountScore = 17;
+                else if (accYears >= 14) accountScore = 16;
+                else if (accYears >= 13) accountScore = 15;
+                else if (accYears >= 12) accountScore = 14;
+                else if (accYears >= 11) accountScore = 13;
+                else if (accYears >= 10) accountScore = 12;
+                else if (accYears >= 9) accountScore = 11;
+                else if (accYears >= 8) accountScore = 10;
+                else if (accYears >= 7) accountScore = 9;
+                else if (accYears >= 6) accountScore = 8;
+                else if (accYears >= 5) accountScore = 7;
+                else if (accYears >= 4) accountScore = 6;
+                else if (accYears >= 3) accountScore = 5;
+                else if (accYears >= 2) accountScore = 4;
+                else if (accYears >= 1) accountScore = 3;
+
+                const totalScore = noHouseScore + dependentScore + accountScore;
+                const maxScore = 84;
+                const percentage = (totalScore / maxScore) * 100;
+
+                let grade = 'C';
+                let gradeColor = 'text-orange-500';
+                if (totalScore >= 70) { grade = 'S'; gradeColor = 'text-purple-600'; }
+                else if (totalScore >= 60) { grade = 'A'; gradeColor = 'text-blue-600'; }
+                else if (totalScore >= 50) { grade = 'B'; gradeColor = 'text-green-600'; }
+
+                return { noHouseScore, dependentScore, accountScore, totalScore, maxScore, percentage, grade, gradeColor };
+            }, [noHouseYears, dependents, accountYears]);
+
+            return (
+                <div className="space-y-6 pb-32 animate-slide-up px-1">
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
+                            <Award className="w-5 h-5 mr-3 text-purple-600 dark:text-purple-400" /> 청약 가점 계산기
+                        </h3>
+                        <div className="space-y-5">
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2 ml-1">무주택 기간 (년)</label>
+                                <input type="number" value={noHouseYears} onChange={(e) => setNoHouseYears(e.target.value)} min="0" max="30" className="w-full px-5 py-4 text-right bg-slate-50 dark:bg-slate-700 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-purple-500 font-bold text-slate-700 dark:text-white text-lg" />
+                                <p className="text-xs text-slate-400 mt-1 ml-1">만 30세 이상 미혼은 무주택기간 산정</p>
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2 ml-1">부양가족 수 (명)</label>
+                                <div className="flex gap-2">
+                                    {['0', '1', '2', '3', '4', '5', '6'].map(n => (
+                                        <button key={n} onClick={() => setDependents(n)} className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${dependents === n ? 'bg-purple-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>{n}{n === '6' ? '+' : ''}</button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2 ml-1">청약통장 가입 기간 (년)</label>
+                                <input type="number" value={accountYears} onChange={(e) => setAccountYears(e.target.value)} min="0" max="20" className="w-full px-5 py-4 text-right bg-slate-50 dark:bg-slate-700 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-purple-500 font-bold text-slate-700 dark:text-white text-lg" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/40 dark:to-indigo-900/40 p-6 rounded-[2.5rem] border border-purple-100 dark:border-purple-800 shadow-lg">
+                        <div className="text-center mb-6">
+                            <p className="text-sm font-bold text-purple-400 uppercase tracking-widest mb-2">My Score</p>
+                            <div className="flex items-center justify-center gap-4">
+                                <span className={`text-6xl font-black ${result.gradeColor}`}>{result.grade}</span>
+                                <div>
+                                    <p className="text-4xl font-black text-purple-900 dark:text-purple-100">{result.totalScore}<span className="text-lg font-bold text-purple-400">/{result.maxScore}</span></p>
+                                    <p className="text-sm text-purple-500">상위 {Math.round(100 - result.percentage)}% 예상</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 space-y-3 shadow-sm">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-slate-600 dark:text-slate-300">무주택 기간</span>
+                                <span className="font-bold text-purple-600">{result.noHouseScore}점 / 32점</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-slate-600 dark:text-slate-300">부양가족 수</span>
+                                <span className="font-bold text-purple-600">{result.dependentScore}점 / 35점</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-slate-600 dark:text-slate-300">청약통장 기간</span>
+                                <span className="font-bold text-purple-600">{result.accountScore}점 / 17점</span>
+                            </div>
+                        </div>
+
+                        <div className="mt-4 w-full bg-purple-200 dark:bg-purple-800 rounded-full h-4 overflow-hidden">
+                            <div className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transition-all duration-1000" style={{ width: `${result.percentage}%` }}></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // NEW: DTI 계산기
+        const DTITab = () => {
+            const [annualIncome, setAnnualIncome] = useState('');
+            const [annualRepayment, setAnnualRepayment] = useState('');
+
+            const result = useMemo(() => {
+                const income = parseNumber(annualIncome);
+                const repay = parseNumber(annualRepayment);
+                if (!income) return null;
+
+                const dti = (repay / income) * 100;
+
+                let status = '여유';
+                let colorClass = 'bg-emerald-50 border-emerald-200 text-emerald-900';
+                if (dti > 60) { status = '위험 (한도 초과)'; colorClass = 'bg-red-50 border-red-200 text-red-900'; }
+                else if (dti > 40) { status = '주의 (한도 근접)'; colorClass = 'bg-orange-50 border-orange-200 text-orange-900'; }
+
+                return { dti, status, colorClass };
+            }, [annualIncome, annualRepayment]);
+
+            return (
+                <div className="space-y-6 pb-32 animate-slide-up px-1">
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
+                            <Percent className="w-5 h-5 mr-3 text-sky-600 dark:text-sky-400" /> DTI 계산 (총부채상환비율)
+                        </h3>
+                        <div className="space-y-5">
+                            <NumberInput label="연 소득" value={annualIncome} onChange={setAnnualIncome} color="cyan" />
+                            <NumberInput label="연간 대출 원리금 상환액" value={annualRepayment} onChange={setAnnualRepayment} color="cyan" />
+                        </div>
+                    </div>
+
+                    {result ? (
+                        <div className={`p-6 rounded-[2.5rem] border ${result.colorClass} shadow-lg`}>
+                            <div className="text-center">
+                                <div className="text-sm font-bold opacity-60 uppercase tracking-widest mb-2">My DTI</div>
+                                <div className="text-5xl font-black mb-2">{result.dti.toFixed(2)}%</div>
+                                <div className="inline-block px-3 py-1 rounded-full bg-white/50 font-bold text-sm">{result.status}</div>
+                            </div>
+                            <div className="w-full bg-white/40 rounded-full h-4 mt-6 p-0.5">
+                                <div className={`h-full rounded-full transition-all duration-1000 ${result.dti > 40 ? 'bg-red-500' : 'bg-emerald-500'}`} style={{ width: `${Math.min(result.dti, 100)}%` }}></div>
+                            </div>
+                            <p className="text-xs text-center opacity-60 mt-4">* DTI 규제: 투기지역 40%, 조정지역 50%, 기타 60%</p>
+                        </div>
+                    ) : (
+                        <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">소득과 상환액을 입력해주세요</div>
+                    )}
+                </div>
+            );
+        };
+
+        // NEW: 전세자금대출 한도 계산기
+        const JeonseLonaLimitTab = () => {
+            const [deposit, setDeposit] = useState('');
+            const [annualIncome, setAnnualIncome] = useState('');
+            const [creditGrade, setCreditGrade] = useState('good');
+
+            const result = useMemo(() => {
+                const dep = parseNumber(deposit);
+                const income = parseNumber(annualIncome);
+                if (!dep) return null;
+
+                // 버팀목전세대출 (최대 2억)
+                const buteomokLimit = Math.min(dep * 0.8, 200000000);
+                const buteomokRate = 2.1; // 저소득층 기준
+
+                // 카카오뱅크 전세대출 (최대 5억)
+                const kakaoLimit = Math.min(dep * 0.8, 500000000);
+                const kakaoRate = creditGrade === 'excellent' ? 3.8 : creditGrade === 'good' ? 4.2 : 4.8;
+
+                // 은행권 일반 전세대출 (최대 4억)
+                const bankLimit = Math.min(dep * 0.8, 400000000);
+                const bankRate = creditGrade === 'excellent' ? 4.0 : creditGrade === 'good' ? 4.5 : 5.0;
+
+                return { buteomokLimit, buteomokRate, kakaoLimit, kakaoRate, bankLimit, bankRate };
+            }, [deposit, annualIncome, creditGrade]);
+
+            return (
+                <div className="space-y-6 pb-32 animate-slide-up px-1">
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
+                            <Banknote className="w-5 h-5 mr-3 text-green-600 dark:text-green-400" /> 전세자금대출 한도
+                        </h3>
+                        <div className="space-y-5">
+                            <NumberInput label="전세 보증금" value={deposit} onChange={setDeposit} color="green" />
+                            <NumberInput label="연 소득 (선택)" value={annualIncome} onChange={setAnnualIncome} color="green" />
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2 ml-1">신용등급</label>
+                                <div className="flex gap-2">
+                                    {[{ id: 'excellent', label: '우수 (1-3)' }, { id: 'good', label: '양호 (4-6)' }, { id: 'normal', label: '보통 (7-9)' }].map(g => (
+                                        <button key={g.id} onClick={() => setCreditGrade(g.id)} className={`flex-1 py-3 rounded-xl text-xs font-bold transition-all ${creditGrade === g.id ? 'bg-green-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>{g.label}</button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {result ? (
+                        <div className="space-y-4">
+                            <div className="bg-gradient-to-r from-blue-50 to-sky-50 dark:from-blue-900/40 dark:to-sky-900/40 p-5 rounded-2xl border border-blue-100 dark:border-blue-800">
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <p className="text-xs font-bold text-blue-600 mb-1">버팀목 전세대출</p>
+                                        <p className="text-2xl font-black text-blue-900 dark:text-blue-100">{formatCompactNumber(result.buteomokLimit)}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xs text-slate-500">예상 금리</p>
+                                        <p className="text-lg font-bold text-blue-600">{result.buteomokRate}%</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/40 dark:to-amber-900/40 p-5 rounded-2xl border border-yellow-100 dark:border-yellow-800">
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <p className="text-xs font-bold text-amber-600 mb-1">카카오뱅크 전세대출</p>
+                                        <p className="text-2xl font-black text-amber-900 dark:text-amber-100">{formatCompactNumber(result.kakaoLimit)}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xs text-slate-500">예상 금리</p>
+                                        <p className="text-lg font-bold text-amber-600">{result.kakaoRate}%</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-800 dark:to-gray-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <p className="text-xs font-bold text-slate-600 mb-1">시중은행 전세대출</p>
+                                        <p className="text-2xl font-black text-slate-900 dark:text-slate-100">{formatCompactNumber(result.bankLimit)}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xs text-slate-500">예상 금리</p>
+                                        <p className="text-lg font-bold text-slate-600">{result.bankRate}%</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <p className="text-xs text-center text-slate-400">* 실제 한도와 금리는 심사 결과에 따라 다를 수 있습니다</p>
+                        </div>
+                    ) : (
+                        <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">보증금을 입력해주세요</div>
+                    )}
+                </div>
+            );
+        };
+
+        // NEW: 주담대 상환 비교 시각화
+        const LoanCompareTab = () => {
+            const [loanAmount, setLoanAmount] = useState('');
+            const [rate, setRate] = useState('4.5');
+            const [period, setPeriod] = useState('360'); // 30년 = 360개월
+
+            const result = useMemo(() => {
+                const principal = parseNumber(loanAmount);
+                const ratePercent = parseFloat(rate) || 0;
+                const n = parseInt(period);
+                if (!principal || !n) return null;
+
+                // Handle zero interest rate edge case
+                if (ratePercent === 0) {
+                    const monthlyPayment = principal / n;
+                    return {
+                        bullet: { total: principal, interest: 0, monthly: 0 },
+                        equal: { total: principal, interest: 0, monthly: monthlyPayment },
+                        principal: { total: principal, interest: 0, first: monthlyPayment },
+                        maxTotal: principal
+                    };
+                }
+
+                const r = ratePercent / 100 / 12;
+
+                // 만기일시
+                const bulletInterest = principal * r * n;
+                const bulletTotal = principal + bulletInterest;
+                const bulletMonthly = principal * r;
+
+                // 원리금균등
+                const equalPayment = (principal * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+                const equalTotal = equalPayment * n;
+                const equalInterest = equalTotal - principal;
+
+                // 원금균등
+                const principalPayment = principal / n;
+                const firstInterest = principal * r;
+                const principalFirst = principalPayment + firstInterest;
+                let principalTotalInterest = 0;
+                for (let i = 0; i < n; i++) {
+                    principalTotalInterest += (principal - (principalPayment * i)) * r;
+                }
+                const principalTotal = principal + principalTotalInterest;
+
+                const maxTotal = Math.max(bulletTotal, equalTotal, principalTotal);
+
+                return {
+                    bullet: { total: bulletTotal, interest: bulletInterest, monthly: bulletMonthly },
+                    equal: { total: equalTotal, interest: equalInterest, monthly: equalPayment },
+                    principal: { total: principalTotal, interest: principalTotalInterest, first: principalFirst },
+                    maxTotal
+                };
+            }, [loanAmount, rate, period]);
+
+            return (
+                <div className="space-y-6 pb-32 animate-slide-up px-1">
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
+                            <BarChart3 className="w-5 h-5 mr-3 text-indigo-600 dark:text-indigo-400" /> 상환방식 비교
+                        </h3>
+                        <div className="space-y-5">
+                            <NumberInput label="대출금액" value={loanAmount} onChange={setLoanAmount} color="violet" />
+                            <div className="flex gap-3">
+                                <div className="flex-1">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">금리 (%)</label>
+                                    <input type="number" value={rate} onChange={(e) => setRate(e.target.value)} className="w-full px-4 py-3 text-right bg-slate-50 dark:bg-slate-700 rounded-2xl font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500" />
+                                </div>
+                                <div className="flex-1">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">기간</label>
+                                    <select value={period} onChange={(e) => setPeriod(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 rounded-2xl font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                                        <option value="120">10년</option>
+                                        <option value="180">15년</option>
+                                        <option value="240">20년</option>
+                                        <option value="300">25년</option>
+                                        <option value="360">30년</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {result ? (
+                        <div className="space-y-4">
+                            <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+                                <h4 className="text-sm font-bold text-slate-600 dark:text-slate-300 mb-4">총 상환금액 비교</h4>
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-3">
+                                        <span className="w-20 text-xs font-bold text-slate-500">만기일시</span>
+                                        <div className="flex-1 bg-slate-100 dark:bg-slate-700 rounded-full h-6 overflow-hidden">
+                                            <div className="h-full bg-red-400 rounded-full" style={{ width: `${(result.bullet.total / result.maxTotal) * 100}%` }}></div>
+                                        </div>
+                                        <span className="text-sm font-bold w-24 text-right">{formatCompactNumber(result.bullet.total)}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <span className="w-20 text-xs font-bold text-slate-500">원리금균등</span>
+                                        <div className="flex-1 bg-slate-100 dark:bg-slate-700 rounded-full h-6 overflow-hidden">
+                                            <div className="h-full bg-blue-400 rounded-full" style={{ width: `${(result.equal.total / result.maxTotal) * 100}%` }}></div>
+                                        </div>
+                                        <span className="text-sm font-bold w-24 text-right">{formatCompactNumber(result.equal.total)}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <span className="w-20 text-xs font-bold text-slate-500">원금균등</span>
+                                        <div className="flex-1 bg-slate-100 dark:bg-slate-700 rounded-full h-6 overflow-hidden">
+                                            <div className="h-full bg-green-400 rounded-full" style={{ width: `${(result.principal.total / result.maxTotal) * 100}%` }}></div>
+                                        </div>
+                                        <span className="text-sm font-bold w-24 text-right">{formatCompactNumber(result.principal.total)}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-3">
+                                <div className="bg-red-50 dark:bg-red-900/30 p-4 rounded-2xl text-center">
+                                    <p className="text-[10px] font-bold text-red-500 mb-1">만기일시</p>
+                                    <p className="text-lg font-black text-red-700 dark:text-red-300">{formatCompactNumber(result.bullet.interest)}</p>
+                                    <p className="text-[10px] text-red-400">총 이자</p>
+                                </div>
+                                <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-2xl text-center">
+                                    <p className="text-[10px] font-bold text-blue-500 mb-1">원리금균등</p>
+                                    <p className="text-lg font-black text-blue-700 dark:text-blue-300">{formatCompactNumber(result.equal.interest)}</p>
+                                    <p className="text-[10px] text-blue-400">총 이자</p>
+                                </div>
+                                <div className="bg-green-50 dark:bg-green-900/30 p-4 rounded-2xl text-center">
+                                    <p className="text-[10px] font-bold text-green-500 mb-1">원금균등</p>
+                                    <p className="text-lg font-black text-green-700 dark:text-green-300">{formatCompactNumber(result.principal.interest)}</p>
+                                    <p className="text-[10px] text-green-400">총 이자</p>
+                                </div>
+                            </div>
+
+                            <div className="bg-green-100 dark:bg-green-900/40 p-4 rounded-2xl text-center">
+                                <p className="text-sm font-bold text-green-800 dark:text-green-200">
+                                    💡 원금균등 선택 시 만기일시 대비 <span className="text-green-600 dark:text-green-400">{formatCompactNumber(result.bullet.interest - result.principal.interest)}</span> 절약!
+                                </p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">대출금액을 입력해주세요</div>
+                    )}
+                </div>
+            );
+        };
+
+        // NEW: 갭투자 ROI 분석
+        const GapInvestmentTab = () => {
+            const [purchasePrice, setPurchasePrice] = useState('');
+            const [jeonseDeposit, setJeonseDeposit] = useState('');
+            const [expectedRise, setExpectedRise] = useState('5');
+            const [holdingYears, setHoldingYears] = useState('3');
+
+            const result = useMemo(() => {
+                const price = parseNumber(purchasePrice);
+                const jeonse = parseNumber(jeonseDeposit);
+                const riseRate = parseFloat(expectedRise) / 100 || 0;
+                const years = parseInt(holdingYears) || 1;
+
+                if (!price || !jeonse) return null;
+
+                // 전세가가 매매가보다 높으면 갭투자 불가
+                if (jeonse >= price) {
+                    return { error: '전세가가 매매가보다 높습니다', gap: 0 };
+                }
+
+                const gap = price - jeonse; // 투자금 (갭)
+                const acquisitionTax = Math.floor(price * 0.011); // 취득세 약 1.1%
+                const totalInvestment = gap + acquisitionTax;
+
+                // 연간 상승률 기준 시세 상승
+                const futurePrice = price * Math.pow(1 + riseRate, years);
+                const priceGain = futurePrice - price;
+
+                // 양도차익 (단순 계산)
+                const estimatedTax = priceGain > 0 ? Math.floor(priceGain * 0.2) : 0; // 간이 양도세 20%
+                const netProfit = priceGain - estimatedTax;
+
+                const roi = totalInvestment > 0 ? (netProfit / totalInvestment) * 100 : 0;
+                const annualRoi = years > 0 ? roi / years : 0;
+
+                return { gap, acquisitionTax, totalInvestment, futurePrice, priceGain, estimatedTax, netProfit, roi, annualRoi };
+            }, [purchasePrice, jeonseDeposit, expectedRise, holdingYears]);
+
+            return (
+                <div className="space-y-6 pb-32 animate-slide-up px-1">
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
+                            <TrendingUp className="w-5 h-5 mr-3 text-cyan-600 dark:text-cyan-400" /> 갭투자 ROI 분석
+                        </h3>
+                        <div className="space-y-5">
+                            <NumberInput label="매매가" value={purchasePrice} onChange={setPurchasePrice} color="cyan" />
+                            <NumberInput label="전세가 (보증금)" value={jeonseDeposit} onChange={setJeonseDeposit} color="cyan" />
+                            <div className="flex gap-3">
+                                <div className="flex-1">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">연간 상승률 (%)</label>
+                                    <input type="number" value={expectedRise} onChange={(e) => setExpectedRise(e.target.value)} className="w-full px-4 py-3 text-right bg-slate-50 dark:bg-slate-700 rounded-2xl font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500" />
+                                </div>
+                                <div className="flex-1">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">보유 기간 (년)</label>
+                                    <input type="number" value={holdingYears} onChange={(e) => setHoldingYears(e.target.value)} className="w-full px-4 py-3 text-right bg-slate-50 dark:bg-slate-700 rounded-2xl font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {result ? (
+                        result.error ? (
+                            <div className="bg-red-50 dark:bg-red-900/30 p-6 rounded-[2rem] border border-red-200 dark:border-red-800 text-center">
+                                <p className="text-lg font-bold text-red-600 dark:text-red-400">⚠️ {result.error}</p>
+                                <p className="text-sm text-red-500 mt-2">전세가율이 100%를 초과하면 갭투자가 불가능합니다.</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <div className="bg-gradient-to-br from-cyan-50 to-teal-50 dark:from-cyan-900/40 dark:to-teal-900/40 p-6 rounded-[2rem] border border-cyan-100 dark:border-cyan-800 shadow-lg">
+                                    <div className="text-center mb-4">
+                                        <p className="text-sm font-bold text-cyan-500 uppercase tracking-widest mb-1">예상 수익률 (ROI)</p>
+                                        <p className="text-5xl font-black text-cyan-800 dark:text-cyan-100">{result.roi.toFixed(1)}%</p>
+                                        <p className="text-sm text-cyan-600">연 환산 {result.annualRoi.toFixed(1)}%</p>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 space-y-3 text-sm">
+                                    <div className="flex justify-between">
+                                        <span className="text-slate-500">투자금 (갭)</span>
+                                        <span className="font-bold">{formatCompactNumber(result.gap)}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-slate-500">취득세</span>
+                                        <span className="font-bold">{formatCompactNumber(result.acquisitionTax)}</span>
+                                    </div>
+                                    <div className="h-px bg-slate-100 dark:bg-slate-700"></div>
+                                    <div className="flex justify-between font-bold">
+                                        <span>총 투자금</span>
+                                        <span className="text-cyan-600">{formatCompactNumber(result.totalInvestment)}</span>
+                                    </div>
+                                    <div className="h-px bg-slate-100 dark:bg-slate-700"></div>
+                                    <div className="flex justify-between">
+                                        <span className="text-slate-500">{holdingYears}년 후 예상 시세</span>
+                                        <span className="font-bold">{formatCompactNumber(result.futurePrice)}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-slate-500">시세 차익</span>
+                                        <span className="font-bold text-green-600">+{formatCompactNumber(result.priceGain)}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-slate-500">예상 양도세</span>
+                                        <span className="font-bold text-red-500">-{formatCompactNumber(result.estimatedTax)}</span>
+                                    </div>
+                                    <div className="h-px bg-slate-100 dark:bg-slate-700"></div>
+                                    <div className="flex justify-between font-bold text-lg">
+                                        <span>순수익</span>
+                                        <span className="text-cyan-600">{formatCompactNumber(result.netProfit)}</span>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-center text-slate-400">* 단순 시뮬레이션이며 실제 수익과 다를 수 있습니다</p>
+                            </div>
+                        )
+                    ) : (
+                        <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">매매가와 전세가를 입력해주세요</div>
                     )}
                 </div>
             );
@@ -2533,6 +3274,7 @@
                 buy: 0,
                 bank: 0,
                 tax: 0,
+                subscription: 0,
                 tools: 0
             });
             const [darkMode, setDarkMode] = useState(() => {
@@ -2563,6 +3305,7 @@
                 { id: 'buy', label: '매매', icon: TrendingUp },
                 { id: 'bank', label: '대출', icon: DollarSign },
                 { id: 'tax', label: '세금', icon: Calculator },
+                { id: 'subscription', label: '청약', icon: Award },
                 { id: 'tools', label: '도구', icon: PenTool },
             ];
 
@@ -2575,16 +3318,23 @@
                 buy: [
                     { id: 0, label: '취득세/채권', component: BuyingTab },
                     { id: 1, label: '임대수익률', component: RentalYieldTab },
-                    { id: 2, label: '중개보수', component: FeeTab },
+                    { id: 2, label: '갭투자ROI', component: GapInvestmentTab },
+                    { id: 3, label: '중개보수', component: FeeTab },
                 ],
                 bank: [
                     { id: 0, label: '대출계산', component: LoanTab },
-                    { id: 1, label: 'DSR계산', component: DSRTab },
-                    { id: 2, label: 'LTV계산', component: LTVTab },
+                    { id: 1, label: '상환비교', component: LoanCompareTab },
+                    { id: 2, label: '전세대출', component: JeonseLonaLimitTab },
+                    { id: 3, label: 'DSR계산', component: DSRTab },
+                    { id: 4, label: 'DTI계산', component: DTITab },
+                    { id: 5, label: 'LTV계산', component: LTVTab },
                 ],
                 tax: [
                     { id: 0, label: '양도소득세', component: CapitalGainsTaxTab },
                     { id: 1, label: '재산세/종부세', component: PropertyTaxTab },
+                ],
+                subscription: [
+                    { id: 0, label: '청약점수', component: SubscriptionScoreTab },
                 ],
                 tools: [
                     { id: 0, label: '도구모음', component: ToolsTab }
@@ -2633,14 +3383,16 @@
                         </div>
                     </div>
 
-                    {/* Sub Navigation (Top) */}
+                    {/* Sub Navigation (Top) - Scrollable */}
                     <div className="px-4 mt-4 sticky top-16 z-20">
-                        <div className="bg-white dark:bg-slate-800 p-1.5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 flex gap-1 overflow-x-auto no-scrollbar">
+                        <div className="bg-white dark:bg-slate-800 p-1.5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 flex gap-1 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
                             {currentTabs.map((tab, idx) => (
                                 <button
                                     key={idx}
                                     onClick={() => setActiveSubTab(prev => ({ ...prev, [activeCategory]: idx }))}
-                                    className={`flex-1 min-w-[80px] py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${currentSubTabIdx === idx ? 'bg-slate-900 dark:bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
+                                    className={`flex-shrink-0 min-w-[72px] px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap snap-start ${currentSubTabIdx === idx ? 'bg-slate-900 dark:bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
+                                    aria-selected={currentSubTabIdx === idx}
+                                    role="tab"
                                 >
                                     {tab.label}
                                 </button>
@@ -2653,9 +3405,9 @@
                         <ActiveComponent />
                     </main>
 
-                    {/* Bottom Navigation (Categories) */}
-                    <nav className="fixed bottom-0 max-w-md w-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border-t border-slate-200/60 dark:border-slate-700 pb-safe z-40 rounded-t-[2rem] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]" aria-label="주요 카테고리">
-                        <div className="flex justify-around items-center px-2 py-3">
+                    {/* Bottom Navigation (Categories) - Improved Touch Targets */}
+                    <nav className="fixed bottom-0 max-w-md w-full bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border-t border-slate-200/60 dark:border-slate-700 pb-safe z-40 rounded-t-[2rem] shadow-[0_-10px_40px_rgba(0,0,0,0.08)]" aria-label="주요 카테고리">
+                        <div className="flex justify-around items-center px-1 py-2">
                             {categories.map((cat) => {
                                 const Icon = cat.icon;
                                 const isActive = activeCategory === cat.id;
@@ -2663,12 +3415,12 @@
                                     <button
                                         key={cat.id}
                                         onClick={() => setActiveCategory(cat.id)}
-                                        className={`flex flex-col items-center justify-center w-16 h-14 rounded-2xl transition-all duration-300 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                                        className={`flex flex-col items-center justify-center min-w-[52px] min-h-[52px] p-2 rounded-2xl transition-all duration-300 active:scale-95 ${isActive ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
                                         aria-label={cat.label}
                                         aria-current={isActive ? 'page' : undefined}
                                     >
-                                        <Icon size={isActive ? 24 : 20} strokeWidth={isActive ? 2.5 : 2} fill={isActive ? "currentColor" : "none"} className={`transition-all mb-1 ${isActive ? 'transform -translate-y-1' : ''}`} />
-                                        <span className={`text-[10px] font-bold transition-all ${isActive ? 'opacity-100' : 'opacity-70'}`}>{cat.label}</span>
+                                        <Icon size={isActive ? 22 : 20} strokeWidth={isActive ? 2.5 : 1.8} fill={isActive ? "currentColor" : "none"} className="transition-all" />
+                                        <span className={`text-[10px] font-bold mt-0.5 transition-all ${isActive ? 'opacity-100' : 'opacity-60'}`}>{cat.label}</span>
                                     </button>
                                 );
                             })}
