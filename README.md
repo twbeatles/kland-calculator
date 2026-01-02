@@ -1,11 +1,11 @@
-# 부동산 마스터 Pro 🏠 (Refactored)
+# 부동산 마스터 Pro 🏠
 
 > 대한민국 No.1 부동산 종합 계산기 - 전월세, 매매, 대출, 세금까지 한 번에!
 
 ![React](https://img.shields.io/badge/React-18.x-61DAFB?logo=react)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?logo=tailwind-css)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Version](https://img.shields.io/badge/Version-3.2.0-blue)
+![Version](https://img.shields.io/badge/Version-3.2.2-blue)
 
 ## ✨ 주요 기능
 
@@ -25,7 +25,7 @@
 | **내집가격 계산** | 월 상환 가능액 기준 구매 가능 주택가격 |
 | **임대수익률** | 수익형 부동산 투자수익률 분석 |
 | **갭투자 ROI** | 전세끼고 매수 시 수익률 시뮬레이션 |
-| **중개보수** | 매매 거래 중개수수료 계산 |
+| **재건축분석** | 재건축 투자 수익성 분석 |
 
 ### 💰 대출 계산기
 | 기능 | 설명 |
@@ -47,43 +47,38 @@
 | **상속세** | 상속재산 세금 계산 |
 
 ### 🏆 청약 계산기
-| 기능 | 설명 |
-|------|------|
-| **청약 점수** | 가점제 84점 만점 기준 점수 계산 |
+- **청약 점수**: 가점제 84점 만점 기준 점수 계산
 
-### 🛠 도구 모음
-- 평수 계산기, 전월세 전환, 보증보험료, 인상률 계산
-- 등기비용, 문자 마법사, 이사 체크리스트, 용어 사전, 히스토리
+### 🛠 도구 모음 (22개)
+평수계산, 전환계산, 매물비교, 프리셋, 결과저장, 보증보험, 인상률, 등기비용, 이사비용, 인테리어, 관리비, 조기상환, 계약관리, 갱신권, 증액한도, 매물점검, 세금일정, 가이드, 문자마법사, 체크리스트, 용어사전, 히스토리
 
 ---
 
 ## 🚀 시작하기
-
-이 프로젝트는 별도의 빌드 과정 없이 정적 파일만으로 실행됩니다.
 
 ```bash
 # 저장소 클론
 git clone https://github.com/your-repo/kland-calculator.git
 cd kland-calculator
 
-# 브라우저에서 실행
-# index.html 파일을 직접 더블 클릭하여 실행하거나 아래 명령어를 사용하세요.
+# 브라우저에서 바로 실행
 start index.html  # Windows
 open index.html   # macOS
 ```
 
-> 📌 **주의사항**: 로컬 파일(`file://`)로 실행 시 브라우저 정책에 따라 일부 기능(PWA 등)이 제한될 수 있습니다. VS Code의 Live Server 등을 사용하면 더 원활하게 실행할 수 있습니다.
+> 📌 **빌드 불필요**: CDN 기반으로 동작하여 별도 npm install이 필요 없습니다.
 
 ---
 
-## 🎨 주요 특징
+## 🎨 UI/UX 특징
 
 ### 💡 사용자 경험
 - **다크 모드** 지원 (부드러운 전환 애니메이션)
 - **반응형 디자인** (모바일 최적화, 44px 터치 영역)
 - **한글 금액 표시** (예: 3억 5천만원)
-- **최근 계산 빠른 접근** (헤더 시계 아이콘)
-- **결과 공유 기능** (URL 또는 Web Share API)
+- **서브탭 스크롤** (화살표 버튼 네비게이션)
+- **스마트 서브탭 바** (단일 탭일 경우 자동 숨김)
+- **입력 자동 선택** (클릭 시 기존 값 자동 선택)
 
 ### ⚡ 성능 최적화
 - `localStorage` 캐싱 및 debounced 저장
@@ -97,15 +92,13 @@ open index.html   # macOS
 
 ---
 
-## � 프로젝트 구조 (Refactored)
-
-기존의 단일 `index.html` 파일 구조에서 유지보수성을 위해 HTML, CSS, JS가 분리되었습니다.
+## 🗂 프로젝트 구조
 
 ```
 kland-calculator-main/
-├── index.html          # 메인 HTML 구조 (스크립트 및 스타일 로드)
-├── styles.css          # 모든 CSS 스타일 정의
-├── app.js              # React 컴포넌트 및 애플리케이션 로직
+├── index.html          # 메인 애플리케이션 (SPA)
+├── app.js              # JavaScript 참조 파일 (HTTP 서버용)
+├── styles.css          # CSS 참조 파일 (HTTP 서버용)
 ├── manifest.json       # PWA 매니페스트
 └── sw.js               # Service Worker
 ```
@@ -119,24 +112,31 @@ kland-calculator-main/
 
 | 기술 | 버전 | 용도 |
 |------|------|------|
-| React | 18.x | UI 프레임워크 (CDN 로드) |
-| Tailwind CSS | 3.x | 스타일링 (CDN 로드) |
-| Babel | 7.x | JSX 트랜스파일링 (CDN 로드) |
+| React | 18.x | UI 프레임워크 (CDN) |
+| Tailwind CSS | 3.x | 스타일링 (CDN) |
+| Babel | 7.x | JSX 트랜스파일링 (CDN) |
+| html2canvas | 1.4.x | 결과 이미지 저장 |
 
 ---
 
 ## 📝 업데이트 내역
 
-### v3.2.0 (Refactored)
-- **코드 구조 개선**: 단일 파일(`index.html`)을 `styles.css`와 `app.js`로 분리하여 유지보수성 향상
-- **기능 유지**: 기존의 모든 계산기 및 유틸리티 기능 100% 이식 및 검증
+### v3.2.2 (2026.01.02)
+- **UI/UX 개선**
+  - 도구 탭 화살표 겹침 수정 (고정 너비 + 반투명 배경)
+  - 단일 항목 카테고리(청약/도구) 서브탭 바 자동 숨김
+  - 전반적인 시각적 일관성 향상
+
+### v3.2.1 (2026.01.02)
+- 서브탭 화살표 네비게이션 추가
+- CORS 이슈 해결 (코드 인라인 처리)
+
+### v3.2.0
+- 코드 구조 개선
 
 ### v3.1.0
-- 신규 계산기 8종 추가 (반전세, 손익분기, 내집마련 등)
+- 신규 계산기 8종 추가
 - 공유 기능 및 UI/UX 개선
-
-### v3.0.0
-- 청약 점수 계산기, PWA 지원
 
 ---
 
