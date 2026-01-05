@@ -5,7 +5,7 @@
 ![React](https://img.shields.io/badge/React-18.x-61DAFB?logo=react)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?logo=tailwind-css)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Version](https://img.shields.io/badge/Version-3.2.2-blue)
+![Version](https://img.shields.io/badge/Version-3.3.0-blue)
 
 ## ✨ 주요 기능
 
@@ -61,7 +61,10 @@
 git clone https://github.com/your-repo/kland-calculator.git
 cd kland-calculator
 
-# 브라우저에서 바로 실행
+# 로컬 서버로 실행 (권장)
+npx http-server -p 8080 -o
+
+# 또는 브라우저에서 바로 실행
 start index.html  # Windows
 open index.html   # macOS
 ```
@@ -73,20 +76,24 @@ open index.html   # macOS
 ## 🎨 UI/UX 특징
 
 ### 💡 사용자 경험
-- **다크 모드** 지원 (부드러운 전환 애니메이션)
 - **반응형 디자인** (모바일 최적화, 44px 터치 영역)
 - **한글 금액 표시** (예: 3억 5천만원)
-- **서브탭 스크롤** (화살표 버튼 네비게이션)
-- **스마트 서브탭 바** (단일 탭일 경우 자동 숨김)
+- **서브탭 스크롤** (부드러운 화살표 버튼 네비게이션)
+- **탭 전환 애니메이션** (슬라이드-인 효과)
+- **하단 네비게이션 글로우 효과** (활성 탭 강조)
+- **모바일 컴팩트 모드** (작은 화면 자동 최적화)
 - **입력 자동 선택** (클릭 시 기존 값 자동 선택)
 
 ### ⚡ 성능 최적화
+- `React.memo` 적용 (10+ 컴포넌트)
+- `useCallback`/`useMemo` 최적화
 - `localStorage` 캐싱 및 debounced 저장
-- React.memo 적용
-- 스크롤 시 동적 헤더 그림자
+- 타이머 클린업으로 메모리 누수 방지
+- NaN/Infinity 방어 로직으로 계산 안정성 확보
 
 ### 🔒 안정성
 - ErrorBoundary 오류 폴백 UI
+- usePersistedState 강화된 에러 처리
 - 입력 유효성 검사 및 시각적 피드백
 - Try-Catch localStorage 예외 처리
 
@@ -121,22 +128,29 @@ kland-calculator-main/
 
 ## 📝 업데이트 내역
 
-### v3.2.2 (2026.01.02)
+### v3.3.0 (2026.01.05)
+- **성능 최적화**
+  - React.memo, useCallback, useMemo 전면 적용
+  - 타이머 클린업으로 메모리 누수 방지
+  - NaN/Infinity 방어 로직 추가
+  - usePersistedState 안정성 강화
 - **UI/UX 개선**
-  - 도구 탭 화살표 겹침 수정 (고정 너비 + 반투명 배경)
-  - 단일 항목 카테고리(청약/도구) 서브탭 바 자동 숨김
-  - 전반적인 시각적 일관성 향상
+  - 탭 전환 슬라이드 애니메이션
+  - 하단 네비게이션 글로우 효과
+  - 스크롤 화살표 펄스 애니메이션
+  - 모바일 컴팩트 모드
+  - 결과 카드 인터랙션 개선
+- **코드 정리**
+  - 다크모드 코드 완전 제거 (474개 클래스)
+  - 불필요한 컴포넌트 정리
+
+### v3.2.2 (2026.01.02)
+- 도구 탭 화살표 겹침 수정
+- 단일 항목 카테고리 서브탭 바 자동 숨김
 
 ### v3.2.1 (2026.01.02)
 - 서브탭 화살표 네비게이션 추가
-- CORS 이슈 해결 (코드 인라인 처리)
-
-### v3.2.0
-- 코드 구조 개선
-
-### v3.1.0
-- 신규 계산기 8종 추가
-- 공유 기능 및 UI/UX 개선
+- CORS 이슈 해결
 
 ---
 

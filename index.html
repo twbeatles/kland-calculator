@@ -6102,8 +6102,12 @@
                 const el = toolsScrollRef.current;
                 if (!el) return;
                 const scrollAmount = el.clientWidth * 0.6;
-                // Direct scroll manipulation for better compatibility
-                el.scrollLeft += direction === 'left' ? -scrollAmount : scrollAmount;
+                el.scrollBy({
+                    left: direction === 'left' ? -scrollAmount : scrollAmount,
+                    behavior: 'smooth'
+                });
+                // Update arrow visibility after scroll animation
+                setTimeout(checkScrollButtons, 350);
             };
 
             const ActiveComponent = {

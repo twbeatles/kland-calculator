@@ -145,17 +145,32 @@ const useLoading = (initialState = false) => {
 // Custom hook for persisted state with optimized localStorage
 const usePersistedState = (key, defaultValue) => {
     const [value, setValue] = useState(() => {
-        const saved = getSafeLocalStorage(key, '');
-        if (saved === '') return defaultValue;
         try {
-            return JSON.parse(saved);
-        } catch {
+            const saved = getSafeLocalStorage(key, null);
+            if (saved === null || saved === undefined) return defaultValue;
+            // If already parsed by getSafeLocalStorage, return as is
+            if (typeof saved === 'object') return saved;
+            // Try parsing if it's a string that looks like JSON
+            if (typeof saved === 'string' && (saved.startsWith('{') || saved.startsWith('['))) {
+                try {
+                    return JSON.parse(saved);
+                } catch {
+                    return saved;
+                }
+            }
             return saved;
+        } catch (e) {
+            console.warn('usePersistedState initialization failed:', e);
+            return defaultValue;
         }
     });
 
     useEffect(() => {
-        debouncedSetStorage(key, typeof value === 'string' ? value : JSON.stringify(value));
+        try {
+            debouncedSetStorage(key, typeof value === 'string' ? value : JSON.stringify(value));
+        } catch (e) {
+            console.warn('usePersistedState save failed:', e);
+        }
     }, [key, value]);
 
     return [value, setValue];
@@ -305,8 +320,8 @@ const parseShareUrl = () => {
 };
 
 // Share Button Component
-const ShareButton = ({ calcType, params, showToast }) => {
-    const handleShare = async () => {
+const ShareButton = React.memo(({ calcType, params, showToast }) => {
+    const handleShare = useCallback(async () => {
         const url = generateShareUrl(calcType, params);
 
         if (navigator.share) {
@@ -325,19 +340,19 @@ const ShareButton = ({ calcType, params, showToast }) => {
             await copyToClipboard(url, showToast);
             if (showToast) showToast('공유 링크가 복사되었습니다!');
         }
-    };
+    }, [calcType, params, showToast]);
 
     return (
         <button
             onClick={handleShare}
-            className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl transition-all active:scale-95"
+            className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition-all active:scale-95 header-btn"
             title="결과 공유하기"
             aria-label="계산 결과 공유"
         >
             <Share2 size={18} />
         </button>
     );
-};
+});
 
 // Quick History Component (최근 계산 빠른 접근)
 const QuickHistory = ({ onSelect }) => {
@@ -364,7 +379,7 @@ const QuickHistory = ({ onSelect }) => {
         <div className="relative">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-all"
+                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all"
                 title="최근 계산"
                 aria-label="최근 계산 기록"
             >
@@ -373,8 +388,8 @@ const QuickHistory = ({ onSelect }) => {
             {isOpen && (
                 <>
                     <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-                    <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 z-50 animate-fade-in overflow-hidden">
-                        <div className="p-3 border-b border-slate-100 dark:border-slate-700">
+                    <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 animate-fade-in overflow-hidden">
+                        <div className="p-3 border-b border-slate-100">
                             <p className="text-xs font-bold text-slate-400 uppercase">최근 계산</p>
                         </div>
                         <div className="max-h-60 overflow-y-auto">
@@ -385,13 +400,13 @@ const QuickHistory = ({ onSelect }) => {
                                         if (onSelect) onSelect(item);
                                         setIsOpen(false);
                                     }}
-                                    className="w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border-b border-slate-50 dark:border-slate-700 last:border-0"
+                                    className="w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0"
                                 >
                                     <div className="flex justify-between items-center">
                                         <span className="text-xs font-bold text-blue-500">{typeLabels[item.type] || item.type}</span>
                                         <span className="text-[10px] text-slate-400">{formatDate(item.timestamp)}</span>
                                     </div>
-                                    <p className="text-sm font-bold text-slate-700 dark:text-slate-200 mt-1 truncate">
+                                    <p className="text-sm font-bold text-slate-700 mt-1 truncate">
                                         {item.result || '결과 없음'}
                                     </p>
                                 </button>
@@ -405,9 +420,9 @@ const QuickHistory = ({ onSelect }) => {
 };
 
 // --- Skeleton Loading Component ---
-const Skeleton = ({ className = "" }) => (
-    <div className={`animate-pulse bg-slate-200 dark:bg-slate-700 rounded-xl ${className}`}></div>
-);
+const Skeleton = React.memo(({ className = "" }) => (
+    <div className={`animate-pulse bg-slate-200 rounded-xl ${className}`}></div>
+));
 
 // --- Error Boundary Component ---
 class ErrorBoundary extends React.Component {
@@ -427,10 +442,10 @@ class ErrorBoundary extends React.Component {
     render() {
         if (this.state.hasError) {
             return (
-                <div className="p-8 m-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-3xl text-center">
+                <div className="p-8 m-4 bg-red-50 border border-red-200 rounded-3xl text-center">
                     <div className="text-4xl mb-4">⚠️</div>
-                    <h2 className="text-lg font-bold text-red-800 dark:text-red-200 mb-2">문제가 발생했습니다</h2>
-                    <p className="text-sm text-red-600 dark:text-red-300 mb-4">페이지를 새로고침하거나 다시 시도해 주세요.</p>
+                    <h2 className="text-lg font-bold text-red-800 mb-2">문제가 발생했습니다</h2>
+                    <p className="text-sm text-red-600 mb-4">페이지를 새로고침하거나 다시 시도해 주세요.</p>
                     <button
                         onClick={() => window.location.reload()}
                         className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-sm transition-colors"
@@ -446,22 +461,21 @@ class ErrorBoundary extends React.Component {
 
 // --- Common Components ---
 // Loading Spinner Component
-const LoadingSpinner = ({ size = 'md', className = '' }) => {
-    const sizes = { sm: 'w-4 h-4', md: 'w-6 h-6', lg: 'w-10 h-10' };
-    return (
-        <div className={`animate-spin rounded-full border-2 border-slate-200 dark:border-slate-600 border-t-indigo-600 dark:border-t-indigo-400 ${sizes[size]} ${className}`}></div>
-    );
-};
+const SPINNER_SIZES = { sm: 'w-4 h-4', md: 'w-6 h-6', lg: 'w-10 h-10' };
+
+const LoadingSpinner = React.memo(({ size = 'md', className = '' }) => (
+    <div className={`animate-spin rounded-full border-2 border-slate-200 border-t-indigo-600 ${SPINNER_SIZES[size]} ${className}`}></div>
+));
 
 // Empty State Component with hint support
-const EmptyState = ({ message, hint, icon: Icon = Info, action, actionLabel }) => (
-    <div className="text-center py-16 text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600 animate-fade-in">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+const EmptyState = React.memo(({ message, hint, icon: Icon = Info, action, actionLabel }) => (
+    <div className="text-center py-16 text-slate-400 bg-white rounded-[2rem] border-2 border-dashed border-slate-200 animate-fade-in empty-state-enhanced">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center floating-hint">
             <Icon className="w-8 h-8 opacity-60" />
         </div>
-        <p className="font-bold text-slate-500 dark:text-slate-400">{message}</p>
+        <p className="font-bold text-slate-500">{message}</p>
         {hint && (
-            <p className="text-sm mt-2 text-slate-400 dark:text-slate-500 max-w-xs mx-auto">{hint}</p>
+            <p className="text-sm mt-2 text-slate-400 max-w-xs mx-auto">{hint}</p>
         )}
         {action && (
             <button
@@ -472,74 +486,90 @@ const EmptyState = ({ message, hint, icon: Icon = Info, action, actionLabel }) =
             </button>
         )}
     </div>
-);
+));
 
 // Copy Button Component
-const CopyButton = ({ text, showToast, className = '' }) => {
+const CopyButton = React.memo(({ text, showToast, className = '' }) => {
     const [copied, setCopied] = useState(false);
+    const timerRef = React.useRef(null);
 
-    const handleCopy = async () => {
+    // Cleanup timer on unmount
+    useEffect(() => {
+        return () => {
+            if (timerRef.current) {
+                clearTimeout(timerRef.current);
+            }
+        };
+    }, []);
+
+    const handleCopy = useCallback(async () => {
         const success = await copyToClipboard(text, showToast);
         if (success) {
             setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
+            if (timerRef.current) clearTimeout(timerRef.current);
+            timerRef.current = setTimeout(() => setCopied(false), 2000);
         }
-    };
+    }, [text, showToast]);
 
     return (
         <button
             onClick={handleCopy}
             className={`p-2 rounded-xl transition-all active:scale-95 ${copied
-                ? 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400'
-                : 'bg-white/60 dark:bg-slate-700/60 text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700'} ${className}`}
+                ? 'bg-green-100 text-green-600'
+                : 'bg-white/60 text-slate-500 hover:bg-white'} ${className}`}
             title="결과 복사"
         >
             {copied ? <Check size={16} /> : <Copy size={16} />}
         </button>
     );
-};
+});
 
 // Tooltip Component for help information
-const Tooltip = ({ children, content }) => {
+const Tooltip = React.memo(({ children, content }) => {
     const [show, setShow] = useState(false);
+
+    const handleMouseEnter = useCallback(() => setShow(true), []);
+    const handleMouseLeave = useCallback(() => setShow(false), []);
+    const handleClick = useCallback(() => setShow(s => !s), []);
+
     return (
         <div className="relative inline-flex items-center">
             <button
                 type="button"
-                onMouseEnter={() => setShow(true)}
-                onMouseLeave={() => setShow(false)}
-                onClick={() => setShow(!show)}
-                className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                onClick={handleClick}
+                className="p-1 text-slate-400 hover:text-slate-600 transition-colors"
                 aria-label="도움말"
             >
                 <HelpCircle size={14} />
             </button>
             {show && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 dark:bg-slate-700 text-white text-xs rounded-lg shadow-lg z-50 w-48 animate-fade-in">
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg shadow-lg z-50 w-48 animate-fade-in">
                     {content}
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800 dark:border-t-slate-700"></div>
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
                 </div>
             )}
         </div>
     );
-};
+});
 
 // Reset Button Component
-const ResetButton = ({ onClick, className = '' }) => (
+const ResetButton = React.memo(({ onClick, className = '' }) => (
     <button
         type="button"
         onClick={onClick}
-        className={`p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all active:scale-95 ${className}`}
+        className={`p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all active:scale-95 ${className}`}
         title="초기화"
         aria-label="입력값 초기화"
     >
         <RotateCcw size={18} />
     </button>
-);
+));
 
 // Result Card Component (reusable for calculation results) - with animation and copy
-const ResultCard = ({ title, value, subtitle, copyText, showToast, colorClass = 'from-blue-50 to-indigo-50 dark:from-blue-900/40 dark:to-indigo-900/40', borderClass = 'border-blue-100 dark:border-blue-800', children, animate = true }) => (
-    <div className={`group bg-gradient-to-br ${colorClass} p-6 rounded-[2.5rem] border ${borderClass} shadow-lg relative card-hover ${animate ? 'animate-fade-in' : ''}`}>
+const ResultCard = React.memo(({ title, value, subtitle, copyText, showToast, colorClass = 'from-blue-50 to-indigo-50', borderClass = 'border-blue-100', children, animate = true }) => (
+    <div className={`group bg-gradient-to-br ${colorClass} p-6 rounded-[2.5rem] border ${borderClass} shadow-lg relative card-hover card-interactive ${animate ? 'animate-fade-in' : ''}`}>
         {copyText && showToast && (
             <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                 <CopyButton text={copyText} showToast={showToast} />
@@ -548,21 +578,21 @@ const ResultCard = ({ title, value, subtitle, copyText, showToast, colorClass = 
         {title && (
             <div className="text-center mb-4">
                 <p className="text-sm font-bold opacity-60 uppercase tracking-widest mb-1">{title}</p>
-                <p className="text-4xl font-black result-number">{value}</p>
+                <p className="text-4xl font-black result-number result-highlight">{value}</p>
                 {subtitle && <p className="text-xs opacity-50 mt-1">{subtitle}</p>}
             </div>
         )}
         {children}
     </div>
-);
+));
 
 // Detail Row Component (for result breakdowns)
-const DetailRow = ({ label, value, highlight = false, negative = false }) => (
-    <div className={`flex justify-between text-sm ${highlight ? 'font-bold text-slate-800 dark:text-white' : 'font-medium text-slate-600 dark:text-slate-300'}`}>
+const DetailRow = React.memo(({ label, value, highlight = false, negative = false }) => (
+    <div className={`flex justify-between text-sm ${highlight ? 'font-bold text-slate-800' : 'font-medium text-slate-600'}`}>
         <span>{label}</span>
-        <span className={negative ? 'text-green-600 dark:text-green-400' : ''}>{value}</span>
+        <span className={negative ? 'text-green-600' : ''}>{value}</span>
     </div>
-);
+));
 
 const NumberInput = React.memo(({
     label,
@@ -638,12 +668,12 @@ const NumberInput = React.memo(({
         cyan: 'focus:ring-cyan-500'
     };
 
-    const errorClasses = hasError ? 'ring-red-400 dark:ring-red-500 bg-red-50 dark:bg-red-900/20' : '';
+    const errorClasses = hasError ? 'ring-red-400 bg-red-50' : '';
 
     return (
         <div className="flex flex-col space-y-1.5">
             <div className="flex justify-between items-center">
-                <label htmlFor={inputId} className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">
+                <label htmlFor={inputId} className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">
                     {label}
                     {required && <span className="text-red-500 ml-0.5">*</span>}
                 </label>
@@ -652,12 +682,12 @@ const NumberInput = React.memo(({
                         <button
                             onClick={() => setUnitMode('원')}
                             type="button"
-                            className={`px-3 py-1.5 min-h-[32px] rounded-l-lg transition-all active:scale-95 ${unitMode === '원' ? 'bg-slate-800 dark:bg-slate-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'}`}
+                            className={`px-3 py-1.5 min-h-[32px] rounded-l-lg transition-all active:scale-95 ${unitMode === '원' ? 'bg-slate-800 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
                         >원</button>
                         <button
                             onClick={() => setUnitMode('만원')}
                             type="button"
-                            className={`px-3 py-1.5 min-h-[32px] rounded-r-lg transition-all active:scale-95 ${unitMode === '만원' ? 'bg-slate-800 dark:bg-slate-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'}`}
+                            className={`px-3 py-1.5 min-h-[32px] rounded-r-lg transition-all active:scale-95 ${unitMode === '만원' ? 'bg-slate-800 text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
                         >만원</button>
                     </div>
                 )}
@@ -674,7 +704,7 @@ const NumberInput = React.memo(({
                     placeholder={placeholder}
                     aria-label={label}
                     aria-invalid={hasError}
-                    className={`w-full pl-5 pr-14 py-4 text-right border-0 bg-white dark:bg-slate-700 rounded-2xl shadow-sm ring-1 ring-slate-200 dark:ring-slate-600 ${focusColors[color]} focus:ring-2 focus:bg-white dark:focus:bg-slate-600 outline-none transition-all font-bold text-slate-800 dark:text-white text-lg group-hover:ring-slate-300 dark:group-hover:ring-slate-500 ${errorClasses}`}
+                    className={`w-full pl-5 pr-14 py-4 text-right border-0 bg-white rounded-2xl shadow-sm ring-1 ring-slate-200 ${focusColors[color]} focus:ring-2 focus:bg-white outline-none transition-all font-bold text-slate-800 text-lg group-hover:ring-slate-300 ${errorClasses}`}
                 />
                 <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 text-sm font-medium pointer-events-none">
                     {enableUnitToggle ? unitMode : unit}
@@ -686,7 +716,7 @@ const NumberInput = React.memo(({
                 </p>
             )}
             {showKorean && koreanDisplay && !hasError && (
-                <div className="text-xs text-slate-400 dark:text-slate-500 ml-1 font-medium">
+                <div className="text-xs text-slate-400 ml-1 font-medium">
                     ≈ {koreanDisplay}
                 </div>
             )}
@@ -696,14 +726,14 @@ const NumberInput = React.memo(({
 
 const ToggleGroup = React.memo(({ options, value, onChange, color = 'blue' }) => {
     const activeClasses = {
-        blue: 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-md ring-1 ring-black/5 dark:ring-white/10',
-        green: 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-md ring-1 ring-black/5 dark:ring-white/10',
-        violet: 'bg-white dark:bg-slate-700 text-violet-600 dark:text-violet-400 shadow-md ring-1 ring-black/5 dark:ring-white/10',
-        orange: 'bg-white dark:bg-slate-700 text-orange-600 dark:text-orange-400 shadow-md ring-1 ring-black/5 dark:ring-white/10',
+        blue: 'bg-white text-blue-600 shadow-md ring-1 ring-black/5',
+        green: 'bg-white text-emerald-600 shadow-md ring-1 ring-black/5',
+        violet: 'bg-white text-violet-600 shadow-md ring-1 ring-black/5',
+        orange: 'bg-white text-orange-600 shadow-md ring-1 ring-black/5',
     };
 
     return (
-        <div role="radiogroup" className="flex bg-slate-100/80 dark:bg-slate-700/80 p-1.5 rounded-2xl">
+        <div role="radiogroup" className="flex bg-slate-100/80 p-1.5 rounded-2xl">
             {options.map((option) => (
                 <button
                     role="radio"
@@ -712,7 +742,7 @@ const ToggleGroup = React.memo(({ options, value, onChange, color = 'blue' }) =>
                     onClick={() => onChange(option)}
                     className={`flex-1 py-3 min-h-[44px] text-xs font-bold rounded-xl transition-all active:scale-95 ${value === option
                         ? activeClasses[color] || activeClasses.blue
-                        : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-600/50'
+                        : 'text-slate-400 hover:text-slate-600 hover:bg-white/50'
                         }`}
                 >
                     {option}
@@ -806,13 +836,24 @@ const CostCompareTab = () => {
             rir = (currentCost / incomeVal) * 100;
         }
 
-        return { jMonthlyCost, wTotalCost, diff, winner, rir, incomeVal, jLoanVal };
+        // Defensive: ensure no NaN/Infinity values
+        const safeNum = (val) => (isFinite(val) && !isNaN(val)) ? val : 0;
+
+        return {
+            jMonthlyCost: safeNum(jMonthlyCost),
+            wTotalCost: safeNum(wTotalCost),
+            diff: safeNum(diff),
+            winner,
+            rir: safeNum(rir),
+            incomeVal: safeNum(incomeVal),
+            jLoanVal: safeNum(jLoanVal)
+        };
     }, [jDeposit, jLoanAmount, jRate, jRatio, wDeposit, wMonthly, wRate, income]);
 
     const maxVal = Math.max(result.jMonthlyCost, result.wTotalCost, 1);
 
-    // Reset function
-    const handleReset = () => {
+    // Reset function with useCallback
+    const handleReset = useCallback(() => {
         setJDeposit('');
         setJLoanAmount('');
         setJRate('4.5');
@@ -821,31 +862,43 @@ const CostCompareTab = () => {
         setWMonthly('');
         setWRate('5.0');
         setIncome('');
-    };
+    }, []);
 
-    // Share function
+    // Share function with useCallback and timer cleanup
     const [copied, setCopied] = useState(false);
-    const handleShare = () => {
+    const copyTimerRef = React.useRef(null);
+
+    // Cleanup timer on unmount
+    useEffect(() => {
+        return () => {
+            if (copyTimerRef.current) {
+                clearTimeout(copyTimerRef.current);
+            }
+        };
+    }, []);
+
+    const handleShare = useCallback(() => {
         const text = `[전월세 비교 결과]\n\n📊 ${result.winner} 유리\n💰 매월 약 ${formatNumber(parseInt(result.diff))}원 절약\n\n📍 전세 월비용: ${formatNumber(parseInt(result.jMonthlyCost))}원\n📍 월세 총비용: ${formatNumber(parseInt(result.wTotalCost))}원\n\n- 부동산 마스터 Pro`;
         navigator.clipboard.writeText(text);
         setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
+        if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+        copyTimerRef.current = setTimeout(() => setCopied(false), 2000);
+    }, [result]);
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
             {/* Base Rate Info + Buttons */}
             <div className="flex justify-between items-start gap-2">
-                <div className="flex-1 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 p-4 rounded-2xl flex items-center justify-between border border-blue-100/50 dark:border-blue-800/50 shadow-sm">
+                <div className="flex-1 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-2xl flex items-center justify-between border border-blue-100/50 shadow-sm">
                     <div className="flex items-center gap-3">
-                        <div className="bg-white dark:bg-slate-700 p-2 rounded-full shadow-sm text-blue-600 dark:text-blue-400">
+                        <div className="bg-white p-2 rounded-full shadow-sm text-blue-600">
                             <TrendingUp size={20} />
                         </div>
                         <div>
-                            <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block mb-0.5">Bank of Korea Rate ({BOK_RATE_DATE_DEFAULT})</span>
-                            <div className="text-lg font-extrabold text-slate-800 dark:text-white flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-bold text-blue-600 uppercase tracking-wider block mb-0.5">Bank of Korea Rate ({BOK_RATE_DATE_DEFAULT})</span>
+                            <div className="text-lg font-extrabold text-slate-800 flex items-center gap-2 flex-wrap">
                                 한국은행 기준금리 {BOK_RATE_DEFAULT.toFixed(2)}%
-                                <a href="https://www.bok.or.kr/portal/singl/baseRate/progress.do?dataSeCd=01&menuNo=200656" target="_blank" rel="noopener noreferrer" className="text-[10px] bg-blue-100/50 dark:bg-blue-800/50 hover:bg-white dark:hover:bg-slate-700 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full border border-blue-200 dark:border-blue-700 transition-all no-print">
+                                <a href="https://www.bok.or.kr/portal/singl/baseRate/progress.do?dataSeCd=01&menuNo=200656" target="_blank" rel="noopener noreferrer" className="text-[10px] bg-blue-100/50 hover:bg-white text-blue-700 px-2 py-0.5 rounded-full border border-blue-200 transition-all no-print">
                                     최신 확인 →
                                 </a>
                             </div>
@@ -856,7 +909,7 @@ const CostCompareTab = () => {
                             // 토스트로 현재 금리 상태 알려주기
                             alert(`✅ 현재 기준금리: ${BOK_RATE_DEFAULT}%\n📅 마지막 금통위 결정일: ${BOK_RATE_DATE_DEFAULT}\n\n최신 금리는 한국은행 공식 홈페이지에서 확인하세요.`);
                         }}
-                        className="p-2 bg-white/50 dark:bg-slate-700/50 rounded-xl text-blue-600 dark:text-blue-400 hover:bg-white dark:hover:bg-slate-600 transition-all no-print ml-2"
+                        className="p-2 bg-white/50 rounded-xl text-blue-600 hover:bg-white transition-all no-print ml-2"
                         title="기준금리 확인"
                         aria-label="기준금리 확인"
                     >
@@ -865,7 +918,7 @@ const CostCompareTab = () => {
                 </div>
                 <button
                     onClick={handleReset}
-                    className="p-3 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-800 transition-all no-print"
+                    className="p-3 bg-white rounded-2xl border border-slate-100 shadow-sm text-slate-400 hover:text-red-500 hover:border-red-200 transition-all no-print"
                     title="입력값 초기화"
                     aria-label="입력값 초기화"
                 >
@@ -874,8 +927,8 @@ const CostCompareTab = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 group hover:border-blue-200 dark:hover:border-blue-700 transition-colors">
-                    <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
+                <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 group hover:border-blue-200 transition-colors">
+                    <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
                         <span className="w-2 h-2 rounded-full bg-blue-500 mr-2 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></span>
                         전세 조건
                     </h3>
@@ -885,23 +938,23 @@ const CostCompareTab = () => {
                         <div className="flex gap-3">
                             <div className="flex-1">
                                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">대출금리 (%)</label>
-                                <input type="number" value={jRate} onChange={(e) => setJRate(e.target.value)} className="w-full px-4 py-3 text-right bg-slate-50 dark:bg-slate-700 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-600 font-bold text-slate-700 dark:text-white transition-all font-mono tracking-tight" />
+                                <input type="number" value={jRate} onChange={(e) => setJRate(e.target.value)} className="w-full px-4 py-3 text-right bg-slate-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white font-bold text-slate-700 transition-all font-mono tracking-tight" />
                             </div>
                             <div className="flex-1">
                                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">대출비율 (%)</label>
-                                <input type="number" value={jRatio} onChange={(e) => handleRatioChange(e.target.value)} className="w-full px-4 py-3 text-right bg-slate-50 dark:bg-slate-700 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-600 font-bold text-slate-700 dark:text-white transition-all font-mono tracking-tight" />
+                                <input type="number" value={jRatio} onChange={(e) => handleRatioChange(e.target.value)} className="w-full px-4 py-3 text-right bg-slate-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white font-bold text-slate-700 transition-all font-mono tracking-tight" />
                             </div>
                         </div>
                         {parseNumber(jDeposit) > 0 && parseNumber(jLoanAmount) > 0 && (
-                            <div className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-2 rounded-xl">
+                            <div className="text-xs text-blue-600 bg-blue-50 px-3 py-2 rounded-xl">
                                 💡 대출금: {formatKoreanNumber(jLoanAmount)} ({jRatio}%) → 월 이자: {formatKoreanNumber(result.jMonthlyCost)}
                             </div>
                         )}
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 group hover:border-orange-200 dark:hover:border-orange-700 transition-colors">
-                    <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
+                <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 group hover:border-orange-200 transition-colors">
+                    <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
                         <span className="w-2 h-2 rounded-full bg-orange-500 mr-2 shadow-[0_0_10px_rgba(249,115,22,0.5)]"></span>
                         월세 조건
                     </h3>
@@ -916,7 +969,7 @@ const CostCompareTab = () => {
                                     value={wRate}
                                     onChange={(e) => setWRate(e.target.value)}
                                     placeholder="0"
-                                    className="w-full pl-5 pr-10 py-4 text-right bg-slate-50 dark:bg-slate-700 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white dark:focus:bg-slate-600 font-bold text-slate-700 dark:text-white transition-all font-mono tracking-tight text-lg"
+                                    className="w-full pl-5 pr-10 py-4 text-right bg-slate-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white font-bold text-slate-700 transition-all font-mono tracking-tight text-lg"
                                 />
                                 <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 text-sm font-medium pointer-events-none">
                                     %
@@ -1014,14 +1067,17 @@ const SafetyTab = () => {
             icon = <Info className="w-8 h-8 text-orange-500" />;
         }
 
-        return { ratio, totalDebt, status, colorClass, barColor, icon };
+        // Defensive: ensure no NaN/Infinity values
+        const safeNum = (val) => (isFinite(val) && !isNaN(val)) ? val : 0;
+
+        return { ratio: safeNum(ratio), totalDebt: safeNum(totalDebt), status, colorClass, barColor, icon };
     }, [price, bond, deposit]);
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 space-y-5">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
-                    <Shield className="w-5 h-5 mr-3 text-emerald-600 dark:text-emerald-400" />
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-5">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <Shield className="w-5 h-5 mr-3 text-emerald-600" />
                     안전 진단 데이터
                 </h3>
                 <NumberInput label="매매 시세 (KB시세/실거래가)" value={price} onChange={setPrice} color="green" />
@@ -1033,7 +1089,7 @@ const SafetyTab = () => {
                 <div className={`p-6 rounded-[2rem] border ${analysis.colorClass} transition-all duration-500 shadow-sm relative overflow-hidden`}>
                     <div className="relative z-10">
                         <div className="flex items-center gap-4 mb-6">
-                            <div className="bg-white dark:bg-slate-700 p-3 rounded-2xl shadow-sm ring-1 ring-black/5 dark:ring-white/10">
+                            <div className="bg-white p-3 rounded-2xl shadow-sm ring-1 ring-black/5">
                                 {analysis.icon}
                             </div>
                             <div>
@@ -1069,7 +1125,7 @@ const SafetyTab = () => {
                     </div>
                 </div>
             ) : (
-                <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-800 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-600 text-slate-400 dark:text-slate-500">
+                <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200 text-slate-400">
                     <Shield className="w-16 h-16 mb-4 text-slate-200 stroke-1" />
                     <p className="text-sm font-bold">정보를 입력하면 안전도를 분석합니다</p>
                 </div>
@@ -1119,18 +1175,18 @@ const FeeTab = () => {
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
-                    <Calculator className="w-5 h-5 mr-3 text-emerald-600 dark:text-emerald-400" />계산 조건
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <Calculator className="w-5 h-5 mr-3 text-emerald-600" />계산 조건
                 </h3>
                 <div className="space-y-6">
                     <div>
-                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2 ml-1">물건 종류</label>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">물건 종류</label>
                         <ToggleGroup options={OPTIONS_PROP_TYPE} value={propType} onChange={setPropType} color="green" />
                     </div>
 
                     <div>
-                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2 ml-1">거래 종류</label>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">거래 종류</label>
                         <ToggleGroup options={OPTIONS_DEAL_TYPE} value={dealType} onChange={setDealType} color="green" />
                     </div>
 
@@ -1139,37 +1195,37 @@ const FeeTab = () => {
             </div>
 
             {result ? (
-                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/40 dark:to-teal-900/40 p-7 rounded-[2.5rem] border border-emerald-100 dark:border-emerald-800 shadow-lg shadow-emerald-100 dark:shadow-emerald-900/20 relative overflow-hidden">
-                    <Calculator className="absolute -bottom-6 -right-6 w-40 h-40 text-emerald-500 dark:text-emerald-400 opacity-5 rotate-12" />
+                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-7 rounded-[2.5rem] border border-emerald-100 shadow-lg shadow-emerald-100 relative overflow-hidden">
+                    <Calculator className="absolute -bottom-6 -right-6 w-40 h-40 text-emerald-500 opacity-5 rotate-12" />
 
-                    <div className="relative z-10 text-emerald-900 dark:text-emerald-100">
+                    <div className="relative z-10 text-emerald-900">
                         <div className="flex justify-between items-center mb-6">
                             <h4 className="text-sm font-black uppercase tracking-widest opacity-60">Estimated Fee</h4>
-                            <span className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-bold text-emerald-600 dark:text-emerald-400 shadow-sm border border-emerald-100 dark:border-emerald-700">{result.rate}% 적용</span>
+                            <span className="bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-bold text-emerald-600 shadow-sm border border-emerald-100">{result.rate}% 적용</span>
                         </div>
 
-                        <div className="space-y-3 mb-8 bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl p-5 rounded-2xl border border-white/50 dark:border-slate-600/50">
-                            <div className="flex justify-between text-slate-600 dark:text-slate-300 font-medium text-sm">
+                        <div className="space-y-3 mb-8 bg-white/60 backdrop-blur-xl p-5 rounded-2xl border border-white/50">
+                            <div className="flex justify-between text-slate-600 font-medium text-sm">
                                 <span>중개수수료</span>
                                 <span>{formatNumber(result.fee)}원</span>
                             </div>
-                            <div className="flex justify-between text-slate-600 dark:text-slate-300 font-medium text-sm">
+                            <div className="flex justify-between text-slate-600 font-medium text-sm">
                                 <span>부가세(10%)</span>
                                 <span>{formatNumber(result.vat)}원</span>
                             </div>
                             {result.limit > 0 && (
-                                <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 text-right mt-1">* 한도액 {formatNumber(result.limit)}원 적용</div>
+                                <div className="text-xs font-bold text-emerald-600 text-right mt-1">* 한도액 {formatNumber(result.limit)}원 적용</div>
                             )}
                         </div>
 
-                        <div className="flex justify-between items-end border-t border-emerald-200/50 dark:border-emerald-700/50 pt-5">
-                            <span className="font-bold text-emerald-800 dark:text-emerald-200">총 예상 금액</span>
-                            <span className="text-4xl font-black text-emerald-700 dark:text-emerald-300 tracking-tight">{formatNumber(result.total)}<span className="text-xl font-medium ml-1 text-emerald-600 dark:text-emerald-400 align-baseline">원</span></span>
+                        <div className="flex justify-between items-end border-t border-emerald-200/50 pt-5">
+                            <span className="font-bold text-emerald-800">총 예상 금액</span>
+                            <span className="text-4xl font-black text-emerald-700 tracking-tight">{formatNumber(result.total)}<span className="text-xl font-medium ml-1 text-emerald-600 align-baseline">원</span></span>
                         </div>
                     </div>
                 </div>
             ) : (
-                <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-slate-50 dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">
+                <div className="text-center py-20 text-slate-300 bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200">
                     금액을 입력해주세요
                 </div>
             )}
@@ -1217,59 +1273,59 @@ const LoanTab = () => {
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
-                    <DollarSign className="w-5 h-5 mr-3 text-violet-600 dark:text-violet-400" /> 대출 조건
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <DollarSign className="w-5 h-5 mr-3 text-violet-600" /> 대출 조건
                 </h3>
                 <div className="space-y-5">
                     <NumberInput label="대출 금액" value={loanAmount} onChange={setLoanAmount} color="violet" />
 
                     <div className="flex gap-3">
                         <div className="flex-1">
-                            <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2 ml-1">연 이자율 (%)</label>
-                            <input type="number" value={rate} onChange={e => setRate(e.target.value)} className="w-full px-4 py-4 border-0 bg-slate-50 dark:bg-slate-700 rounded-2xl text-right outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white dark:focus:bg-slate-600 font-bold text-slate-700 dark:text-white transition-all" />
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">연 이자율 (%)</label>
+                            <input type="number" value={rate} onChange={e => setRate(e.target.value)} className="w-full px-4 py-4 border-0 bg-slate-50 rounded-2xl text-right outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white font-bold text-slate-700 transition-all" />
                         </div>
                         <div className="flex-1">
-                            <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2 ml-1">기간 (개월)</label>
-                            <input type="number" value={period} onChange={e => setPeriod(e.target.value)} className="w-full px-4 py-4 border-0 bg-slate-50 dark:bg-slate-700 rounded-2xl text-right outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white dark:focus:bg-slate-600 font-bold text-slate-700 dark:text-white transition-all" />
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">기간 (개월)</label>
+                            <input type="number" value={period} onChange={e => setPeriod(e.target.value)} className="w-full px-4 py-4 border-0 bg-slate-50 rounded-2xl text-right outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white font-bold text-slate-700 transition-all" />
                         </div>
                     </div>
 
                     <div>
-                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2 ml-1">상환 방식</label>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">상환 방식</label>
                         <ToggleGroup options={OPTIONS_LOAN_METHOD} value={method} onChange={setMethod} color="violet" />
                     </div>
                 </div>
             </div>
 
             {result ? (
-                <div className="bg-violet-50 dark:bg-violet-900/40 p-6 rounded-[2.5rem] border border-violet-100 dark:border-violet-800 shadow-lg shadow-violet-100/50 dark:shadow-violet-900/20 relative">
-                    <div className="absolute top-5 right-5 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm px-3 py-1.5 rounded-full ring-1 ring-violet-200 dark:ring-violet-700">
-                        <span className="text-violet-700 dark:text-violet-300 text-xs font-bold">{result.desc}</span>
+                <div className="bg-violet-50 p-6 rounded-[2.5rem] border border-violet-100 shadow-lg shadow-violet-100/50 relative">
+                    <div className="absolute top-5 right-5 bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-full ring-1 ring-violet-200">
+                        <span className="text-violet-700 text-xs font-bold">{result.desc}</span>
                     </div>
 
                     <div className="mt-8 space-y-4">
-                        <div className="flex justify-between items-center bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm ring-1 ring-black/5 dark:ring-white/10">
-                            <span className="text-slate-500 dark:text-slate-400 font-bold text-sm uppercase tracking-wide">
+                        <div className="flex justify-between items-center bg-white p-5 rounded-2xl shadow-sm ring-1 ring-black/5">
+                            <span className="text-slate-500 font-bold text-sm uppercase tracking-wide">
                                 {method === '원금균등' ? '첫 달 납입금' : '월 예상 납입금'}
                             </span>
-                            <span className="text-2xl font-black text-violet-600 dark:text-violet-400">{formatNumber(Math.round(result.monthlyPayment))}원</span>
+                            <span className="text-2xl font-black text-violet-600">{formatNumber(Math.round(result.monthlyPayment))}원</span>
                         </div>
 
                         <div className="px-4 py-2 space-y-3">
-                            <div className="flex justify-between text-sm text-slate-600 dark:text-slate-300 font-medium">
+                            <div className="flex justify-between text-sm text-slate-600 font-medium">
                                 <span>총 이자 비용</span>
                                 <span>{formatNumber(Math.round(result.totalInterest))}원</span>
                             </div>
-                            <div className="flex justify-between text-sm text-slate-600 dark:text-slate-300 font-medium">
+                            <div className="flex justify-between text-sm text-slate-600 font-medium">
                                 <span>총 상환 금액</span>
-                                <span className="font-bold text-slate-800 dark:text-white">{formatNumber(Math.round(result.totalPayment))}원</span>
+                                <span className="font-bold text-slate-800">{formatNumber(Math.round(result.totalPayment))}원</span>
                             </div>
                         </div>
                     </div>
                 </div>
             ) : (
-                <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">
+                <div className="text-center py-20 text-slate-300 bg-white rounded-[2rem] border-2 border-dashed border-slate-200">
                     대출 조건을 입력해주세요
                 </div>
             )}
@@ -1330,66 +1386,66 @@ const BuyingTab = () => {
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
-                    <Home className="w-5 h-5 mr-3 text-blue-600 dark:text-blue-400" /> 매수 세금 계산
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <Home className="w-5 h-5 mr-3 text-blue-600" /> 매수 세금 계산
                 </h3>
                 <div className="space-y-5">
                     <NumberInput label="매매 가격" value={price} onChange={setPrice} color="blue" />
 
                     <div className="flex gap-3">
                         <div className="flex-1">
-                            <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2 ml-1">지역 구분</label>
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">지역 구분</label>
                             <ToggleGroup options={OPTIONS_REGION} value={region === 'non-adj' ? '비규제' : '규제(조정)'} onChange={(v) => setRegion(v === '비규제' ? 'non-adj' : 'adj')} color="blue" />
                         </div>
                         <div className="flex-1">
-                            <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2 ml-1">주택 수</label>
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">주택 수</label>
                             <ToggleGroup options={OPTIONS_COUNT} value={count === '1' ? '1채' : count === '2' ? '2채' : '3채+'} onChange={(v) => setCount(v === '1채' ? '1' : v === '2채' ? '2' : '3')} color="blue" />
                         </div>
                     </div>
 
-                    <label className="flex items-center gap-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 rounded-2xl cursor-pointer border border-green-100 dark:border-green-800 hover:shadow-md transition-all">
+                    <label className="flex items-center gap-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl cursor-pointer border border-green-100 hover:shadow-md transition-all">
                         <input type="checkbox" checked={isFirstTimeBuyer} onChange={(e) => setIsFirstTimeBuyer(e.target.checked)} className="w-5 h-5 rounded accent-green-500" />
                         <div>
-                            <span className="text-sm font-bold text-green-800 dark:text-green-200">🏠 생애최초 주택 구입</span>
-                            <p className="text-xs text-green-600 dark:text-green-400">12억 이하 주택, 최대 200만원 취득세 감면</p>
+                            <span className="text-sm font-bold text-green-800">🏠 생애최초 주택 구입</span>
+                            <p className="text-xs text-green-600">12억 이하 주택, 최대 200만원 취득세 감면</p>
                         </div>
                     </label>
                 </div>
             </div>
 
             {result ? (
-                <div className="bg-blue-50 dark:bg-blue-900/40 p-6 rounded-[2.5rem] border border-blue-100 dark:border-blue-800 shadow-lg relative">
+                <div className="bg-blue-50 p-6 rounded-[2.5rem] border border-blue-100 shadow-lg relative">
                     <div className="text-center mb-8">
-                        <p className="text-sm font-bold text-blue-400 dark:text-blue-300 uppercase tracking-widest mb-2">예상 총 필요 자금 (세금+채권)</p>
-                        <p className="text-4xl font-black text-blue-900 dark:text-blue-100">{formatNumber(result.totalTax + result.bondCost)}원</p>
+                        <p className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-2">예상 총 필요 자금 (세금+채권)</p>
+                        <p className="text-4xl font-black text-blue-900">{formatNumber(result.totalTax + result.bondCost)}원</p>
                     </div>
 
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 space-y-3 shadow-sm ring-1 ring-black/5 dark:ring-white/10">
-                        <div className="flex justify-between text-sm font-medium text-slate-600 dark:text-slate-300">
+                    <div className="bg-white rounded-2xl p-5 space-y-3 shadow-sm ring-1 ring-black/5">
+                        <div className="flex justify-between text-sm font-medium text-slate-600">
                             <span>취득세 ({result.taxRate}%)</span>
                             <span>{formatNumber(result.acquisitionTax)}원</span>
                         </div>
                         {result.firstTimeBuyerDiscount > 0 && (
-                            <div className="flex justify-between text-sm font-bold text-green-600 dark:text-green-400">
+                            <div className="flex justify-between text-sm font-bold text-green-600">
                                 <span>🎉 생애최초 감면</span>
                                 <span>-{formatNumber(result.firstTimeBuyerDiscount)}원</span>
                             </div>
                         )}
-                        <div className="flex justify-between text-sm font-medium text-slate-600 dark:text-slate-300">
+                        <div className="flex justify-between text-sm font-medium text-slate-600">
                             <span>지방교육세 등</span>
                             <span>{formatNumber(result.totalTax - result.acquisitionTax)}원</span>
                         </div>
-                        <div className="h-px bg-slate-100 dark:bg-slate-600 my-2"></div>
-                        <div className="flex justify-between text-sm font-bold text-slate-800 dark:text-white">
+                        <div className="h-px bg-slate-100 my-2"></div>
+                        <div className="flex justify-between text-sm font-bold text-slate-800">
                             <span>국민주택채권 (할인매도 가정)</span>
                             <span>약 {formatNumber(result.bondCost)}원</span>
                         </div>
                     </div>
-                    <p className="text-xs text-center text-blue-300 dark:text-blue-400 mt-4">* 실제 세금은 면적, 감면요건(생애최초 등)에 따라 다를 수 있습니다.</p>
+                    <p className="text-xs text-center text-blue-300 mt-4">* 실제 세금은 면적, 감면요건(생애최초 등)에 따라 다를 수 있습니다.</p>
                 </div>
             ) : (
-                <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">
+                <div className="text-center py-20 text-slate-300 bg-white rounded-[2rem] border-2 border-dashed border-slate-200">
                     매매가를 입력해주세요
                 </div>
             )}
@@ -1429,9 +1485,9 @@ const DSRTab = () => {
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
-                    <DollarSign className="w-5 h-5 mr-3 text-indigo-600 dark:text-indigo-400" /> DSR 계산 (총부채원리금상환비율)
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <DollarSign className="w-5 h-5 mr-3 text-indigo-600" /> DSR 계산 (총부채원리금상환비율)
                 </h3>
                 <div className="space-y-5">
                     <NumberInput label="연 소득" value={income} onChange={setIncome} color="violet" />
@@ -1458,7 +1514,7 @@ const DSRTab = () => {
                     <p className="text-xs text-center opacity-60 mt-4">* 1금융권 40%, 2금융권 50% 규제 적용 (2026)</p>
                 </div>
             ) : (
-                <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">
+                <div className="text-center py-20 text-slate-300 bg-white rounded-[2rem] border-2 border-dashed border-slate-200">
                     소득과 부채 정보를 입력해주세요
                 </div>
             )}
@@ -1495,9 +1551,9 @@ const LTVTab = () => {
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
-                    <PieChart className="w-5 h-5 mr-3 text-purple-600 dark:text-purple-400" /> 주택담보대출 비율 (LTV)
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <PieChart className="w-5 h-5 mr-3 text-purple-600" /> 주택담보대출 비율 (LTV)
                 </h3>
                 <div className="space-y-5">
                     <NumberInput label="주택 자산 가치 (매매가)" value={value} onChange={setValue} color="violet" />
@@ -1532,7 +1588,7 @@ const LTVTab = () => {
                     </div>
                 </div>
             ) : (
-                <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">
+                <div className="text-center py-20 text-slate-300 bg-white rounded-[2rem] border-2 border-dashed border-slate-200">
                     정보를 입력하면 LTV를 계산합니다
                 </div>
             )}
@@ -1620,9 +1676,9 @@ const CapitalGainsTaxTab = () => {
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
-                    <TrendingUp className="w-5 h-5 mr-3 text-rose-600 dark:text-rose-400" /> 양도소득세 계산기
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <TrendingUp className="w-5 h-5 mr-3 text-rose-600" /> 양도소득세 계산기
                 </h3>
                 <div className="space-y-5">
                     <NumberInput label="취득가액 (매입가)" value={acquisitionPrice} onChange={setAcquisitionPrice} color="blue" />
@@ -1630,13 +1686,13 @@ const CapitalGainsTaxTab = () => {
                     <NumberInput label="필요경비 (취득세, 중개보수 등)" value={expenses} onChange={setExpenses} color="blue" />
 
                     <div>
-                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2 ml-1">보유 기간 (년)</label>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">보유 기간 (년)</label>
                         <div className="flex gap-2">
                             {['1', '2', '3', '5', '10'].map(y => (
                                 <button
                                     key={y}
                                     onClick={() => setHoldingYears(y)}
-                                    className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${holdingYears === y ? 'bg-rose-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}
+                                    className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${holdingYears === y ? 'bg-rose-500 text-white' : 'bg-slate-100 text-slate-500'}`}
                                 >
                                     {y}년
                                 </button>
@@ -1647,51 +1703,51 @@ const CapitalGainsTaxTab = () => {
                     <div className="flex gap-4">
                         <label className="flex items-center gap-2 cursor-pointer">
                             <input type="checkbox" checked={isOneHouse} onChange={(e) => setIsOneHouse(e.target.checked)} className="w-4 h-4 rounded" />
-                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">1세대 1주택</span>
+                            <span className="text-sm font-medium text-slate-700">1세대 1주택</span>
                         </label>
                         <label className="flex items-center gap-2 cursor-pointer">
                             <input type="checkbox" checked={isRegulated} onChange={(e) => setIsRegulated(e.target.checked)} className="w-4 h-4 rounded" />
-                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">조정대상지역</span>
+                            <span className="text-sm font-medium text-slate-700">조정대상지역</span>
                         </label>
                     </div>
                 </div>
             </div>
 
             {result ? (
-                <div className="bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-900/40 dark:to-pink-900/40 p-6 rounded-[2.5rem] border border-rose-100 dark:border-rose-800 shadow-lg relative">
+                <div className="bg-gradient-to-br from-rose-50 to-pink-50 p-6 rounded-[2.5rem] border border-rose-100 shadow-lg relative">
                     <div className="text-center mb-6">
-                        <p className="text-sm font-bold text-rose-400 dark:text-rose-300 uppercase tracking-widest mb-2">예상 납부 세액</p>
-                        <p className="text-4xl font-black text-rose-900 dark:text-rose-100">{formatNumber(result.total)}원</p>
-                        {result.total > 0 && <p className="text-xs text-rose-500 dark:text-rose-400 mt-1">적용세율 {result.rate}%</p>}
+                        <p className="text-sm font-bold text-rose-400 uppercase tracking-widest mb-2">예상 납부 세액</p>
+                        <p className="text-4xl font-black text-rose-900">{formatNumber(result.total)}원</p>
+                        {result.total > 0 && <p className="text-xs text-rose-500 mt-1">적용세율 {result.rate}%</p>}
                     </div>
 
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 space-y-3 shadow-sm ring-1 ring-black/5 dark:ring-white/10">
-                        <div className="flex justify-between text-sm font-medium text-slate-600 dark:text-slate-300">
+                    <div className="bg-white rounded-2xl p-5 space-y-3 shadow-sm ring-1 ring-black/5">
+                        <div className="flex justify-between text-sm font-medium text-slate-600">
                             <span>양도차익</span>
                             <span>{formatNumber(result.gain)}원</span>
                         </div>
-                        <div className="flex justify-between text-sm font-medium text-slate-600 dark:text-slate-300">
+                        <div className="flex justify-between text-sm font-medium text-slate-600">
                             <span>장기보유특별공제</span>
-                            <span className="text-green-600 dark:text-green-400">-{formatNumber(result.deduction)}원</span>
+                            <span className="text-green-600">-{formatNumber(result.deduction)}원</span>
                         </div>
-                        <div className="flex justify-between text-sm font-medium text-slate-600 dark:text-slate-300">
+                        <div className="flex justify-between text-sm font-medium text-slate-600">
                             <span>과세표준</span>
                             <span>{formatNumber(result.taxableGain)}원</span>
                         </div>
-                        <div className="h-px bg-slate-100 dark:bg-slate-600 my-2"></div>
-                        <div className="flex justify-between text-sm font-medium text-slate-600 dark:text-slate-300">
+                        <div className="h-px bg-slate-100 my-2"></div>
+                        <div className="flex justify-between text-sm font-medium text-slate-600">
                             <span>양도소득세</span>
                             <span>{formatNumber(result.tax)}원</span>
                         </div>
-                        <div className="flex justify-between text-sm font-bold text-slate-800 dark:text-white">
+                        <div className="flex justify-between text-sm font-bold text-slate-800">
                             <span>지방소득세 (10%)</span>
                             <span>{formatNumber(result.localTax)}원</span>
                         </div>
                     </div>
-                    <p className="text-xs text-center text-rose-300 dark:text-rose-400 mt-4">* 실제 세액은 다양한 요인에 따라 달라질 수 있습니다. 참고용으로만 활용하세요.</p>
+                    <p className="text-xs text-center text-rose-300 mt-4">* 실제 세액은 다양한 요인에 따라 달라질 수 있습니다. 참고용으로만 활용하세요.</p>
                 </div>
             ) : (
-                <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">
+                <div className="text-center py-20 text-slate-300 bg-white rounded-[2rem] border-2 border-dashed border-slate-200">
                     취득가와 양도가를 입력해주세요
                 </div>
             )}
@@ -1765,39 +1821,39 @@ const PropertyTaxTab = () => {
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
-                    <Calculator className="w-5 h-5 mr-3 text-teal-600 dark:text-teal-400" /> 재산세 / 종합부동산세
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <Calculator className="w-5 h-5 mr-3 text-teal-600" /> 재산세 / 종합부동산세
                 </h3>
                 <div className="space-y-5">
                     <NumberInput label="주택 공시가격" value={publicPrice} onChange={setPublicPrice} color="cyan" />
 
-                    <label className="flex items-center gap-2 cursor-pointer p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
+                    <label className="flex items-center gap-2 cursor-pointer p-3 bg-slate-50 rounded-xl">
                         <input type="checkbox" checked={isOneHouse} onChange={(e) => setIsOneHouse(e.target.checked)} className="w-4 h-4 rounded" />
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">1세대 1주택 (종부세 12억 공제)</span>
+                        <span className="text-sm font-medium text-slate-700">1세대 1주택 (종부세 12억 공제)</span>
                     </label>
                 </div>
             </div>
 
             {result ? (
                 <div className="space-y-4">
-                    <div className="bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-900/40 dark:to-cyan-900/40 p-6 rounded-[2rem] border border-teal-100 dark:border-teal-800 shadow-lg">
-                        <h4 className="text-sm font-bold text-teal-600 dark:text-teal-400 mb-4">재산세 (7월, 9월 납부)</h4>
-                        <div className="bg-white dark:bg-slate-800 rounded-xl p-4 space-y-2 text-sm">
-                            <div className="flex justify-between text-slate-600 dark:text-slate-300">
+                    <div className="bg-gradient-to-br from-teal-50 to-cyan-50 p-6 rounded-[2rem] border border-teal-100 shadow-lg">
+                        <h4 className="text-sm font-bold text-teal-600 mb-4">재산세 (7월, 9월 납부)</h4>
+                        <div className="bg-white rounded-xl p-4 space-y-2 text-sm">
+                            <div className="flex justify-between text-slate-600">
                                 <span>재산세</span>
                                 <span>{formatNumber(result.propertyTax)}원</span>
                             </div>
-                            <div className="flex justify-between text-slate-600 dark:text-slate-300">
+                            <div className="flex justify-between text-slate-600">
                                 <span>도시지역분</span>
                                 <span>{formatNumber(result.cityTax)}원</span>
                             </div>
-                            <div className="flex justify-between text-slate-600 dark:text-slate-300">
+                            <div className="flex justify-between text-slate-600">
                                 <span>지방교육세</span>
                                 <span>{formatNumber(result.eduTax)}원</span>
                             </div>
-                            <div className="h-px bg-teal-100 dark:bg-teal-700 my-2"></div>
-                            <div className="flex justify-between font-bold text-teal-800 dark:text-teal-200">
+                            <div className="h-px bg-teal-100 my-2"></div>
+                            <div className="flex justify-between font-bold text-teal-800">
                                 <span>소계</span>
                                 <span>{formatNumber(result.totalPropertyTax)}원</span>
                             </div>
@@ -1805,19 +1861,19 @@ const PropertyTaxTab = () => {
                     </div>
 
                     {result.totalJongbuTax > 0 && (
-                        <div className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/40 dark:to-orange-900/40 p-6 rounded-[2rem] border border-red-100 dark:border-red-800 shadow-lg">
-                            <h4 className="text-sm font-bold text-red-600 dark:text-red-400 mb-4">종합부동산세 (12월 납부)</h4>
-                            <div className="bg-white dark:bg-slate-800 rounded-xl p-4 space-y-2 text-sm">
-                                <div className="flex justify-between text-slate-600 dark:text-slate-300">
+                        <div className="bg-gradient-to-br from-red-50 to-orange-50 p-6 rounded-[2rem] border border-red-100 shadow-lg">
+                            <h4 className="text-sm font-bold text-red-600 mb-4">종합부동산세 (12월 납부)</h4>
+                            <div className="bg-white rounded-xl p-4 space-y-2 text-sm">
+                                <div className="flex justify-between text-slate-600">
                                     <span>종합부동산세</span>
                                     <span>{formatNumber(result.jongbuTax)}원</span>
                                 </div>
-                                <div className="flex justify-between text-slate-600 dark:text-slate-300">
+                                <div className="flex justify-between text-slate-600">
                                     <span>농어촌특별세</span>
                                     <span>{formatNumber(result.jongbuEduTax)}원</span>
                                 </div>
-                                <div className="h-px bg-red-100 dark:bg-red-700 my-2"></div>
-                                <div className="flex justify-between font-bold text-red-800 dark:text-red-200">
+                                <div className="h-px bg-red-100 my-2"></div>
+                                <div className="flex justify-between font-bold text-red-800">
                                     <span>소계</span>
                                     <span>{formatNumber(result.totalJongbuTax)}원</span>
                                 </div>
@@ -1825,14 +1881,14 @@ const PropertyTaxTab = () => {
                         </div>
                     )}
 
-                    <div className="bg-slate-900 dark:bg-slate-950 p-6 rounded-[2rem] text-center">
+                    <div className="bg-slate-900 p-6 rounded-[2rem] text-center">
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">연간 총 보유세</p>
                         <p className="text-4xl font-black text-white">{formatNumber(result.totalTax)}원</p>
                         <p className="text-sm text-slate-400 mt-2">월 약 {formatNumber(Math.round(result.totalTax / 12))}원</p>
                     </div>
                 </div>
             ) : (
-                <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">
+                <div className="text-center py-20 text-slate-300 bg-white rounded-[2rem] border-2 border-dashed border-slate-200">
                     주택 공시가격을 입력해주세요
                 </div>
             )}
@@ -1872,13 +1928,13 @@ const SemiJeonseTab = () => {
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
-                    <ArrowRightLeft className="w-5 h-5 mr-3 text-violet-600 dark:text-violet-400" /> 반전세 계산기
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <ArrowRightLeft className="w-5 h-5 mr-3 text-violet-600" /> 반전세 계산기
                 </h3>
                 <div className="space-y-5">
                     <NumberInput label="현재 전세 보증금" value={fullDeposit} onChange={setFullDeposit} color="violet" />
-                    <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl space-y-4">
+                    <div className="p-4 bg-slate-50 rounded-2xl space-y-4">
                         <p className="text-xs font-bold text-slate-500">전환 옵션 (하나만 입력)</p>
                         <NumberInput label="희망 보증금 (감액)" value={targetDeposit} onChange={(v) => { setTargetDeposit(v); setTargetMonthly(''); }} color="violet" />
                         <div className="text-center text-xs text-slate-400 font-bold">또는</div>
@@ -1886,25 +1942,25 @@ const SemiJeonseTab = () => {
                     </div>
                     <div>
                         <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">전환율 (%)</label>
-                        <input type="number" value={conversionRate} onChange={(e) => setConversionRate(e.target.value)} className="w-full px-4 py-3 text-right bg-slate-50 dark:bg-slate-700 rounded-2xl font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-violet-500" />
+                        <input type="number" value={conversionRate} onChange={(e) => setConversionRate(e.target.value)} className="w-full px-4 py-3 text-right bg-slate-50 rounded-2xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-violet-500" />
                         <p className="text-xs text-slate-400 mt-1 ml-1">* 법정 상한: 기준금리({BOK_RATE_DEFAULT}%) + 3.5% = {(BOK_RATE_DEFAULT + 3.5).toFixed(1)}%</p>
                     </div>
                 </div>
             </div>
 
             {result ? (
-                <div className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-900/40 dark:to-purple-900/40 p-6 rounded-[2.5rem] border border-violet-100 dark:border-violet-800 shadow-lg">
+                <div className="bg-gradient-to-br from-violet-50 to-purple-50 p-6 rounded-[2.5rem] border border-violet-100 shadow-lg">
                     <div className="text-center mb-6">
                         <p className="text-sm font-bold text-violet-400 uppercase tracking-widest mb-2">반전세 조건</p>
-                        <p className="text-3xl font-black text-violet-900 dark:text-violet-100">보증금 {formatCompactNumber(result.deposit)} + 월세 {formatNumber(result.monthly)}원</p>
+                        <p className="text-3xl font-black text-violet-900">보증금 {formatCompactNumber(result.deposit)} + 월세 {formatNumber(result.monthly)}원</p>
                     </div>
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 space-y-2 text-sm">
+                    <div className="bg-white rounded-2xl p-4 space-y-2 text-sm">
                         <div className="flex justify-between"><span className="text-slate-500">전환 보증금</span><span className="font-bold">{formatCompactNumber(result.diff)}</span></div>
                         <div className="flex justify-between"><span className="text-slate-500">연간 월세 합계</span><span className="font-bold">{formatNumber(result.monthly * 12)}원</span></div>
                     </div>
                 </div>
             ) : (
-                <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">전세 보증금과 희망 조건을 입력해주세요</div>
+                <div className="text-center py-20 text-slate-300 bg-white rounded-[2rem] border-2 border-dashed border-slate-200">전세 보증금과 희망 조건을 입력해주세요</div>
             )}
         </div>
     );
@@ -1945,9 +2001,9 @@ const GiftTaxTab = () => {
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
-                    <Banknote className="w-5 h-5 mr-3 text-pink-600 dark:text-pink-400" /> 증여세 계산기
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <Banknote className="w-5 h-5 mr-3 text-pink-600" /> 증여세 계산기
                 </h3>
                 <div className="space-y-5">
                     <NumberInput label="증여 재산가액" value={giftAmount} onChange={setGiftAmount} color="orange" />
@@ -1955,26 +2011,26 @@ const GiftTaxTab = () => {
                         <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">증여자와의 관계</label>
                         <div className="grid grid-cols-2 gap-2">
                             {[{ id: 'spouse', label: '배우자 (6억)' }, { id: 'child', label: '자녀 (5천만)' }, { id: 'grandchild', label: '손자녀 (5천만)' }, { id: 'other', label: '기타 (1천만)' }].map(r => (
-                                <button key={r.id} onClick={() => setRelationship(r.id)} className={`py-3 rounded-xl text-xs font-bold transition-all ${relationship === r.id ? 'bg-pink-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>{r.label}</button>
+                                <button key={r.id} onClick={() => setRelationship(r.id)} className={`py-3 rounded-xl text-xs font-bold transition-all ${relationship === r.id ? 'bg-pink-500 text-white' : 'bg-slate-100 text-slate-500'}`}>{r.label}</button>
                             ))}
                         </div>
                     </div>
                     {relationship === 'grandchild' && (
-                        <label className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/30 rounded-xl cursor-pointer">
+                        <label className="flex items-center gap-2 p-3 bg-yellow-50 rounded-xl cursor-pointer">
                             <input type="checkbox" checked={isGenerationSkip} onChange={(e) => setIsGenerationSkip(e.target.checked)} className="w-4 h-4 rounded" />
-                            <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">세대생략 증여 (30% 가산)</span>
+                            <span className="text-sm font-medium text-yellow-800">세대생략 증여 (30% 가산)</span>
                         </label>
                     )}
                 </div>
             </div>
 
             {result ? (
-                <div className="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-900/40 dark:to-rose-900/40 p-6 rounded-[2.5rem] border border-pink-100 dark:border-pink-800 shadow-lg">
+                <div className="bg-gradient-to-br from-pink-50 to-rose-50 p-6 rounded-[2.5rem] border border-pink-100 shadow-lg">
                     <div className="text-center mb-6">
                         <p className="text-sm font-bold text-pink-400 uppercase tracking-widest mb-2">예상 증여세</p>
-                        <p className="text-4xl font-black text-pink-900 dark:text-pink-100">{formatNumber(result.finalTax)}원</p>
+                        <p className="text-4xl font-black text-pink-900">{formatNumber(result.finalTax)}원</p>
                     </div>
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 space-y-2 text-sm">
+                    <div className="bg-white rounded-2xl p-4 space-y-2 text-sm">
                         <div className="flex justify-between"><span className="text-slate-500">증여재산 공제</span><span className="font-bold text-green-600">-{formatCompactNumber(result.exemption)}</span></div>
                         <div className="flex justify-between"><span className="text-slate-500">과세표준</span><span className="font-bold">{formatCompactNumber(result.taxableAmount)}</span></div>
                         <div className="flex justify-between"><span className="text-slate-500">산출세액</span><span className="font-bold">{formatNumber(result.tax)}원</span></div>
@@ -1983,7 +2039,7 @@ const GiftTaxTab = () => {
                     <p className="text-xs text-center text-pink-300 mt-4">* 10년 내 동일인 증여 합산 과세</p>
                 </div>
             ) : (
-                <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">증여 재산가액을 입력해주세요</div>
+                <div className="text-center py-20 text-slate-300 bg-white rounded-[2rem] border-2 border-dashed border-slate-200">증여 재산가액을 입력해주세요</div>
             )}
         </div>
     );
@@ -2032,22 +2088,22 @@ const InheritanceTaxTab = () => {
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
-                    <Users className="w-5 h-5 mr-3 text-indigo-600 dark:text-indigo-400" /> 상속세 계산기
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <Users className="w-5 h-5 mr-3 text-indigo-600" /> 상속세 계산기
                 </h3>
                 <div className="space-y-5">
                     <NumberInput label="총 상속재산" value={totalAssets} onChange={setTotalAssets} color="violet" />
                     <NumberInput label="채무 및 공과금" value={debts} onChange={setDebts} color="violet" />
-                    <label className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl cursor-pointer">
+                    <label className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl cursor-pointer">
                         <input type="checkbox" checked={hasSpouse} onChange={(e) => setHasSpouse(e.target.checked)} className="w-5 h-5 rounded" />
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">배우자 생존 (배우자 공제 적용)</span>
+                        <span className="text-sm font-medium text-slate-700">배우자 생존 (배우자 공제 적용)</span>
                     </label>
                     <div>
                         <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">자녀 수</label>
                         <div className="flex gap-2">
                             {['0', '1', '2', '3', '4'].map(n => (
-                                <button key={n} onClick={() => setChildCount(n)} className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${childCount === n ? 'bg-indigo-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>{n}명</button>
+                                <button key={n} onClick={() => setChildCount(n)} className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${childCount === n ? 'bg-indigo-500 text-white' : 'bg-slate-100 text-slate-500'}`}>{n}명</button>
                             ))}
                         </div>
                     </div>
@@ -2055,12 +2111,12 @@ const InheritanceTaxTab = () => {
             </div>
 
             {result ? (
-                <div className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/40 dark:to-blue-900/40 p-6 rounded-[2.5rem] border border-indigo-100 dark:border-indigo-800 shadow-lg">
+                <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-6 rounded-[2.5rem] border border-indigo-100 shadow-lg">
                     <div className="text-center mb-6">
                         <p className="text-sm font-bold text-indigo-400 uppercase tracking-widest mb-2">예상 상속세</p>
-                        <p className="text-4xl font-black text-indigo-900 dark:text-indigo-100">{formatNumber(result.finalTax)}원</p>
+                        <p className="text-4xl font-black text-indigo-900">{formatNumber(result.finalTax)}원</p>
                     </div>
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 space-y-2 text-sm">
+                    <div className="bg-white rounded-2xl p-4 space-y-2 text-sm">
                         <div className="flex justify-between"><span className="text-slate-500">순 상속재산</span><span className="font-bold">{formatCompactNumber(result.netAssets)}</span></div>
                         <div className="flex justify-between"><span className="text-slate-500">총 공제액</span><span className="font-bold text-green-600">-{formatCompactNumber(result.deductions)}</span></div>
                         <div className="flex justify-between"><span className="text-slate-500">과세표준</span><span className="font-bold">{formatCompactNumber(result.taxableAmount)}</span></div>
@@ -2068,7 +2124,7 @@ const InheritanceTaxTab = () => {
                     </div>
                 </div>
             ) : (
-                <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">상속재산을 입력해주세요</div>
+                <div className="text-center py-20 text-slate-300 bg-white rounded-[2rem] border-2 border-dashed border-slate-200">상속재산을 입력해주세요</div>
             )}
         </div>
     );
@@ -2115,9 +2171,9 @@ const MortgageLimitTab = () => {
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
-                    <Building className="w-5 h-5 mr-3 text-blue-600 dark:text-blue-400" /> 주담대 한도 계산기
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <Building className="w-5 h-5 mr-3 text-blue-600" /> 주담대 한도 계산기
                 </h3>
                 <div className="space-y-5">
                     <NumberInput label="연 소득" value={annualIncome} onChange={setAnnualIncome} color="blue" />
@@ -2125,43 +2181,43 @@ const MortgageLimitTab = () => {
                     <div className="flex gap-3">
                         <div className="flex-1">
                             <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">대출금리 (%)</label>
-                            <input type="number" value={loanRate} onChange={(e) => setLoanRate(e.target.value)} className="w-full px-4 py-3 text-right bg-slate-50 dark:bg-slate-700 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-blue-500" />
+                            <input type="number" value={loanRate} onChange={(e) => setLoanRate(e.target.value)} className="w-full px-4 py-3 text-right bg-slate-50 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-blue-500" />
                         </div>
                         <div className="flex-1">
                             <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">대출기간 (년)</label>
-                            <select value={loanPeriod} onChange={(e) => setLoanPeriod(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-blue-500">
+                            <select value={loanPeriod} onChange={(e) => setLoanPeriod(e.target.value)} className="w-full px-4 py-3 bg-slate-50 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="20">20년</option><option value="30">30년</option><option value="40">40년</option>
                             </select>
                         </div>
                     </div>
                     <ToggleGroup options={OPTIONS_REGION} value={region === 'non-adj' ? '비규제' : '규제(조정)'} onChange={(v) => setRegion(v === '비규제' ? 'non-adj' : 'adj')} color="blue" />
-                    <label className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/30 rounded-xl cursor-pointer">
+                    <label className="flex items-center gap-3 p-3 bg-green-50 rounded-xl cursor-pointer">
                         <input type="checkbox" checked={isFirstTime} onChange={(e) => setIsFirstTime(e.target.checked)} className="w-5 h-5 rounded accent-green-500" />
-                        <span className="text-sm font-medium text-green-800 dark:text-green-200">생애최초 주택구입 (LTV 80%)</span>
+                        <span className="text-sm font-medium text-green-800">생애최초 주택구입 (LTV 80%)</span>
                     </label>
                 </div>
             </div>
 
             {result ? (
-                <div className="bg-gradient-to-br from-blue-50 to-sky-50 dark:from-blue-900/40 dark:to-sky-900/40 p-6 rounded-[2.5rem] border border-blue-100 dark:border-blue-800 shadow-lg">
+                <div className="bg-gradient-to-br from-blue-50 to-sky-50 p-6 rounded-[2.5rem] border border-blue-100 shadow-lg">
                     <div className="text-center mb-6">
                         <p className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-2">예상 대출 한도</p>
-                        <p className="text-4xl font-black text-blue-900 dark:text-blue-100">{formatCompactNumber(result.finalLimit)}</p>
+                        <p className="text-4xl font-black text-blue-900">{formatCompactNumber(result.finalLimit)}</p>
                         <p className="text-xs text-blue-500 mt-1">{result.limitingFactor} 기준 적용</p>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl text-center">
+                        <div className="bg-white p-4 rounded-2xl text-center">
                             <p className="text-xs font-bold text-slate-400 mb-1">DSR 40% 한도</p>
-                            <p className="text-lg font-black text-slate-700 dark:text-slate-200">{formatCompactNumber(result.dsrLimit)}</p>
+                            <p className="text-lg font-black text-slate-700">{formatCompactNumber(result.dsrLimit)}</p>
                         </div>
-                        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl text-center">
+                        <div className="bg-white p-4 rounded-2xl text-center">
                             <p className="text-xs font-bold text-slate-400 mb-1">LTV {result.ltvRate}% 한도</p>
-                            <p className="text-lg font-black text-slate-700 dark:text-slate-200">{formatCompactNumber(result.ltvLimit)}</p>
+                            <p className="text-lg font-black text-slate-700">{formatCompactNumber(result.ltvLimit)}</p>
                         </div>
                     </div>
                 </div>
             ) : (
-                <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">연소득과 주택 시세를 입력해주세요</div>
+                <div className="text-center py-20 text-slate-300 bg-white rounded-[2rem] border-2 border-dashed border-slate-200">연소득과 주택 시세를 입력해주세요</div>
             )}
         </div>
     );
@@ -2202,31 +2258,31 @@ const ReverseRentTab = () => {
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
-                    <Home className="w-5 h-5 mr-3 text-amber-600 dark:text-amber-400" /> 주택연금 계산기
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <Home className="w-5 h-5 mr-3 text-amber-600" /> 주택연금 계산기
                 </h3>
                 <div className="space-y-5">
                     <NumberInput label="주택 시세" value={propertyValue} onChange={setPropertyValue} color="orange" />
                     <div>
                         <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">신청자 연령</label>
-                        <input type="number" value={age} onChange={(e) => setAge(e.target.value)} min="55" max="90" className="w-full px-4 py-3 text-right bg-slate-50 dark:bg-slate-700 rounded-2xl font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-amber-500" />
+                        <input type="number" value={age} onChange={(e) => setAge(e.target.value)} min="55" max="90" className="w-full px-4 py-3 text-right bg-slate-50 rounded-2xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-amber-500" />
                         <p className="text-xs text-slate-400 mt-1 ml-1">만 55세 이상 신청 가능</p>
                     </div>
                     <div className="flex gap-2">
-                        <button onClick={() => setPensionType('lifetime')} className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${pensionType === 'lifetime' ? 'bg-amber-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>종신형</button>
-                        <button onClick={() => setPensionType('fixedTerm')} className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${pensionType === 'fixedTerm' ? 'bg-amber-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>확정기간형</button>
+                        <button onClick={() => setPensionType('lifetime')} className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${pensionType === 'lifetime' ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-500'}`}>종신형</button>
+                        <button onClick={() => setPensionType('fixedTerm')} className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${pensionType === 'fixedTerm' ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-500'}`}>확정기간형</button>
                     </div>
                 </div>
             </div>
 
             {result ? (
-                <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/40 dark:to-orange-900/40 p-6 rounded-[2.5rem] border border-amber-100 dark:border-amber-800 shadow-lg">
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-6 rounded-[2.5rem] border border-amber-100 shadow-lg">
                     <div className="text-center mb-6">
                         <p className="text-sm font-bold text-amber-500 uppercase tracking-widest mb-2">예상 월 수령액</p>
-                        <p className="text-4xl font-black text-amber-900 dark:text-amber-100">{formatNumber(result.monthlyPension)}원</p>
+                        <p className="text-4xl font-black text-amber-900">{formatNumber(result.monthlyPension)}원</p>
                     </div>
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 space-y-2 text-sm">
+                    <div className="bg-white rounded-2xl p-4 space-y-2 text-sm">
                         <div className="flex justify-between"><span className="text-slate-500">연간 수령액</span><span className="font-bold">{formatCompactNumber(result.annualPension)}</span></div>
                         <div className="flex justify-between"><span className="text-slate-500">10년간 총 수령액</span><span className="font-bold">{formatCompactNumber(result.totalPension10Y)}</span></div>
                         <div className="flex justify-between"><span className="text-slate-500">적용 주택가격</span><span className="font-bold">{formatCompactNumber(result.cappedProperty)}</span></div>
@@ -2234,7 +2290,7 @@ const ReverseRentTab = () => {
                     <p className="text-xs text-center text-amber-400 mt-4">* HF 한국주택금융공사 기준 간이 추정치</p>
                 </div>
             ) : (
-                <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">주택 시세와 연령을 입력해주세요</div>
+                <div className="text-center py-20 text-slate-300 bg-white rounded-[2rem] border-2 border-dashed border-slate-200">주택 시세와 연령을 입력해주세요</div>
             )}
         </div>
     );
@@ -2284,9 +2340,9 @@ const RentVsBuyTab = () => {
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
-                    <BarChart3 className="w-5 h-5 mr-3 text-cyan-600 dark:text-cyan-400" /> 전세 vs 매매 분석
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <BarChart3 className="w-5 h-5 mr-3 text-cyan-600" /> 전세 vs 매매 분석
                 </h3>
                 <div className="space-y-5">
                     <NumberInput label="매매가" value={purchasePrice} onChange={setPurchasePrice} color="cyan" />
@@ -2294,13 +2350,13 @@ const RentVsBuyTab = () => {
                     <div className="flex gap-3">
                         <div className="flex-1">
                             <label className="text-xs font-bold text-slate-500 uppercase block mb-2 ml-1">거주기간 (년)</label>
-                            <select value={years} onChange={(e) => setYears(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-cyan-500">
+                            <select value={years} onChange={(e) => setYears(e.target.value)} className="w-full px-4 py-3 bg-slate-50 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-cyan-500">
                                 <option value="3">3년</option><option value="5">5년</option><option value="10">10년</option>
                             </select>
                         </div>
                         <div className="flex-1">
                             <label className="text-xs font-bold text-slate-500 uppercase block mb-2 ml-1">연간 상승률 (%)</label>
-                            <input type="number" value={expectedRise} onChange={(e) => setExpectedRise(e.target.value)} className="w-full px-4 py-3 text-right bg-slate-50 dark:bg-slate-700 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-cyan-500" />
+                            <input type="number" value={expectedRise} onChange={(e) => setExpectedRise(e.target.value)} className="w-full px-4 py-3 text-right bg-slate-50 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-cyan-500" />
                         </div>
                     </div>
                 </div>
@@ -2308,7 +2364,7 @@ const RentVsBuyTab = () => {
 
             {result ? (
                 <div className="space-y-4">
-                    <div className={`p-6 rounded-[2.5rem] shadow-lg ${result.winner === '매매' ? 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/40 dark:to-indigo-900/40 border border-blue-100 dark:border-blue-800' : 'bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/40 dark:to-amber-900/40 border border-orange-100 dark:border-orange-800'}`}>
+                    <div className={`p-6 rounded-[2.5rem] shadow-lg ${result.winner === '매매' ? 'bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100' : 'bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-100'}`}>
                         <div className="text-center mb-4">
                             <p className="text-sm font-bold uppercase tracking-widest mb-2 opacity-60">{years}년 거주 시</p>
                             <p className="text-3xl font-black">{result.winner === '매매' ? '🏠 매매 유리' : '🔑 전세 유리'}</p>
@@ -2316,13 +2372,13 @@ const RentVsBuyTab = () => {
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl text-center shadow-sm border border-slate-100 dark:border-slate-700">
+                        <div className="bg-white p-4 rounded-2xl text-center shadow-sm border border-slate-100">
                             <p className="text-xs font-bold text-blue-500 mb-1">매매 총비용</p>
-                            <p className="text-lg font-black text-slate-700 dark:text-slate-200">{formatCompactNumber(result.buyCost)}</p>
+                            <p className="text-lg font-black text-slate-700">{formatCompactNumber(result.buyCost)}</p>
                         </div>
-                        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl text-center shadow-sm border border-slate-100 dark:border-slate-700">
+                        <div className="bg-white p-4 rounded-2xl text-center shadow-sm border border-slate-100">
                             <p className="text-xs font-bold text-orange-500 mb-1">전세 총비용</p>
-                            <p className="text-lg font-black text-slate-700 dark:text-slate-200">{formatCompactNumber(result.rentCost)}</p>
+                            <p className="text-lg font-black text-slate-700">{formatCompactNumber(result.rentCost)}</p>
                         </div>
                     </div>
                     {result.breakEvenYear > 0 && result.breakEvenYear < 30 && (
@@ -2330,7 +2386,7 @@ const RentVsBuyTab = () => {
                     )}
                 </div>
             ) : (
-                <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">매매가와 전세가를 입력해주세요</div>
+                <div className="text-center py-20 text-slate-300 bg-white rounded-[2rem] border-2 border-dashed border-slate-200">매매가와 전세가를 입력해주세요</div>
             )}
         </div>
     );
@@ -2383,9 +2439,9 @@ const AffordabilityTab = () => {
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
-                    <Home className="w-5 h-5 mr-3 text-emerald-600 dark:text-emerald-400" /> 내 집 가격 계산기
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <Home className="w-5 h-5 mr-3 text-emerald-600" /> 내 집 가격 계산기
                 </h3>
                 <div className="space-y-5">
                     <NumberInput label="월 가용 주거비 (상환액)" value={monthlyBudget} onChange={setMonthlyBudget} color="green" />
@@ -2394,11 +2450,11 @@ const AffordabilityTab = () => {
                     <div className="flex gap-3">
                         <div className="flex-1">
                             <label className="text-xs font-bold text-slate-500 uppercase block mb-2 ml-1">대출금리 (%)</label>
-                            <input type="number" value={loanRate} onChange={(e) => setLoanRate(e.target.value)} className="w-full px-4 py-3 text-right bg-slate-50 dark:bg-slate-700 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-emerald-500" />
+                            <input type="number" value={loanRate} onChange={(e) => setLoanRate(e.target.value)} className="w-full px-4 py-3 text-right bg-slate-50 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-emerald-500" />
                         </div>
                         <div className="flex-1">
                             <label className="text-xs font-bold text-slate-500 uppercase block mb-2 ml-1">대출기간</label>
-                            <select value={loanPeriod} onChange={(e) => setLoanPeriod(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 rounded-2xl font-bold outline-none">
+                            <select value={loanPeriod} onChange={(e) => setLoanPeriod(e.target.value)} className="w-full px-4 py-3 bg-slate-50 rounded-2xl font-bold outline-none">
                                 <option value="20">20년</option><option value="30">30년</option><option value="40">40년</option>
                             </select>
                         </div>
@@ -2407,19 +2463,19 @@ const AffordabilityTab = () => {
             </div>
 
             {result ? (
-                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/40 dark:to-teal-900/40 p-6 rounded-[2.5rem] border border-emerald-100 dark:border-emerald-800 shadow-lg">
+                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-6 rounded-[2.5rem] border border-emerald-100 shadow-lg">
                     <div className="text-center mb-6">
                         <p className="text-sm font-bold text-emerald-500 uppercase tracking-widest mb-2">구매 가능 주택 가격</p>
-                        <p className="text-4xl font-black text-emerald-900 dark:text-emerald-100">{formatCompactNumber(result.recommendedPrice)}</p>
+                        <p className="text-4xl font-black text-emerald-900">{formatCompactNumber(result.recommendedPrice)}</p>
                     </div>
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 space-y-2 text-sm">
+                    <div className="bg-white rounded-2xl p-4 space-y-2 text-sm">
                         <div className="flex justify-between"><span className="text-slate-500">자기자금</span><span className="font-bold">{formatCompactNumber(result.cash)}</span></div>
                         <div className="flex justify-between"><span className="text-slate-500">예상 대출 한도</span><span className="font-bold">{formatCompactNumber(result.maxLoan)}</span></div>
                     </div>
                     <p className="text-xs text-center text-emerald-400 mt-4">* 실제 대출 한도는 신용도, 소득증빙에 따라 달라질 수 있습니다</p>
                 </div>
             ) : (
-                <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">월 가용 주거비와 보유 현금을 입력해주세요</div>
+                <div className="text-center py-20 text-slate-300 bg-white rounded-[2rem] border-2 border-dashed border-slate-200">월 가용 주거비와 보유 현금을 입력해주세요</div>
             )}
         </div>
     );
@@ -2466,36 +2522,36 @@ const AmortizationScheduleTab = () => {
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
-                    <ClipboardList className="w-5 h-5 mr-3 text-purple-600 dark:text-purple-400" /> 상환 스케줄표
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <ClipboardList className="w-5 h-5 mr-3 text-purple-600" /> 상환 스케줄표
                 </h3>
                 <div className="space-y-5">
                     <NumberInput label="대출금액" value={loanAmount} onChange={setLoanAmount} color="violet" />
                     <div className="flex gap-3">
                         <div className="flex-1">
                             <label className="text-xs font-bold text-slate-500 uppercase block mb-2 ml-1">금리 (%)</label>
-                            <input type="number" value={rate} onChange={(e) => setRate(e.target.value)} className="w-full px-4 py-3 text-right bg-slate-50 dark:bg-slate-700 rounded-2xl font-bold outline-none" />
+                            <input type="number" value={rate} onChange={(e) => setRate(e.target.value)} className="w-full px-4 py-3 text-right bg-slate-50 rounded-2xl font-bold outline-none" />
                         </div>
                         <div className="flex-1">
                             <label className="text-xs font-bold text-slate-500 uppercase block mb-2 ml-1">기간</label>
-                            <select value={period} onChange={(e) => setPeriod(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 rounded-2xl font-bold outline-none">
+                            <select value={period} onChange={(e) => setPeriod(e.target.value)} className="w-full px-4 py-3 bg-slate-50 rounded-2xl font-bold outline-none">
                                 <option value="120">10년</option><option value="240">20년</option><option value="360">30년</option>
                             </select>
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <button onClick={() => setMethod('equal')} className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${method === 'equal' ? 'bg-purple-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>원리금균등</button>
-                        <button onClick={() => setMethod('principal')} className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${method === 'principal' ? 'bg-purple-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>원금균등</button>
+                        <button onClick={() => setMethod('equal')} className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${method === 'equal' ? 'bg-purple-500 text-white' : 'bg-slate-100 text-slate-500'}`}>원리금균등</button>
+                        <button onClick={() => setMethod('principal')} className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${method === 'principal' ? 'bg-purple-500 text-white' : 'bg-slate-100 text-slate-500'}`}>원금균등</button>
                     </div>
                 </div>
             </div>
 
             {schedule && schedule.length > 0 ? (
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-xs">
-                            <thead className="bg-slate-50 dark:bg-slate-700">
+                            <thead className="bg-slate-50">
                                 <tr>
                                     <th className="py-3 px-2 text-left font-bold text-slate-500">회차</th>
                                     <th className="py-3 px-2 text-right font-bold text-slate-500">상환액</th>
@@ -2506,7 +2562,7 @@ const AmortizationScheduleTab = () => {
                             </thead>
                             <tbody>
                                 {schedule.map((row) => (
-                                    <tr key={row.month} className="border-t border-slate-100 dark:border-slate-700">
+                                    <tr key={row.month} className="border-t border-slate-100">
                                         <td className="py-2.5 px-2 font-medium">{row.month}회</td>
                                         <td className="py-2.5 px-2 text-right font-bold">{formatNumber(row.payment)}</td>
                                         <td className="py-2.5 px-2 text-right text-blue-600">{formatNumber(row.principal)}</td>
@@ -2520,7 +2576,7 @@ const AmortizationScheduleTab = () => {
                     <p className="text-xs text-center text-slate-400 py-3">* 첫 12개월 스케줄 표시</p>
                 </div>
             ) : (
-                <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">대출금액을 입력해주세요</div>
+                <div className="text-center py-20 text-slate-300 bg-white rounded-[2rem] border-2 border-dashed border-slate-200">대출금액을 입력해주세요</div>
             )}
         </div>
     );
@@ -2597,59 +2653,59 @@ const SubscriptionScoreTab = () => {
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
-                    <Award className="w-5 h-5 mr-3 text-purple-600 dark:text-purple-400" /> 청약 가점 계산기
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <Award className="w-5 h-5 mr-3 text-purple-600" /> 청약 가점 계산기
                 </h3>
                 <div className="space-y-5">
                     <div>
-                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2 ml-1">무주택 기간 (년)</label>
-                        <input type="number" value={noHouseYears} onChange={(e) => setNoHouseYears(e.target.value)} min="0" max="30" className="w-full px-5 py-4 text-right bg-slate-50 dark:bg-slate-700 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-purple-500 font-bold text-slate-700 dark:text-white text-lg" />
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">무주택 기간 (년)</label>
+                        <input type="number" value={noHouseYears} onChange={(e) => setNoHouseYears(e.target.value)} min="0" max="30" className="w-full px-5 py-4 text-right bg-slate-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-purple-500 font-bold text-slate-700 text-lg" />
                         <p className="text-xs text-slate-400 mt-1 ml-1">만 30세 이상 미혼은 무주택기간 산정</p>
                     </div>
                     <div>
-                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2 ml-1">부양가족 수 (명)</label>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">부양가족 수 (명)</label>
                         <div className="flex gap-2">
                             {['0', '1', '2', '3', '4', '5', '6'].map(n => (
-                                <button key={n} onClick={() => setDependents(n)} className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${dependents === n ? 'bg-purple-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>{n}{n === '6' ? '+' : ''}</button>
+                                <button key={n} onClick={() => setDependents(n)} className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${dependents === n ? 'bg-purple-500 text-white' : 'bg-slate-100 text-slate-500'}`}>{n}{n === '6' ? '+' : ''}</button>
                             ))}
                         </div>
                     </div>
                     <div>
-                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2 ml-1">청약통장 가입 기간 (년)</label>
-                        <input type="number" value={accountYears} onChange={(e) => setAccountYears(e.target.value)} min="0" max="20" className="w-full px-5 py-4 text-right bg-slate-50 dark:bg-slate-700 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-purple-500 font-bold text-slate-700 dark:text-white text-lg" />
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">청약통장 가입 기간 (년)</label>
+                        <input type="number" value={accountYears} onChange={(e) => setAccountYears(e.target.value)} min="0" max="20" className="w-full px-5 py-4 text-right bg-slate-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-purple-500 font-bold text-slate-700 text-lg" />
                     </div>
                 </div>
             </div>
 
-            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/40 dark:to-indigo-900/40 p-6 rounded-[2.5rem] border border-purple-100 dark:border-purple-800 shadow-lg">
+            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-6 rounded-[2.5rem] border border-purple-100 shadow-lg">
                 <div className="text-center mb-6">
                     <p className="text-sm font-bold text-purple-400 uppercase tracking-widest mb-2">My Score</p>
                     <div className="flex items-center justify-center gap-4">
                         <span className={`text-6xl font-black ${result.gradeColor}`}>{result.grade}</span>
                         <div>
-                            <p className="text-4xl font-black text-purple-900 dark:text-purple-100">{result.totalScore}<span className="text-lg font-bold text-purple-400">/{result.maxScore}</span></p>
+                            <p className="text-4xl font-black text-purple-900">{result.totalScore}<span className="text-lg font-bold text-purple-400">/{result.maxScore}</span></p>
                             <p className="text-sm text-purple-500">상위 {Math.round(100 - result.percentage)}% 예상</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 space-y-3 shadow-sm">
+                <div className="bg-white rounded-2xl p-4 space-y-3 shadow-sm">
                     <div className="flex justify-between text-sm">
-                        <span className="text-slate-600 dark:text-slate-300">무주택 기간</span>
+                        <span className="text-slate-600">무주택 기간</span>
                         <span className="font-bold text-purple-600">{result.noHouseScore}점 / 32점</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                        <span className="text-slate-600 dark:text-slate-300">부양가족 수</span>
+                        <span className="text-slate-600">부양가족 수</span>
                         <span className="font-bold text-purple-600">{result.dependentScore}점 / 35점</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                        <span className="text-slate-600 dark:text-slate-300">청약통장 기간</span>
+                        <span className="text-slate-600">청약통장 기간</span>
                         <span className="font-bold text-purple-600">{result.accountScore}점 / 17점</span>
                     </div>
                 </div>
 
-                <div className="mt-4 w-full bg-purple-200 dark:bg-purple-800 rounded-full h-4 overflow-hidden">
+                <div className="mt-4 w-full bg-purple-200 rounded-full h-4 overflow-hidden">
                     <div className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transition-all duration-1000" style={{ width: `${result.percentage}%` }}></div>
                 </div>
             </div>
@@ -2679,9 +2735,9 @@ const DTITab = () => {
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
-                    <Percent className="w-5 h-5 mr-3 text-sky-600 dark:text-sky-400" /> DTI 계산 (총부채상환비율)
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <Percent className="w-5 h-5 mr-3 text-sky-600" /> DTI 계산 (총부채상환비율)
                 </h3>
                 <div className="space-y-5">
                     <NumberInput label="연 소득" value={annualIncome} onChange={setAnnualIncome} color="cyan" />
@@ -2702,7 +2758,7 @@ const DTITab = () => {
                     <p className="text-xs text-center opacity-60 mt-4">* DTI 규제: 투기지역 40%, 조정지역 50%, 기타 60%</p>
                 </div>
             ) : (
-                <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">소득과 상환액을 입력해주세요</div>
+                <div className="text-center py-20 text-slate-300 bg-white rounded-[2rem] border-2 border-dashed border-slate-200">소득과 상환액을 입력해주세요</div>
             )}
         </div>
     );
@@ -2736,18 +2792,18 @@ const JeonseLoanLimitTab = () => {
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
-                    <Banknote className="w-5 h-5 mr-3 text-green-600 dark:text-green-400" /> 전세자금대출 한도
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <Banknote className="w-5 h-5 mr-3 text-green-600" /> 전세자금대출 한도
                 </h3>
                 <div className="space-y-5">
                     <NumberInput label="전세 보증금" value={deposit} onChange={setDeposit} color="green" />
                     <NumberInput label="연 소득 (선택)" value={annualIncome} onChange={setAnnualIncome} color="green" />
                     <div>
-                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-2 ml-1">신용등급</label>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">신용등급</label>
                         <div className="flex gap-2">
                             {[{ id: 'excellent', label: '우수 (1-3)' }, { id: 'good', label: '양호 (4-6)' }, { id: 'normal', label: '보통 (7-9)' }].map(g => (
-                                <button key={g.id} onClick={() => setCreditGrade(g.id)} className={`flex-1 py-3 rounded-xl text-xs font-bold transition-all ${creditGrade === g.id ? 'bg-green-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>{g.label}</button>
+                                <button key={g.id} onClick={() => setCreditGrade(g.id)} className={`flex-1 py-3 rounded-xl text-xs font-bold transition-all ${creditGrade === g.id ? 'bg-green-500 text-white' : 'bg-slate-100 text-slate-500'}`}>{g.label}</button>
                             ))}
                         </div>
                     </div>
@@ -2756,11 +2812,11 @@ const JeonseLoanLimitTab = () => {
 
             {result ? (
                 <div className="space-y-4">
-                    <div className="bg-gradient-to-r from-blue-50 to-sky-50 dark:from-blue-900/40 dark:to-sky-900/40 p-5 rounded-2xl border border-blue-100 dark:border-blue-800">
+                    <div className="bg-gradient-to-r from-blue-50 to-sky-50 p-5 rounded-2xl border border-blue-100">
                         <div className="flex justify-between items-center">
                             <div>
                                 <p className="text-xs font-bold text-blue-600 mb-1">버팀목 전세대출</p>
-                                <p className="text-2xl font-black text-blue-900 dark:text-blue-100">{formatCompactNumber(result.buteomokLimit)}</p>
+                                <p className="text-2xl font-black text-blue-900">{formatCompactNumber(result.buteomokLimit)}</p>
                             </div>
                             <div className="text-right">
                                 <p className="text-xs text-slate-500">예상 금리</p>
@@ -2768,11 +2824,11 @@ const JeonseLoanLimitTab = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/40 dark:to-amber-900/40 p-5 rounded-2xl border border-yellow-100 dark:border-yellow-800">
+                    <div className="bg-gradient-to-r from-yellow-50 to-amber-50 p-5 rounded-2xl border border-yellow-100">
                         <div className="flex justify-between items-center">
                             <div>
                                 <p className="text-xs font-bold text-amber-600 mb-1">카카오뱅크 전세대출</p>
-                                <p className="text-2xl font-black text-amber-900 dark:text-amber-100">{formatCompactNumber(result.kakaoLimit)}</p>
+                                <p className="text-2xl font-black text-amber-900">{formatCompactNumber(result.kakaoLimit)}</p>
                             </div>
                             <div className="text-right">
                                 <p className="text-xs text-slate-500">예상 금리</p>
@@ -2780,11 +2836,11 @@ const JeonseLoanLimitTab = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-800 dark:to-gray-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                    <div className="bg-gradient-to-r from-slate-50 to-gray-50 p-5 rounded-2xl border border-slate-200">
                         <div className="flex justify-between items-center">
                             <div>
                                 <p className="text-xs font-bold text-slate-600 mb-1">시중은행 전세대출</p>
-                                <p className="text-2xl font-black text-slate-900 dark:text-slate-100">{formatCompactNumber(result.bankLimit)}</p>
+                                <p className="text-2xl font-black text-slate-900">{formatCompactNumber(result.bankLimit)}</p>
                             </div>
                             <div className="text-right">
                                 <p className="text-xs text-slate-500">예상 금리</p>
@@ -2795,7 +2851,7 @@ const JeonseLoanLimitTab = () => {
                     <p className="text-xs text-center text-slate-400">* 실제 한도와 금리는 심사 결과에 따라 다를 수 있습니다</p>
                 </div>
             ) : (
-                <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">보증금을 입력해주세요</div>
+                <div className="text-center py-20 text-slate-300 bg-white rounded-[2rem] border-2 border-dashed border-slate-200">보증금을 입력해주세요</div>
             )}
         </div>
     );
@@ -2858,20 +2914,20 @@ const LoanCompareTab = () => {
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
-                    <BarChart3 className="w-5 h-5 mr-3 text-indigo-600 dark:text-indigo-400" /> 상환방식 비교
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <BarChart3 className="w-5 h-5 mr-3 text-indigo-600" /> 상환방식 비교
                 </h3>
                 <div className="space-y-5">
                     <NumberInput label="대출금액" value={loanAmount} onChange={setLoanAmount} color="violet" />
                     <div className="flex gap-3">
                         <div className="flex-1">
                             <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">금리 (%)</label>
-                            <input type="number" value={rate} onChange={(e) => setRate(e.target.value)} className="w-full px-4 py-3 text-right bg-slate-50 dark:bg-slate-700 rounded-2xl font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500" />
+                            <input type="number" value={rate} onChange={(e) => setRate(e.target.value)} className="w-full px-4 py-3 text-right bg-slate-50 rounded-2xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500" />
                         </div>
                         <div className="flex-1">
                             <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">기간</label>
-                            <select value={period} onChange={(e) => setPeriod(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 rounded-2xl font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                            <select value={period} onChange={(e) => setPeriod(e.target.value)} className="w-full px-4 py-3 bg-slate-50 rounded-2xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500">
                                 <option value="120">10년</option>
                                 <option value="180">15년</option>
                                 <option value="240">20년</option>
@@ -2885,26 +2941,26 @@ const LoanCompareTab = () => {
 
             {result ? (
                 <div className="space-y-4">
-                    <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-                        <h4 className="text-sm font-bold text-slate-600 dark:text-slate-300 mb-4">총 상환금액 비교</h4>
+                    <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                        <h4 className="text-sm font-bold text-slate-600 mb-4">총 상환금액 비교</h4>
                         <div className="space-y-3">
                             <div className="flex items-center gap-3">
                                 <span className="w-20 text-xs font-bold text-slate-500">만기일시</span>
-                                <div className="flex-1 bg-slate-100 dark:bg-slate-700 rounded-full h-6 overflow-hidden">
+                                <div className="flex-1 bg-slate-100 rounded-full h-6 overflow-hidden">
                                     <div className="h-full bg-red-400 rounded-full" style={{ width: `${(result.bullet.total / result.maxTotal) * 100}%` }}></div>
                                 </div>
                                 <span className="text-sm font-bold w-24 text-right">{formatCompactNumber(result.bullet.total)}</span>
                             </div>
                             <div className="flex items-center gap-3">
                                 <span className="w-20 text-xs font-bold text-slate-500">원리금균등</span>
-                                <div className="flex-1 bg-slate-100 dark:bg-slate-700 rounded-full h-6 overflow-hidden">
+                                <div className="flex-1 bg-slate-100 rounded-full h-6 overflow-hidden">
                                     <div className="h-full bg-blue-400 rounded-full" style={{ width: `${(result.equal.total / result.maxTotal) * 100}%` }}></div>
                                 </div>
                                 <span className="text-sm font-bold w-24 text-right">{formatCompactNumber(result.equal.total)}</span>
                             </div>
                             <div className="flex items-center gap-3">
                                 <span className="w-20 text-xs font-bold text-slate-500">원금균등</span>
-                                <div className="flex-1 bg-slate-100 dark:bg-slate-700 rounded-full h-6 overflow-hidden">
+                                <div className="flex-1 bg-slate-100 rounded-full h-6 overflow-hidden">
                                     <div className="h-full bg-green-400 rounded-full" style={{ width: `${(result.principal.total / result.maxTotal) * 100}%` }}></div>
                                 </div>
                                 <span className="text-sm font-bold w-24 text-right">{formatCompactNumber(result.principal.total)}</span>
@@ -2913,31 +2969,31 @@ const LoanCompareTab = () => {
                     </div>
 
                     <div className="grid grid-cols-3 gap-3">
-                        <div className="bg-red-50 dark:bg-red-900/30 p-4 rounded-2xl text-center">
+                        <div className="bg-red-50 p-4 rounded-2xl text-center">
                             <p className="text-[10px] font-bold text-red-500 mb-1">만기일시</p>
-                            <p className="text-lg font-black text-red-700 dark:text-red-300">{formatCompactNumber(result.bullet.interest)}</p>
+                            <p className="text-lg font-black text-red-700">{formatCompactNumber(result.bullet.interest)}</p>
                             <p className="text-[10px] text-red-400">총 이자</p>
                         </div>
-                        <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-2xl text-center">
+                        <div className="bg-blue-50 p-4 rounded-2xl text-center">
                             <p className="text-[10px] font-bold text-blue-500 mb-1">원리금균등</p>
-                            <p className="text-lg font-black text-blue-700 dark:text-blue-300">{formatCompactNumber(result.equal.interest)}</p>
+                            <p className="text-lg font-black text-blue-700">{formatCompactNumber(result.equal.interest)}</p>
                             <p className="text-[10px] text-blue-400">총 이자</p>
                         </div>
-                        <div className="bg-green-50 dark:bg-green-900/30 p-4 rounded-2xl text-center">
+                        <div className="bg-green-50 p-4 rounded-2xl text-center">
                             <p className="text-[10px] font-bold text-green-500 mb-1">원금균등</p>
-                            <p className="text-lg font-black text-green-700 dark:text-green-300">{formatCompactNumber(result.principal.interest)}</p>
+                            <p className="text-lg font-black text-green-700">{formatCompactNumber(result.principal.interest)}</p>
                             <p className="text-[10px] text-green-400">총 이자</p>
                         </div>
                     </div>
 
-                    <div className="bg-green-100 dark:bg-green-900/40 p-4 rounded-2xl text-center">
-                        <p className="text-sm font-bold text-green-800 dark:text-green-200">
-                            💡 원금균등 선택 시 만기일시 대비 <span className="text-green-600 dark:text-green-400">{formatCompactNumber(result.bullet.interest - result.principal.interest)}</span> 절약!
+                    <div className="bg-green-100 p-4 rounded-2xl text-center">
+                        <p className="text-sm font-bold text-green-800">
+                            💡 원금균등 선택 시 만기일시 대비 <span className="text-green-600">{formatCompactNumber(result.bullet.interest - result.principal.interest)}</span> 절약!
                         </p>
                     </div>
                 </div>
             ) : (
-                <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">대출금액을 입력해주세요</div>
+                <div className="text-center py-20 text-slate-300 bg-white rounded-[2rem] border-2 border-dashed border-slate-200">대출금액을 입력해주세요</div>
             )}
         </div>
     );
@@ -2975,8 +3031,8 @@ const RentalYieldTab = () => {
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
                     <TrendingUp className="w-5 h-5 mr-3 text-green-600" /> 임대수익률 시뮬레이터
                 </h3>
                 <div className="space-y-5">
@@ -2986,7 +3042,7 @@ const RentalYieldTab = () => {
                     <div className="flex gap-3">
                         <div className="flex-1">
                             <label className="text-xs font-bold text-slate-500 block mb-1">공실률 (%)</label>
-                            <input type="number" value={vacancyRate} onChange={e => setVacancyRate(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 rounded-xl text-right font-bold outline-none" />
+                            <input type="number" value={vacancyRate} onChange={e => setVacancyRate(e.target.value)} className="w-full px-3 py-2 bg-slate-50 rounded-xl text-right font-bold outline-none" />
                         </div>
                         <div className="flex-1">
                             <NumberInput label="연간 수선비" value={repairCost} onChange={setRepairCost} color="green" enableUnitToggle={false} showKorean={false} />
@@ -2996,27 +3052,27 @@ const RentalYieldTab = () => {
                 </div>
             </div>
             {result ? (
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/40 dark:to-emerald-900/40 p-6 rounded-[2.5rem] border border-green-100 dark:border-green-800 shadow-lg">
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-[2.5rem] border border-green-100 shadow-lg">
                     <div className="grid grid-cols-2 gap-4 mb-4">
-                        <div className="text-center p-4 bg-white dark:bg-slate-800 rounded-2xl">
+                        <div className="text-center p-4 bg-white rounded-2xl">
                             <p className="text-xs font-bold text-slate-500 mb-1">총수익률</p>
                             <p className="text-2xl font-black text-green-600">{result.grossYield.toFixed(2)}%</p>
                         </div>
-                        <div className="text-center p-4 bg-white dark:bg-slate-800 rounded-2xl">
+                        <div className="text-center p-4 bg-white rounded-2xl">
                             <p className="text-xs font-bold text-slate-500 mb-1">실질수익률</p>
                             <p className="text-2xl font-black text-emerald-600">{result.netYield.toFixed(2)}%</p>
                         </div>
                     </div>
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 space-y-2 text-sm">
+                    <div className="bg-white rounded-2xl p-4 space-y-2 text-sm">
                         <div className="flex justify-between"><span className="text-slate-500">연간 임대료</span><span className="font-bold">{formatCompactNumber(result.annualRent)}</span></div>
                         <div className="flex justify-between"><span className="text-slate-500">공실 반영</span><span className="font-bold">{formatCompactNumber(result.effectiveRent)}</span></div>
                         <div className="flex justify-between"><span className="text-slate-500">연간 비용</span><span className="font-bold text-red-500">-{formatCompactNumber(result.totalCosts)}</span></div>
-                        <div className="h-px bg-slate-200 dark:bg-slate-600"></div>
+                        <div className="h-px bg-slate-200"></div>
                         <div className="flex justify-between font-bold"><span>순임대소득</span><span className="text-green-600">{formatCompactNumber(result.netIncome)}</span></div>
                     </div>
                 </div>
             ) : (
-                <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">매입가와 월 임대료를 입력해주세요</div>
+                <div className="text-center py-20 text-slate-300 bg-white rounded-[2rem] border-2 border-dashed border-slate-200">매입가와 월 임대료를 입력해주세요</div>
             )}
         </div>
     );
@@ -3063,13 +3119,13 @@ const MultiPropertyTaxTab = () => {
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
                     <Building className="w-5 h-5 mr-3 text-purple-600" /> 다주택 보유세 시뮬레이션
                 </h3>
                 <div className="space-y-4">
                     {properties.map((prop, idx) => (
-                        <div key={idx} className="p-4 bg-slate-50 dark:bg-slate-700 rounded-2xl">
+                        <div key={idx} className="p-4 bg-slate-50 rounded-2xl">
                             <div className="flex justify-between items-center mb-3">
                                 <span className="text-sm font-bold text-purple-600">주택 {idx + 1}</span>
                                 {properties.length > 1 && <button onClick={() => removeProperty(idx)} className="text-red-500 text-xs font-bold">삭제</button>}
@@ -3077,16 +3133,16 @@ const MultiPropertyTaxTab = () => {
                             <NumberInput label="공시가격" value={prop.price} onChange={(v) => updateProperty(idx, 'price', v)} color="violet" />
                         </div>
                     ))}
-                    <button onClick={addProperty} className="w-full py-3 bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded-xl font-bold text-sm">+ 주택 추가</button>
+                    <button onClick={addProperty} className="w-full py-3 bg-purple-100 text-purple-600 rounded-xl font-bold text-sm">+ 주택 추가</button>
                 </div>
             </div>
             {result && (
-                <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/40 dark:to-indigo-900/40 p-6 rounded-[2.5rem] border border-purple-100 dark:border-purple-800 shadow-lg">
+                <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-6 rounded-[2.5rem] border border-purple-100 shadow-lg">
                     <div className="text-center mb-4">
                         <p className="text-sm font-bold text-purple-500 mb-1">{result.count}주택 연간 보유세</p>
-                        <p className="text-4xl font-black text-purple-800 dark:text-purple-200">{formatCompactNumber(result.total)}</p>
+                        <p className="text-4xl font-black text-purple-800">{formatCompactNumber(result.total)}</p>
                     </div>
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 space-y-2 text-sm">
+                    <div className="bg-white rounded-2xl p-4 space-y-2 text-sm">
                         <div className="flex justify-between"><span className="text-slate-500">총 공시가격</span><span className="font-bold">{formatCompactNumber(result.totalPrice)}</span></div>
                         <div className="flex justify-between"><span className="text-slate-500">재산세</span><span className="font-bold">{formatCompactNumber(result.propertyTax)}</span></div>
                         <div className="flex justify-between"><span className="text-slate-500">종합부동산세</span><span className="font-bold">{formatCompactNumber(result.jongbuTax)}</span></div>
@@ -3123,8 +3179,8 @@ const ReconstructionTab = () => {
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
                     <Building className="w-5 h-5 mr-3 text-amber-600" /> 재건축/리모델링 수익분석
                 </h3>
                 <div className="space-y-5">
@@ -3133,24 +3189,24 @@ const ReconstructionTab = () => {
                     <NumberInput label="완공 후 예상 시세" value={expectedValue} onChange={setExpectedValue} color="orange" />
                     <div>
                         <label className="text-xs font-bold text-slate-500 block mb-1">예상 소요기간 (년)</label>
-                        <input type="number" value={duration} onChange={e => setDuration(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 rounded-xl text-right font-bold outline-none" />
+                        <input type="number" value={duration} onChange={e => setDuration(e.target.value)} className="w-full px-3 py-2 bg-slate-50 rounded-xl text-right font-bold outline-none" />
                     </div>
                 </div>
             </div>
             {result ? (
-                <div className={`p-6 rounded-[2.5rem] shadow-lg ${result.isPositive ? 'bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/40 dark:to-orange-900/40 border border-amber-100 dark:border-amber-800' : 'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800'}`}>
+                <div className={`p-6 rounded-[2.5rem] shadow-lg ${result.isPositive ? 'bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100' : 'bg-red-50 border border-red-200'}`}>
                     <div className="text-center mb-4">
                         <p className="text-sm font-bold mb-1">{result.isPositive ? '예상 수익률' : '예상 손실'}</p>
-                        <p className={`text-4xl font-black ${result.isPositive ? 'text-amber-700 dark:text-amber-200' : 'text-red-600'}`}>{result.roi.toFixed(1)}%</p>
+                        <p className={`text-4xl font-black ${result.isPositive ? 'text-amber-700' : 'text-red-600'}`}>{result.roi.toFixed(1)}%</p>
                         <p className="text-sm text-slate-500">연 환산 {result.annualRoi.toFixed(1)}%</p>
                     </div>
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 space-y-2 text-sm">
+                    <div className="bg-white rounded-2xl p-4 space-y-2 text-sm">
                         <div className="flex justify-between"><span className="text-slate-500">총 투자금</span><span className="font-bold">{formatCompactNumber(result.totalInvestment)}</span></div>
                         <div className="flex justify-between"><span className="text-slate-500">{result.isPositive ? '예상 수익' : '예상 손실'}</span><span className={`font-bold ${result.isPositive ? 'text-green-600' : 'text-red-600'}`}>{result.isPositive ? '+' : ''}{formatCompactNumber(result.profit)}</span></div>
                     </div>
                 </div>
             ) : (
-                <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">현재 시세와 예상 시세를 입력해주세요</div>
+                <div className="text-center py-20 text-slate-300 bg-white rounded-[2rem] border-2 border-dashed border-slate-200">현재 시세와 예상 시세를 입력해주세요</div>
             )}
         </div>
     );
@@ -3196,9 +3252,9 @@ const GapInvestmentTab = () => {
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center">
-                    <TrendingUp className="w-5 h-5 mr-3 text-cyan-600 dark:text-cyan-400" /> 갭투자 ROI 분석
+            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <TrendingUp className="w-5 h-5 mr-3 text-cyan-600" /> 갭투자 ROI 분석
                 </h3>
                 <div className="space-y-5">
                     <NumberInput label="매매가" value={purchasePrice} onChange={setPurchasePrice} color="cyan" />
@@ -3206,11 +3262,11 @@ const GapInvestmentTab = () => {
                     <div className="flex gap-3">
                         <div className="flex-1">
                             <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">연간 상승률 (%)</label>
-                            <input type="number" value={expectedRise} onChange={(e) => setExpectedRise(e.target.value)} className="w-full px-4 py-3 text-right bg-slate-50 dark:bg-slate-700 rounded-2xl font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500" />
+                            <input type="number" value={expectedRise} onChange={(e) => setExpectedRise(e.target.value)} className="w-full px-4 py-3 text-right bg-slate-50 rounded-2xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-cyan-500" />
                         </div>
                         <div className="flex-1">
                             <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">보유 기간 (년)</label>
-                            <input type="number" value={holdingYears} onChange={(e) => setHoldingYears(e.target.value)} className="w-full px-4 py-3 text-right bg-slate-50 dark:bg-slate-700 rounded-2xl font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500" />
+                            <input type="number" value={holdingYears} onChange={(e) => setHoldingYears(e.target.value)} className="w-full px-4 py-3 text-right bg-slate-50 rounded-2xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-cyan-500" />
                         </div>
                     </div>
                 </div>
@@ -3218,21 +3274,21 @@ const GapInvestmentTab = () => {
 
             {result ? (
                 result.error ? (
-                    <div className="bg-red-50 dark:bg-red-900/30 p-6 rounded-[2rem] border border-red-200 dark:border-red-800 text-center">
-                        <p className="text-lg font-bold text-red-600 dark:text-red-400">⚠️ {result.error}</p>
+                    <div className="bg-red-50 p-6 rounded-[2rem] border border-red-200 text-center">
+                        <p className="text-lg font-bold text-red-600">⚠️ {result.error}</p>
                         <p className="text-sm text-red-500 mt-2">전세가율이 100%를 초과하면 갭투자가 불가능합니다.</p>
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        <div className="bg-gradient-to-br from-cyan-50 to-teal-50 dark:from-cyan-900/40 dark:to-teal-900/40 p-6 rounded-[2rem] border border-cyan-100 dark:border-cyan-800 shadow-lg">
+                        <div className="bg-gradient-to-br from-cyan-50 to-teal-50 p-6 rounded-[2rem] border border-cyan-100 shadow-lg">
                             <div className="text-center mb-4">
                                 <p className="text-sm font-bold text-cyan-500 uppercase tracking-widest mb-1">예상 수익률 (ROI)</p>
-                                <p className="text-5xl font-black text-cyan-800 dark:text-cyan-100">{result.roi.toFixed(1)}%</p>
+                                <p className="text-5xl font-black text-cyan-800">{result.roi.toFixed(1)}%</p>
                                 <p className="text-sm text-cyan-600">연 환산 {result.annualRoi.toFixed(1)}%</p>
                             </div>
                         </div>
 
-                        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 space-y-3 text-sm">
+                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 space-y-3 text-sm">
                             <div className="flex justify-between">
                                 <span className="text-slate-500">투자금 (갭)</span>
                                 <span className="font-bold">{formatCompactNumber(result.gap)}</span>
@@ -3241,12 +3297,12 @@ const GapInvestmentTab = () => {
                                 <span className="text-slate-500">취득세</span>
                                 <span className="font-bold">{formatCompactNumber(result.acquisitionTax)}</span>
                             </div>
-                            <div className="h-px bg-slate-100 dark:bg-slate-700"></div>
+                            <div className="h-px bg-slate-100"></div>
                             <div className="flex justify-between font-bold">
                                 <span>총 투자금</span>
                                 <span className="text-cyan-600">{formatCompactNumber(result.totalInvestment)}</span>
                             </div>
-                            <div className="h-px bg-slate-100 dark:bg-slate-700"></div>
+                            <div className="h-px bg-slate-100"></div>
                             <div className="flex justify-between">
                                 <span className="text-slate-500">{holdingYears}년 후 예상 시세</span>
                                 <span className="font-bold">{formatCompactNumber(result.futurePrice)}</span>
@@ -3259,7 +3315,7 @@ const GapInvestmentTab = () => {
                                 <span className="text-slate-500">예상 양도세</span>
                                 <span className="font-bold text-red-500">-{formatCompactNumber(result.estimatedTax)}</span>
                             </div>
-                            <div className="h-px bg-slate-100 dark:bg-slate-700"></div>
+                            <div className="h-px bg-slate-100"></div>
                             <div className="flex justify-between font-bold text-lg">
                                 <span>순수익</span>
                                 <span className="text-cyan-600">{formatCompactNumber(result.netProfit)}</span>
@@ -3269,7 +3325,7 @@ const GapInvestmentTab = () => {
                     </div>
                 )
             ) : (
-                <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">매매가와 전세가를 입력해주세요</div>
+                <div className="text-center py-20 text-slate-300 bg-white rounded-[2rem] border-2 border-dashed border-slate-200">매매가와 전세가를 입력해주세요</div>
             )}
         </div>
     );
@@ -3302,8 +3358,8 @@ const RentIncreaseCalc = () => {
     }, [currentRent, currentDeposit, increaseRate]);
 
     return (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 mt-2">
-            <h4 className="text-sm font-bold text-slate-800 dark:text-white mb-4 flex items-center">
+        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 mt-2">
+            <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
                 <TrendingUp className="w-4 h-4 mr-2 text-green-600" /> 월세 인상률 계산 (5% 상한)
             </h4>
             <div className="space-y-4">
@@ -3311,19 +3367,19 @@ const RentIncreaseCalc = () => {
                 <NumberInput label="현재 보증금" value={currentDeposit} onChange={setCurrentDeposit} color="green" />
 
                 <div>
-                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 ml-1 block mb-2">인상률 (%)</label>
-                    <input type="number" value={increaseRate} onChange={(e) => setIncreaseRate(e.target.value)} max="5" className="w-full px-4 py-3 text-right bg-slate-50 dark:bg-slate-700 rounded-xl font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-green-500" />
+                    <label className="text-xs font-bold text-slate-500 ml-1 block mb-2">인상률 (%)</label>
+                    <input type="number" value={increaseRate} onChange={(e) => setIncreaseRate(e.target.value)} max="5" className="w-full px-4 py-3 text-right bg-slate-50 rounded-xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-green-500" />
                 </div>
 
                 {result && (
-                    <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/30 rounded-2xl space-y-3">
+                    <div className="mt-4 p-4 bg-green-50 rounded-2xl space-y-3">
                         <div className="flex justify-between text-sm">
-                            <span className="text-slate-600 dark:text-slate-300">인상 후 최대 월세</span>
-                            <span className="font-bold text-green-700 dark:text-green-300">{formatNumber(result.newMaxRent)}원</span>
+                            <span className="text-slate-600">인상 후 최대 월세</span>
+                            <span className="font-bold text-green-700">{formatNumber(result.newMaxRent)}원</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                            <span className="text-slate-600 dark:text-slate-300">인상 후 최대 보증금</span>
-                            <span className="font-bold text-green-700 dark:text-green-300">{formatNumber(result.newMaxDeposit)}원</span>
+                            <span className="text-slate-600">인상 후 최대 보증금</span>
+                            <span className="font-bold text-green-700">{formatNumber(result.newMaxDeposit)}원</span>
                         </div>
                         <p className="text-xs text-slate-400 mt-2">* 주택임대차보호법 기준 5% 상한</p>
                     </div>
@@ -3370,8 +3426,8 @@ const RegistrationFeeCalc = () => {
     }, [salePrice, loanAmount]);
 
     return (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 mt-2">
-            <h4 className="text-sm font-bold text-slate-800 dark:text-white mb-4 flex items-center">
+        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 mt-2">
+            <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
                 <ClipboardList className="w-4 h-4 mr-2 text-indigo-600" /> 등기비용 계산기
             </h4>
             <div className="space-y-4">
@@ -3379,31 +3435,31 @@ const RegistrationFeeCalc = () => {
                 <NumberInput label="대출금액 (선택)" value={loanAmount} onChange={setLoanAmount} color="violet" />
 
                 {result && (
-                    <div className="mt-4 p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl space-y-2 text-sm">
-                        <div className="flex justify-between text-slate-600 dark:text-slate-300">
+                    <div className="mt-4 p-4 bg-indigo-50 rounded-2xl space-y-2 text-sm">
+                        <div className="flex justify-between text-slate-600">
                             <span>등록면허세</span>
                             <span>{formatNumber(result.registrationTax)}원</span>
                         </div>
-                        <div className="flex justify-between text-slate-600 dark:text-slate-300">
+                        <div className="flex justify-between text-slate-600">
                             <span>지방교육세</span>
                             <span>{formatNumber(result.localEduTax)}원</span>
                         </div>
-                        <div className="flex justify-between text-slate-600 dark:text-slate-300">
+                        <div className="flex justify-between text-slate-600">
                             <span>대법원 수입증지</span>
                             <span>{formatNumber(result.courtStamp)}원</span>
                         </div>
-                        <div className="flex justify-between text-slate-600 dark:text-slate-300">
+                        <div className="flex justify-between text-slate-600">
                             <span>법무사 수수료 (추정)</span>
                             <span>약 {formatNumber(result.lawyerFee)}원</span>
                         </div>
                         {result.mortgageFee > 0 && (
-                            <div className="flex justify-between text-slate-600 dark:text-slate-300">
+                            <div className="flex justify-between text-slate-600">
                                 <span>근저당 설정비</span>
                                 <span>{formatNumber(result.mortgageFee)}원</span>
                             </div>
                         )}
-                        <div className="h-px bg-indigo-200 dark:bg-indigo-700 my-2"></div>
-                        <div className="flex justify-between font-bold text-indigo-800 dark:text-indigo-200">
+                        <div className="h-px bg-indigo-200 my-2"></div>
+                        <div className="flex justify-between font-bold text-indigo-800">
                             <span>총 등기비용</span>
                             <span>약 {formatNumber(result.total)}원</span>
                         </div>
@@ -3630,17 +3686,17 @@ const ConversionCalculator = () => {
     }, [mode, deposit, monthly, rate]);
 
     return (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 mt-2">
+        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 mt-2">
             <div className="flex gap-2 mb-6">
                 <button
                     onClick={() => setMode('toMonthly')}
-                    className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${mode === 'toMonthly' ? 'bg-violet-500 text-white shadow-lg' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}
+                    className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${mode === 'toMonthly' ? 'bg-violet-500 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}
                 >
                     보증금 → 월세
                 </button>
                 <button
                     onClick={() => setMode('toDeposit')}
-                    className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${mode === 'toDeposit' ? 'bg-violet-500 text-white shadow-lg' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}
+                    className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${mode === 'toDeposit' ? 'bg-violet-500 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}
                 >
                     월세 → 보증금
                 </button>
@@ -3654,26 +3710,26 @@ const ConversionCalculator = () => {
                 )}
 
                 <div>
-                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2 block ml-1">전환율 (%)</label>
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block ml-1">전환율 (%)</label>
                     <input
                         type="number"
                         value={rate}
                         onChange={(e) => setRate(e.target.value)}
-                        className="w-full px-5 py-4 text-right bg-slate-50 dark:bg-slate-700 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-violet-500 font-bold text-slate-700 dark:text-white text-lg"
+                        className="w-full px-5 py-4 text-right bg-slate-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-violet-500 font-bold text-slate-700 text-lg"
                     />
                     <p className="text-xs text-slate-400 mt-2 ml-1">* 법정 전환율 상한: 기준금리({BOK_RATE_DEFAULT}%) + 3.5% = {(BOK_RATE_DEFAULT + 3.5).toFixed(1)}%</p>
                 </div>
             </div>
 
-            <div className="mt-6 p-6 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/30 dark:to-purple-900/30 rounded-2xl">
-                <p className="text-sm font-medium text-violet-600 dark:text-violet-400 mb-2">
+            <div className="mt-6 p-6 bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl">
+                <p className="text-sm font-medium text-violet-600 mb-2">
                     {mode === 'toMonthly' ? '전환 시 월세 금액' : '전환 시 보증금 금액'}
                 </p>
-                <p className="text-3xl font-black text-violet-900 dark:text-violet-300">
+                <p className="text-3xl font-black text-violet-900">
                     {formatNumber(result)} <span className="text-lg font-bold">원</span>
                 </p>
                 {mode === 'toMonthly' && result > 0 && (
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                    <p className="text-xs text-slate-500 mt-2">
                         연간 {formatNumber(result * 12)}원 추가 지출
                     </p>
                 )}
@@ -3707,7 +3763,7 @@ const InsuranceCalculator = () => {
     }, [deposit, years, insuranceType]);
 
     return (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 mt-2">
+        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 mt-2">
             <div className="flex gap-2 mb-6 overflow-x-auto no-scrollbar">
                 {[
                     { id: 'hug', label: 'HUG 전세보증' },
@@ -3717,7 +3773,7 @@ const InsuranceCalculator = () => {
                     <button
                         key={t.id}
                         onClick={() => setInsuranceType(t.id)}
-                        className={`flex-1 py-3 px-3 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${insuranceType === t.id ? 'bg-emerald-500 text-white shadow-lg' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}
+                        className={`flex-1 py-3 px-3 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${insuranceType === t.id ? 'bg-emerald-500 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}
                     >
                         {t.label}
                     </button>
@@ -3728,13 +3784,13 @@ const InsuranceCalculator = () => {
                 <NumberInput label="전세 보증금" value={deposit} onChange={setDeposit} color="green" enableUnitToggle={true} />
 
                 <div>
-                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2 block ml-1">계약 기간 (년)</label>
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block ml-1">계약 기간 (년)</label>
                     <div className="flex gap-2">
                         {OPTIONS_YEARS.map(y => (
                             <button
                                 key={y}
                                 onClick={() => setYears(y)}
-                                className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${years === y ? 'bg-emerald-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}
+                                className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${years === y ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-500'}`}
                             >
                                 {y}년
                             </button>
@@ -3743,14 +3799,14 @@ const InsuranceCalculator = () => {
                 </div>
             </div>
 
-            <div className="mt-6 p-6 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-2xl">
+            <div className="mt-6 p-6 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl">
                 <div className="flex justify-between items-center mb-4">
-                    <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">예상 보험료 (요율 {result.rate.toFixed(3)}%)</span>
-                    <span className="text-2xl font-black text-emerald-900 dark:text-emerald-300">{formatNumber(result.fee)}원</span>
+                    <span className="text-sm font-medium text-emerald-600">예상 보험료 (요율 {result.rate.toFixed(3)}%)</span>
+                    <span className="text-2xl font-black text-emerald-900">{formatNumber(result.fee)}원</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
-                    <span className="text-slate-500 dark:text-slate-400">월 환산</span>
-                    <span className="font-bold text-slate-700 dark:text-slate-300">약 {formatNumber(result.monthlyFee)}원/월</span>
+                    <span className="text-slate-500">월 환산</span>
+                    <span className="font-bold text-slate-700">약 {formatNumber(result.monthlyFee)}원/월</span>
                 </div>
                 <p className="text-xs text-slate-400 mt-4">
                     * 실제 보험료는 주택 유형, 지역, 보증금 구간에 따라 상이할 수 있습니다.
@@ -3780,9 +3836,9 @@ const HistoryPanel = () => {
     };
 
     return (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 mt-2">
+        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 mt-2">
             <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                <h3 className="font-bold text-slate-800 flex items-center gap-2">
                     <History size={18} /> 최근 계산 기록
                 </h3>
                 {history.length > 0 && (
@@ -3804,14 +3860,14 @@ const HistoryPanel = () => {
             ) : (
                 <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar">
                     {history.map((item, idx) => (
-                        <div key={idx} className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
+                        <div key={idx} className="p-4 bg-slate-50 rounded-xl">
                             <div className="flex justify-between items-start mb-2">
-                                <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded">
+                                <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
                                     {typeLabels[item.type] || item.type}
                                 </span>
                                 <span className="text-xs text-slate-400">{formatDate(item.timestamp)}</span>
                             </div>
-                            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                            <p className="text-sm font-medium text-slate-700">
                                 {item.data.summary || JSON.stringify(item.data).slice(0, 50)}
                             </p>
                         </div>
@@ -3848,34 +3904,34 @@ const MovingCostCalculator = () => {
     }, [fromFloor, toFloor, distance, size]);
 
     return (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 mt-2">
-            <h4 className="text-sm font-bold text-slate-800 dark:text-white mb-4 flex items-center">🚚 이사비용 계산기</h4>
+        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 mt-2">
+            <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">🚚 이사비용 계산기</h4>
             <div className="space-y-4">
                 <div className="flex gap-3">
                     <div className="flex-1">
                         <label className="text-xs font-bold text-slate-500 block mb-1">출발층</label>
-                        <input type="number" value={fromFloor} onChange={e => setFromFloor(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 rounded-xl text-right font-bold outline-none" />
+                        <input type="number" value={fromFloor} onChange={e => setFromFloor(e.target.value)} className="w-full px-3 py-2 bg-slate-50 rounded-xl text-right font-bold outline-none" />
                     </div>
                     <div className="flex-1">
                         <label className="text-xs font-bold text-slate-500 block mb-1">도착층</label>
-                        <input type="number" value={toFloor} onChange={e => setToFloor(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 rounded-xl text-right font-bold outline-none" />
+                        <input type="number" value={toFloor} onChange={e => setToFloor(e.target.value)} className="w-full px-3 py-2 bg-slate-50 rounded-xl text-right font-bold outline-none" />
                     </div>
                 </div>
                 <div>
                     <label className="text-xs font-bold text-slate-500 block mb-1">이동거리 (km)</label>
-                    <input type="number" value={distance} onChange={e => setDistance(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 rounded-xl text-right font-bold outline-none" />
+                    <input type="number" value={distance} onChange={e => setDistance(e.target.value)} className="w-full px-3 py-2 bg-slate-50 rounded-xl text-right font-bold outline-none" />
                 </div>
                 <div>
                     <label className="text-xs font-bold text-slate-500 block mb-2">짐 규모</label>
                     <div className="flex gap-2">
                         {['1', '2', '3', '4'].map(s => (
-                            <button key={s} onClick={() => setSize(s)} className={`flex-1 py-2 rounded-xl text-xs font-bold ${size === s ? 'bg-orange-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>{s}룸</button>
+                            <button key={s} onClick={() => setSize(s)} className={`flex-1 py-2 rounded-xl text-xs font-bold ${size === s ? 'bg-orange-500 text-white' : 'bg-slate-100 text-slate-500'}`}>{s}룸</button>
                         ))}
                     </div>
                 </div>
-                <div className="p-4 bg-orange-50 dark:bg-orange-900/30 rounded-2xl">
+                <div className="p-4 bg-orange-50 rounded-2xl">
                     <p className="text-sm text-orange-600 mb-1">예상 이사비</p>
-                    <p className="text-2xl font-black text-orange-800 dark:text-orange-200">{formatNumber(result.minCost)} ~ {formatNumber(result.maxCost)}원</p>
+                    <p className="text-2xl font-black text-orange-800">{formatNumber(result.minCost)} ~ {formatNumber(result.maxCost)}원</p>
                     {result.ladderCharge > 0 && <p className="text-xs text-orange-500 mt-1">* 사다리차 비용 포함</p>}
                 </div>
             </div>
@@ -3905,33 +3961,33 @@ const InteriorCostCalculator = () => {
     }, [pyung, scope]);
 
     return (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 mt-2">
-            <h4 className="text-sm font-bold text-slate-800 dark:text-white mb-4 flex items-center">🔨 인테리어 비용 계산기</h4>
+        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 mt-2">
+            <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">🔨 인테리어 비용 계산기</h4>
             <div className="space-y-4">
                 <div>
                     <label className="text-xs font-bold text-slate-500 block mb-1">평수</label>
-                    <input type="number" value={pyung} onChange={e => setPyung(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 rounded-xl text-right font-bold outline-none" />
+                    <input type="number" value={pyung} onChange={e => setPyung(e.target.value)} className="w-full px-3 py-2 bg-slate-50 rounded-xl text-right font-bold outline-none" />
                 </div>
                 <div>
                     <label className="text-xs font-bold text-slate-500 block mb-2">시공 범위</label>
                     <div className="grid grid-cols-2 gap-2">
                         {[{ id: 'full', l: '전체리모델링' }, { id: 'kitchen', l: '주방' }, { id: 'bathroom', l: '욕실' }, { id: 'living', l: '거실/방' }].map(s => (
-                            <button key={s.id} onClick={() => setScope(s.id)} className={`py-2 rounded-xl text-xs font-bold ${scope === s.id ? 'bg-pink-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>{s.l}</button>
+                            <button key={s.id} onClick={() => setScope(s.id)} className={`py-2 rounded-xl text-xs font-bold ${scope === s.id ? 'bg-pink-500 text-white' : 'bg-slate-100 text-slate-500'}`}>{s.l}</button>
                         ))}
                     </div>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
-                    <div className="p-3 bg-slate-100 dark:bg-slate-700 rounded-xl text-center">
+                    <div className="p-3 bg-slate-100 rounded-xl text-center">
                         <p className="text-[10px] text-slate-500 mb-1">저가</p>
-                        <p className="font-black text-slate-700 dark:text-slate-200">{formatCompactNumber(result.low)}</p>
+                        <p className="font-black text-slate-700">{formatCompactNumber(result.low)}</p>
                     </div>
-                    <div className="p-3 bg-pink-50 dark:bg-pink-900/30 rounded-xl text-center">
+                    <div className="p-3 bg-pink-50 rounded-xl text-center">
                         <p className="text-[10px] text-pink-500 mb-1">중간</p>
-                        <p className="font-black text-pink-700 dark:text-pink-200">{formatCompactNumber(result.mid)}</p>
+                        <p className="font-black text-pink-700">{formatCompactNumber(result.mid)}</p>
                     </div>
-                    <div className="p-3 bg-slate-100 dark:bg-slate-700 rounded-xl text-center">
+                    <div className="p-3 bg-slate-100 rounded-xl text-center">
                         <p className="text-[10px] text-slate-500 mb-1">고급</p>
-                        <p className="font-black text-slate-700 dark:text-slate-200">{formatCompactNumber(result.high)}</p>
+                        <p className="font-black text-slate-700">{formatCompactNumber(result.high)}</p>
                     </div>
                 </div>
             </div>
@@ -3957,18 +4013,18 @@ const MaintenanceFeeAnalyzer = () => {
     }, [fee, area]);
 
     return (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 mt-2">
-            <h4 className="text-sm font-bold text-slate-800 dark:text-white mb-4">📊 관리비 분석기</h4>
+        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 mt-2">
+            <h4 className="text-sm font-bold text-slate-800 mb-4">📊 관리비 분석기</h4>
             <div className="space-y-4">
                 <NumberInput label="월 관리비" value={fee} onChange={setFee} color="green" />
                 <div>
                     <label className="text-xs font-bold text-slate-500 block mb-1">전용면적 (㎡)</label>
-                    <input type="number" value={area} onChange={e => setArea(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 rounded-xl text-right font-bold outline-none" />
+                    <input type="number" value={area} onChange={e => setArea(e.target.value)} className="w-full px-3 py-2 bg-slate-50 rounded-xl text-right font-bold outline-none" />
                 </div>
                 {result && (
-                    <div className={`p-4 bg-${result.color}-50 dark:bg-${result.color}-900/30 rounded-2xl`}>
+                    <div className={`p-4 bg-${result.color}-50${result.color}-900/30 rounded-2xl`}>
                         <div className="flex justify-between items-center">
-                            <span className="text-sm text-slate-600 dark:text-slate-300">평당 관리비</span>
+                            <span className="text-sm text-slate-600">평당 관리비</span>
                             <span className="text-xl font-black">{formatNumber(result.perPyung)}원</span>
                         </div>
                         <p className="text-xs text-slate-500 mt-2">약 {result.pyung}평 기준 | 수준: <span className="font-bold">{result.status}</span></p>
@@ -4003,31 +4059,31 @@ const EarlyRepaymentAnalyzer = () => {
     }, [balance, rate, remaining, repayAmount, feeRate]);
 
     return (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 mt-2">
-            <h4 className="text-sm font-bold text-slate-800 dark:text-white mb-4">💰 조기상환 분석</h4>
+        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 mt-2">
+            <h4 className="text-sm font-bold text-slate-800 mb-4">💰 조기상환 분석</h4>
             <div className="space-y-4">
                 <NumberInput label="대출 잔액" value={balance} onChange={setBalance} color="violet" />
                 <NumberInput label="조기상환 금액" value={repayAmount} onChange={setRepayAmount} color="violet" />
                 <div className="flex gap-3">
                     <div className="flex-1">
                         <label className="text-xs font-bold text-slate-500 block mb-1">금리(%)</label>
-                        <input type="number" value={rate} onChange={e => setRate(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 rounded-xl text-right font-bold outline-none" />
+                        <input type="number" value={rate} onChange={e => setRate(e.target.value)} className="w-full px-3 py-2 bg-slate-50 rounded-xl text-right font-bold outline-none" />
                     </div>
                     <div className="flex-1">
                         <label className="text-xs font-bold text-slate-500 block mb-1">남은기간(월)</label>
-                        <input type="number" value={remaining} onChange={e => setRemaining(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 rounded-xl text-right font-bold outline-none" />
+                        <input type="number" value={remaining} onChange={e => setRemaining(e.target.value)} className="w-full px-3 py-2 bg-slate-50 rounded-xl text-right font-bold outline-none" />
                     </div>
                     <div className="flex-1">
                         <label className="text-xs font-bold text-slate-500 block mb-1">수수료(%)</label>
-                        <input type="number" value={feeRate} onChange={e => setFeeRate(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 rounded-xl text-right font-bold outline-none" />
+                        <input type="number" value={feeRate} onChange={e => setFeeRate(e.target.value)} className="w-full px-3 py-2 bg-slate-50 rounded-xl text-right font-bold outline-none" />
                     </div>
                 </div>
                 {result && (
-                    <div className={`p-4 rounded-2xl ${result.isWorth ? 'bg-green-50 dark:bg-green-900/30' : 'bg-red-50 dark:bg-red-900/30'}`}>
+                    <div className={`p-4 rounded-2xl ${result.isWorth ? 'bg-green-50' : 'bg-red-50'}`}>
                         <div className="space-y-2 text-sm">
                             <div className="flex justify-between"><span>조기상환 수수료</span><span className="font-bold text-red-600">-{formatNumber(result.fee)}원</span></div>
                             <div className="flex justify-between"><span>절감 이자</span><span className="font-bold text-green-600">+{formatNumber(result.savedInterest)}원</span></div>
-                            <div className="h-px bg-slate-200 dark:bg-slate-600"></div>
+                            <div className="h-px bg-slate-200"></div>
                             <div className="flex justify-between font-bold text-lg">
                                 <span>순이익</span>
                                 <span className={result.isWorth ? 'text-green-600' : 'text-red-600'}>{result.netBenefit > 0 ? '+' : ''}{formatNumber(result.netBenefit)}원</span>
@@ -4068,17 +4124,17 @@ const ContractManager = () => {
     };
 
     return (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 mt-2">
+        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 mt-2">
             <div className="flex justify-between items-center mb-4">
-                <h4 className="text-sm font-bold text-slate-800 dark:text-white">📋 계약 관리</h4>
-                <button onClick={() => setShowForm(!showForm)} className="text-xs font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-lg">{showForm ? '닫기' : '+ 추가'}</button>
+                <h4 className="text-sm font-bold text-slate-800">📋 계약 관리</h4>
+                <button onClick={() => setShowForm(!showForm)} className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg">{showForm ? '닫기' : '+ 추가'}</button>
             </div>
             {showForm && (
-                <div className="mb-4 p-4 bg-slate-50 dark:bg-slate-700 rounded-2xl space-y-3">
-                    <input placeholder="계약명 (예: 역삼동 오피스텔)" value={newContract.name} onChange={e => setNewContract({ ...newContract, name: e.target.value })} className="w-full px-3 py-2 bg-white dark:bg-slate-600 rounded-xl text-sm font-medium outline-none" />
+                <div className="mb-4 p-4 bg-slate-50 rounded-2xl space-y-3">
+                    <input placeholder="계약명 (예: 역삼동 오피스텔)" value={newContract.name} onChange={e => setNewContract({ ...newContract, name: e.target.value })} className="w-full px-3 py-2 bg-white rounded-xl text-sm font-medium outline-none" />
                     <div className="flex gap-2">
-                        <input type="date" value={newContract.startDate} onChange={e => setNewContract({ ...newContract, startDate: e.target.value })} className="flex-1 px-3 py-2 bg-white dark:bg-slate-600 rounded-xl text-sm font-medium outline-none" />
-                        <input type="date" value={newContract.endDate} onChange={e => setNewContract({ ...newContract, endDate: e.target.value })} className="flex-1 px-3 py-2 bg-white dark:bg-slate-600 rounded-xl text-sm font-medium outline-none" />
+                        <input type="date" value={newContract.startDate} onChange={e => setNewContract({ ...newContract, startDate: e.target.value })} className="flex-1 px-3 py-2 bg-white rounded-xl text-sm font-medium outline-none" />
+                        <input type="date" value={newContract.endDate} onChange={e => setNewContract({ ...newContract, endDate: e.target.value })} className="flex-1 px-3 py-2 bg-white rounded-xl text-sm font-medium outline-none" />
                     </div>
                     <button onClick={addContract} className="w-full py-2 bg-blue-500 text-white rounded-xl font-bold text-sm">저장</button>
                 </div>
@@ -4092,7 +4148,7 @@ const ContractManager = () => {
                         const isUrgent = dday <= 60 && dday > 0;
                         const isExpired = dday <= 0;
                         return (
-                            <div key={c.id} className={`p-4 rounded-xl ${isExpired ? 'bg-red-50 dark:bg-red-900/30' : isUrgent ? 'bg-orange-50 dark:bg-orange-900/30' : 'bg-slate-50 dark:bg-slate-700'}`}>
+                            <div key={c.id} className={`p-4 rounded-xl ${isExpired ? 'bg-red-50' : isUrgent ? 'bg-orange-50' : 'bg-slate-50'}`}>
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <p className="font-bold text-sm">{c.name}</p>
@@ -4137,26 +4193,26 @@ const PropertyChecklistTool = () => {
     const done = Object.values(checked).filter(Boolean).length;
 
     return (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 mt-2 h-[500px] flex flex-col">
+        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 mt-2 h-[500px] flex flex-col">
             <div className="flex justify-between items-center mb-4">
-                <h4 className="text-sm font-bold text-slate-800 dark:text-white">🔍 매물 체크리스트</h4>
+                <h4 className="text-sm font-bold text-slate-800">🔍 매물 체크리스트</h4>
                 <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-green-600">{done}/{total}</span>
                     <button onClick={resetAll} className="text-xs text-red-500 font-bold">초기화</button>
                 </div>
             </div>
-            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mb-4">
+            <div className="w-full bg-slate-200 rounded-full h-2 mb-4">
                 <div className="bg-green-500 h-2 rounded-full transition-all" style={{ width: `${(done / total) * 100}%` }}></div>
             </div>
             <div className="flex-1 overflow-y-auto space-y-4 pr-2">
                 {categories.map((cat, cIdx) => (
                     <div key={cIdx}>
-                        <h5 className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-2">{cat.title}</h5>
+                        <h5 className="text-xs font-bold text-slate-600 mb-2">{cat.title}</h5>
                         <div className="grid grid-cols-2 gap-2">
                             {cat.items.map((item, iIdx) => {
                                 const id = `${cIdx}-${iIdx}`;
                                 return (
-                                    <button key={id} onClick={() => toggle(id)} className={`py-2 px-3 rounded-lg text-xs font-medium text-left transition-all ${checked[id] ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'}`}>
+                                    <button key={id} onClick={() => toggle(id)} className={`py-2 px-3 rounded-lg text-xs font-medium text-left transition-all ${checked[id] ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
                                         {checked[id] ? '✓ ' : ''}{item}
                                     </button>
                                 );
@@ -4183,20 +4239,20 @@ const TaxCalendar = () => {
     const currentMonth = new Date().getMonth() + 1;
 
     return (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 mt-2">
-            <h4 className="text-sm font-bold text-slate-800 dark:text-white mb-4">📅 2026년 세금 캘린더</h4>
+        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 mt-2">
+            <h4 className="text-sm font-bold text-slate-800 mb-4">📅 2026년 세금 캘린더</h4>
             <div className="space-y-3">
                 {taxEvents.map((event, idx) => {
                     const isPast = event.month < currentMonth;
                     const isCurrent = event.month === currentMonth;
                     return (
-                        <div key={idx} className={`p-3 rounded-xl flex items-center gap-3 ${isCurrent ? 'bg-blue-50 dark:bg-blue-900/30 border-2 border-blue-200 dark:border-blue-700' : isPast ? 'bg-slate-50 dark:bg-slate-700/50 opacity-50' : 'bg-slate-50 dark:bg-slate-700'}`}>
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm ${isCurrent ? 'bg-blue-500 text-white' : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300'}`}>{event.month}월</div>
+                        <div key={idx} className={`p-3 rounded-xl flex items-center gap-3 ${isCurrent ? 'bg-blue-50 border-2 border-blue-200' : isPast ? 'bg-slate-50 opacity-50' : 'bg-slate-50'}`}>
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm ${isCurrent ? 'bg-blue-500 text-white' : 'bg-slate-200 text-slate-600'}`}>{event.month}월</div>
                             <div>
                                 <p className="font-bold text-sm">{event.title}</p>
                                 <p className="text-xs text-slate-500">{event.desc}</p>
                             </div>
-                            {isCurrent && <span className="ml-auto text-xs font-bold text-blue-600 bg-blue-100 dark:bg-blue-800 px-2 py-1 rounded">이번달</span>}
+                            {isCurrent && <span className="ml-auto text-xs font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded">이번달</span>}
                         </div>
                     );
                 })}
@@ -4241,8 +4297,8 @@ const RenewalRightTracker = () => {
     const formatDate = (date) => date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
 
     return (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 card-depth mt-2">
-            <h4 className="text-sm font-bold text-slate-800 dark:text-white mb-4 flex items-center">
+        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 card-depth mt-2">
+            <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
                 <Calendar className="w-4 h-4 mr-2 text-blue-600" /> 계약갱신청구권 카운터
             </h4>
             <div className="space-y-4">
@@ -4252,14 +4308,14 @@ const RenewalRightTracker = () => {
                         type="date"
                         value={firstContractDate}
                         onChange={e => setFirstContractDate(e.target.value)}
-                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 rounded-xl font-medium outline-none input-unified"
+                        className="w-full px-4 py-3 bg-slate-50 rounded-xl font-medium outline-none input-unified"
                     />
                 </div>
-                <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-xl">
+                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
                     <span className="text-sm font-medium">갱신권 사용 여부</span>
                     <button
                         onClick={() => setUsedRenewal(!usedRenewal)}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${usedRenewal ? 'bg-red-100 dark:bg-red-900/30 text-red-600' : 'bg-green-100 dark:bg-green-900/30 text-green-600'}`}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${usedRenewal ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}
                     >
                         {usedRenewal ? '사용함' : '미사용'}
                     </button>
@@ -4267,7 +4323,7 @@ const RenewalRightTracker = () => {
             </div>
             {result && (
                 <div className="mt-4 space-y-3">
-                    <div className={`p-4 rounded-xl text-center ${result.canUseRenewal ? 'bg-green-50 dark:bg-green-900/30' : 'bg-slate-100 dark:bg-slate-700'}`}>
+                    <div className={`p-4 rounded-xl text-center ${result.canUseRenewal ? 'bg-green-50' : 'bg-slate-100'}`}>
                         <p className="text-xs font-bold text-slate-500 mb-1">남은 갱신권</p>
                         <p className={`text-3xl font-black ${result.remainingRights > 0 ? 'text-green-600' : 'text-slate-400'}`}>
                             {result.remainingRights}회
@@ -4277,12 +4333,12 @@ const RenewalRightTracker = () => {
                         </p>
                     </div>
                     <div className="grid grid-cols-2 gap-3 text-center">
-                        <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-xl">
+                        <div className="p-3 bg-blue-50 rounded-xl">
                             <p className="text-xs font-bold text-blue-500">갱신 가능일</p>
                             <p className="text-sm font-bold mt-1">{formatDate(result.renewalDate)}</p>
                             {result.daysUntilRenewal > 0 && <p className="text-xs text-slate-500">D-{result.daysUntilRenewal}</p>}
                         </div>
-                        <div className="p-3 bg-orange-50 dark:bg-orange-900/30 rounded-xl">
+                        <div className="p-3 bg-orange-50 rounded-xl">
                             <p className="text-xs font-bold text-orange-500">계약 만료일</p>
                             <p className="text-sm font-bold mt-1">{formatDate(result.expiryDate)}</p>
                             <p className="text-xs text-slate-500">D{result.daysUntilExpiry > 0 ? '-' : '+'}{Math.abs(result.daysUntilExpiry)}</p>
@@ -4335,8 +4391,8 @@ const RentCapCalculator = () => {
     }, [currentDeposit, currentRent, conversionRate]);
 
     return (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 card-depth mt-2">
-            <h4 className="text-sm font-bold text-slate-800 dark:text-white mb-4 flex items-center">
+        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 card-depth mt-2">
+            <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
                 <TrendingUp className="w-4 h-4 mr-2 text-amber-600" /> 임대료 증액 한도 (5%)
             </h4>
             <div className="space-y-4">
@@ -4349,21 +4405,21 @@ const RentCapCalculator = () => {
                         value={conversionRate}
                         onChange={e => setConversionRate(e.target.value)}
                         step="0.1"
-                        className="w-full px-4 py-3 text-right bg-slate-50 dark:bg-slate-700 rounded-xl font-bold outline-none input-unified"
+                        className="w-full px-4 py-3 text-right bg-slate-50 rounded-xl font-bold outline-none input-unified"
                     />
                 </div>
             </div>
             {result && (
                 <div className="mt-4">
-                    <div className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30 rounded-2xl">
+                    <div className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl">
                         <p className="text-xs font-bold text-amber-600 text-center mb-3">5% 상한 적용 시 최대 증가분</p>
                         <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-white dark:bg-slate-800 p-3 rounded-xl text-center">
+                            <div className="bg-white p-3 rounded-xl text-center">
                                 <p className="text-xs text-slate-500">보증금</p>
                                 <p className="text-lg font-black text-amber-600">+{formatCompactNumber(result.increasedDeposit)}</p>
                                 <p className="text-xs text-slate-400">→ {formatCompactNumber(result.maxNewDeposit)}</p>
                             </div>
-                            <div className="bg-white dark:bg-slate-800 p-3 rounded-xl text-center">
+                            <div className="bg-white p-3 rounded-xl text-center">
                                 <p className="text-xs text-slate-500">월세</p>
                                 <p className="text-lg font-black text-orange-600">+{formatNumber(result.increasedRent)}원</p>
                                 <p className="text-xs text-slate-400">→ {formatNumber(result.maxNewRent)}원</p>
@@ -4418,18 +4474,18 @@ const ExportButton = () => {
     };
 
     return (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 card-depth mt-2 text-center">
-            <h4 className="text-sm font-bold text-slate-800 dark:text-white mb-4 flex items-center justify-center">
+        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 card-depth mt-2 text-center">
+            <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center justify-center">
                 <Download className="w-4 h-4 mr-2 text-blue-600" /> 결과 저장
             </h4>
             <p className="text-xs text-slate-500 mb-4">현재 화면을 이미지로 저장합니다.</p>
             <button
                 onClick={handleExport}
-                className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-95"
+                className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-200 transition-all active:scale-95"
             >
                 화면 캡처 및 다운로드
             </button>
-            <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl text-xs text-left text-slate-500">
+            <div className="mt-4 p-3 bg-slate-50 rounded-xl text-xs text-left text-slate-500">
                 💡 PC에서는 다운로드 폴더에 저장되며, 모바일에서는 이미지 길게 누르기로 저장할 수 있습니다.
             </div>
         </div>
@@ -4456,7 +4512,7 @@ const CompareTab = () => {
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-center mb-2">
-                <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center">
+                <h4 className="text-sm font-bold text-slate-800 flex items-center">
                     <ArrowRightLeft className="w-4 h-4 mr-2 text-purple-600" /> 매물 비교 ({properties.length}/3)
                 </h4>
                 {properties.length < 3 && (
@@ -4475,7 +4531,7 @@ const CompareTab = () => {
                         const rate = priceVal ? ((jeonseVal / priceVal) * 100).toFixed(1) : 0;
 
                         return (
-                            <div key={p.id} className="w-40 flex-shrink-0 bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 card-depth relative">
+                            <div key={p.id} className="w-40 flex-shrink-0 bg-white p-4 rounded-2xl shadow-sm border border-slate-100 card-depth relative">
                                 {properties.length > 1 && (
                                     <button onClick={() => removeProperty(p.id)} className="absolute top-2 right-2 text-slate-300 hover:text-red-500">
                                         <X size={16} />
@@ -4492,7 +4548,7 @@ const CompareTab = () => {
                                         <input
                                             value={formatNumber(p.price)}
                                             onChange={e => updateProperty(p.id, 'price', e.target.value)}
-                                            className="w-full text-right bg-slate-50 dark:bg-slate-700 px-2 py-1 rounded text-sm font-bold outline-none"
+                                            className="w-full text-right bg-slate-50 px-2 py-1 rounded text-sm font-bold outline-none"
                                             placeholder="0"
                                         />
                                     </div>
@@ -4501,18 +4557,18 @@ const CompareTab = () => {
                                         <input
                                             value={formatNumber(p.jeonse)}
                                             onChange={e => updateProperty(p.id, 'jeonse', e.target.value)}
-                                            className="w-full text-right bg-slate-50 dark:bg-slate-700 px-2 py-1 rounded text-sm font-bold outline-none"
+                                            className="w-full text-right bg-slate-50 px-2 py-1 rounded text-sm font-bold outline-none"
                                             placeholder="0"
                                         />
                                     </div>
-                                    <div className="pt-2 border-t border-slate-100 dark:border-slate-700">
+                                    <div className="pt-2 border-t border-slate-100">
                                         <div className="flex justify-between items-center mb-1">
                                             <span className="text-[10px] text-slate-500">갭</span>
                                             <span className="text-xs font-bold text-indigo-600">{formatCompactNumber(gap)}</span>
                                         </div>
                                         <div className="flex justify-between items-center">
                                             <span className="text-[10px] text-slate-500">전세가율</span>
-                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{rate}%</span>
+                                            <span className="text-xs font-bold text-slate-700">{rate}%</span>
                                         </div>
                                     </div>
                                 </div>
@@ -4544,8 +4600,8 @@ const PresetManager = () => {
     };
 
     return (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 card-depth mt-2">
-            <h4 className="text-sm font-bold text-slate-800 dark:text-white mb-4 flex items-center">
+        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 card-depth mt-2">
+            <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
                 <Bookmark className="w-4 h-4 mr-2 text-yellow-500" /> 즐겨찾기/프리셋
             </h4>
             <div className="flex gap-2 mb-4">
@@ -4553,12 +4609,12 @@ const PresetManager = () => {
                     value={name}
                     onChange={e => setName(e.target.value)}
                     placeholder="설정 이름 (예: 서울 아파트 투자)"
-                    className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-700 rounded-xl text-sm outline-none"
+                    className="flex-1 px-3 py-2 bg-slate-50 rounded-xl text-sm outline-none"
                 />
                 <button
                     onClick={savePreset}
                     disabled={!name}
-                    className="bg-slate-800 dark:bg-slate-600 text-white px-4 py-2 rounded-xl text-xs font-bold disabled:opacity-50"
+                    className="bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-bold disabled:opacity-50"
                 >
                     저장
                 </button>
@@ -4568,13 +4624,13 @@ const PresetManager = () => {
                     <div className="text-center py-4 text-slate-400 text-xs">저장된 프리셋이 없습니다.</div>
                 ) : (
                     presets.map(p => (
-                        <div key={p.id} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
+                        <div key={p.id} className="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
                             <div>
-                                <p className="text-sm font-bold text-slate-700 dark:text-slate-300">{p.name}</p>
+                                <p className="text-sm font-bold text-slate-700">{p.name}</p>
                                 <p className="text-[10px] text-slate-400">{p.date}</p>
                             </div>
                             <div className="flex gap-2">
-                                <button className="text-xs font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded">불러오기</button>
+                                <button className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">불러오기</button>
                                 <button onClick={() => deletePreset(p.id)} className="text-slate-300 hover:text-red-500"><X size={14} /></button>
                             </div>
                         </div>
@@ -4597,17 +4653,17 @@ const GuidePanel = () => {
     ];
 
     return (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-slate-700 mt-2">
-            <h4 className="text-sm font-bold text-slate-800 dark:text-white mb-4">📚 부동산 가이드</h4>
+        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 mt-2">
+            <h4 className="text-sm font-bold text-slate-800 mb-4">📚 부동산 가이드</h4>
             <div className="space-y-2">
                 {guides.map(g => (
                     <div key={g.id}>
-                        <button onClick={() => setActiveGuide(activeGuide === g.id ? null : g.id)} className={`w-full py-3 px-4 rounded-xl text-left font-bold text-sm flex justify-between items-center transition-all ${activeGuide === g.id ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300' : 'bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-600'}`}>
+                        <button onClick={() => setActiveGuide(activeGuide === g.id ? null : g.id)} className={`w-full py-3 px-4 rounded-xl text-left font-bold text-sm flex justify-between items-center transition-all ${activeGuide === g.id ? 'bg-indigo-50 text-indigo-700' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}>
                             {g.title}
                             <span>{activeGuide === g.id ? '−' : '+'}</span>
                         </button>
                         {activeGuide === g.id && (
-                            <div className="p-4 bg-slate-50 dark:bg-slate-700 rounded-b-xl mt-1 text-sm text-slate-600 dark:text-slate-300 whitespace-pre-line">{g.content}</div>
+                            <div className="p-4 bg-slate-50 rounded-b-xl mt-1 text-sm text-slate-600 whitespace-pre-line">{g.content}</div>
                         )}
                     </div>
                 ))}
@@ -4671,7 +4727,7 @@ const ToolsTab = () => {
 
     return (
         <div className="space-y-4 pb-32 animate-slide-up px-1">
-            <div className="flex bg-white dark:bg-slate-800 p-1.5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-x-auto no-scrollbar">
+            <div className="flex bg-white p-1.5 rounded-2xl shadow-sm border border-slate-100 overflow-x-auto no-scrollbar">
                 {tools.map(t => {
                     const Icon = t.icon;
                     return (
@@ -4680,7 +4736,7 @@ const ToolsTab = () => {
                             onClick={() => setActiveTool(t.id)}
                             aria-label={t.label}
                             aria-current={activeTool === t.id ? 'page' : undefined}
-                            className={`flex-1 min-w-[60px] py-3 rounded-xl flex flex-col items-center justify-center gap-1 transition-all ${activeTool === t.id ? 'bg-slate-900 dark:bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-600'}`}
+                            className={`flex-1 min-w-[60px] py-3 rounded-xl flex flex-col items-center justify-center gap-1 transition-all ${activeTool === t.id ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'}`}
                         >
                             <Icon size={18} className={activeTool === t.id ? "animate-pulse" : ""} />
                             <span className="text-[10px] font-bold">{t.label}</span>
@@ -4852,14 +4908,14 @@ const App = () => {
 
 
     return (
-        <div className={`max-w-md mx-auto min-h-screen bg-slate-50 dark:bg-slate-900 relative shadow-2xl border-x border-slate-100 dark:border-slate-800 pb-24 theme-transition`}>
+        <div className={`max-w-md mx-auto min-h-screen bg-slate-50 relative shadow-2xl border-x border-slate-100 pb-24 theme-transition`}>
             {/* Toast */}
             {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage('')} />}
 
             {/* Header with scroll shadow */}
-            <div className={`bg-white/90 dark:bg-slate-800/90 backdrop-blur-md sticky top-0 z-30 border-b border-slate-100 dark:border-slate-700 theme-transition ${isScrolled ? 'header-shadow' : ''}`}>
+            <div className={`bg-white/90 backdrop-blur-md sticky top-0 z-30 border-b border-slate-100 theme-transition ${isScrolled ? 'header-shadow' : ''}`}>
                 <div className="h-16 px-6 flex items-center justify-between">
-                    <h1 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2.5 tracking-tight">
+                    <h1 className="text-lg font-black text-slate-900 flex items-center gap-2.5 tracking-tight">
                         <div className="bg-gradient-to-br from-indigo-600 to-purple-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-500/30">
                             <Home size={16} fill="white" />
                         </div>
@@ -4869,7 +4925,7 @@ const App = () => {
                         <QuickHistory />
                         <button
                             onClick={toggleDarkMode}
-                            className="p-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-all no-print touch-target"
+                            className="p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all no-print touch-target"
                             title={darkMode ? "라이트 모드" : "다크 모드"}
                             aria-label={darkMode ? "라이트 모드로 전환" : "다크 모드로 전환"}
                         >
@@ -4877,7 +4933,7 @@ const App = () => {
                         </button>
                         <button
                             onClick={handlePrint}
-                            className="p-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-all no-print touch-target"
+                            className="p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all no-print touch-target"
                             title="PDF 저장 / 인쇄"
                             aria-label="인쇄하기"
                         >
@@ -4889,14 +4945,14 @@ const App = () => {
 
             {/* Sub Navigation (Top) - with arrow buttons */}
             <div className="px-4 mt-4 sticky top-16 z-20">
-                <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden group">
+                <div className="relative bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden group">
 
                     {/* Left Arrow */}
                     <div className={`absolute left-0 top-0 bottom-0 z-10 flex items-center transition-opacity duration-300 ${showLeftArrow ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-                        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-transparent dark:from-slate-800 dark:via-slate-800/90" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-transparent" />
                         <button
                             onClick={() => scrollSubTabs('left')}
-                            className="relative z-10 p-1.5 ml-1 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-full transition-colors shadow-sm ring-1 ring-slate-900/5"
+                            className="scroll-arrow-btn left text-slate-500 hover:text-slate-800 scroll-arrow"
                             aria-label="이전 메뉴"
                         >
                             <ChevronLeft size={18} />
@@ -4921,7 +4977,7 @@ const App = () => {
                                     // Optional: Center the clicked tab
                                     setTimeout(checkScrollButtons, 300);
                                 }}
-                                className={`flex-shrink-0 min-w-[72px] min-h-[40px] px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap snap-start tab-indicator ${currentSubTabIdx === idx ? 'bg-gradient-to-r from-slate-900 to-slate-800 dark:from-indigo-600 dark:to-purple-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'}`}
+                                className={`flex-shrink-0 min-w-[72px] min-h-[40px] px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap snap-start tab-indicator btn-ripple ${currentSubTabIdx === idx ? 'bg-gradient-to-r from-slate-900 to-slate-800 text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'}`}
                                 aria-selected={currentSubTabIdx === idx}
                                 role="tab"
                             >
@@ -4935,10 +4991,10 @@ const App = () => {
 
                     {/* Right Arrow */}
                     <div className={`absolute right-0 top-0 bottom-0 z-10 flex items-center transition-opacity duration-300 ${showRightArrow ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-                        <div className="absolute inset-0 bg-gradient-to-l from-white via-white/90 to-transparent dark:from-slate-800 dark:via-slate-800/90" />
+                        <div className="absolute inset-0 bg-gradient-to-l from-white via-white/90 to-transparent" />
                         <button
                             onClick={() => scrollSubTabs('right')}
-                            className="relative z-10 p-1.5 mr-1 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-full transition-colors shadow-sm ring-1 ring-slate-900/5"
+                            className="scroll-arrow-btn right text-slate-500 hover:text-slate-800 scroll-arrow"
                             aria-label="다음 메뉴"
                         >
                             <ChevronRight size={18} />
@@ -4948,12 +5004,14 @@ const App = () => {
             </div>
 
             {/* Main Content */}
-            <main className="p-4">
-                <ActiveComponent />
+            <main className="p-4 compact-mobile">
+                <div className="tab-content-enter" key={`${activeCategory}-${activeSubTab[activeCategory]}`}>
+                    <ActiveComponent />
+                </div>
             </main>
 
             {/* Bottom Navigation (Categories) - Enhanced Touch Targets */}
-            <nav className="fixed bottom-0 max-w-md w-full bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border-t border-slate-200/60 dark:border-slate-700 pb-safe z-40 rounded-t-[2rem] shadow-[0_-10px_40px_rgba(0,0,0,0.08)]" aria-label="주요 카테고리">
+            <nav className="fixed bottom-0 max-w-md w-full bg-white/95 backdrop-blur-xl border-t border-slate-200/60 pb-safe z-40 rounded-t-[2rem] shadow-[0_-10px_40px_rgba(0,0,0,0.08)]" aria-label="주요 카테고리">
                 <div className="flex justify-around items-center px-1 py-2.5">
                     {categories.map((cat) => {
                         const Icon = cat.icon;
@@ -4962,7 +5020,7 @@ const App = () => {
                             <button
                                 key={cat.id}
                                 onClick={() => setActiveCategory(cat.id)}
-                                className={`flex flex-col items-center justify-center min-w-[56px] min-h-[56px] p-2 rounded-2xl transition-all duration-300 active:scale-95 touch-target ${isActive ? 'bg-gradient-to-b from-indigo-50 to-indigo-100/50 dark:from-indigo-900/60 dark:to-indigo-900/30 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
+                                className={`nav-glow flex flex-col items-center justify-center min-w-[56px] min-h-[56px] p-2 rounded-2xl transition-all duration-300 active:scale-95 touch-target ${isActive ? 'active bg-gradient-to-b from-indigo-50 to-indigo-100/50 text-indigo-600 shadow-sm active-tab-indicator' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
                                 aria-label={cat.label}
                                 aria-current={isActive ? 'page' : undefined}
                             >
