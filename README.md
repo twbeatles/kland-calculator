@@ -5,7 +5,7 @@
 ![React](https://img.shields.io/badge/React-18.x-61DAFB?logo=react)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?logo=tailwind-css)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Version](https://img.shields.io/badge/Version-3.3.0-blue)
+![Version](https://img.shields.io/badge/Version-3.4.0-blue)
 
 ## ✨ 주요 기능
 
@@ -49,8 +49,14 @@
 ### 🏆 청약 계산기
 - **청약 점수**: 가점제 84점 만점 기준 점수 계산
 
-### 🛠 도구 모음 (22개)
-평수계산, 전환계산, 매물비교, 프리셋, 결과저장, 보증보험, 인상률, 등기비용, 이사비용, 인테리어, 관리비, 조기상환, 계약관리, 갱신권, 증액한도, 매물점검, 세금일정, 가이드, 문자마법사, 체크리스트, 용어사전, 히스토리
+### 🛠 도구 모음 (39개 → 카테고리별 분류)
+
+| 카테고리 | 도구 |
+|---------|------|
+| **계산 (6개)** | 평수계산, 전환계산, 매물비교, 수익률목표, BEP계산, 역세권 |
+| **금융 (7개)** | 은행금리, 고정vs변동, 스트레스테스트, 중도상환+, 신용점수, 보증보험, 조기상환 |
+| **문서 (5개)** | 필수서류, 특약조항, 계약관리, 갱신권, 문자마법사 |
+| **유틸 (21개)** | 프리셋, 결과저장, 엑셀저장, 외부연동, 복비협상, 리모델링ROI, 공동명의, 만기D-day, 세금캘린더, 인상률, 등기비용, 이사비용, 인테리어, 관리비, 증액한도, 매물점검, 세금일정, 가이드, 체크리스트, 용어사전, 히스토리 |
 
 ---
 
@@ -78,6 +84,8 @@ open index.html   # macOS
 ### 💡 사용자 경험
 - **반응형 디자인** (모바일 최적화, 44px 터치 영역)
 - **한글 금액 표시** (예: 3억 5천만원)
+- **카테고리별 도구 분류** (전체/계산/금융/문서/유틸)
+- **카테고리 스크롤 화살표** (PC에서 화살표 클릭 탐색)
 - **서브탭 스크롤** (부드러운 화살표 버튼 네비게이션)
 - **탭 전환 애니메이션** (슬라이드-인 효과)
 - **하단 네비게이션 글로우 효과** (활성 탭 강조)
@@ -85,13 +93,20 @@ open index.html   # macOS
 - **입력 자동 선택** (클릭 시 기존 값 자동 선택)
 
 ### ⚡ 성능 최적화
-- `React.memo` 적용 (10+ 컴포넌트)
+- `React.memo` 적용 (IconBase, NumberInput 등)
 - `useCallback`/`useMemo` 최적화
+- **미리 컴파일된 정규식** (`REGEX_COMMA`, `REGEX_NON_DIGIT`)
+- **상수 캐싱** (`KOREAN_UNITS`, `DEBOUNCE_DELAY_*`)
 - `localStorage` 캐싱 및 debounced 저장
 - 타이머 클린업으로 메모리 누수 방지
 - NaN/Infinity 방어 로직으로 계산 안정성 확보
 
-### 🔒 안정성
+### 🔒 안정성 (Safe Utility Functions)
+- `safeDivide(a, b, default)` - 0 나누기 방어
+- `safeParseFloat(value, default)` - 안전한 실수 변환
+- `safeParseInt(value, default)` - 안전한 정수 변환
+- `safeArrayAccess(arr, idx, default)` - 배열 범위 초과 방어
+- `clampNumber(value, min, max)` - 숫자 범위 제한
 - ErrorBoundary 오류 폴백 UI
 - usePersistedState 강화된 에러 처리
 - 입력 유효성 검사 및 시각적 피드백
@@ -107,7 +122,8 @@ kland-calculator-main/
 ├── app.js              # JavaScript 참조 파일 (HTTP 서버용)
 ├── styles.css          # CSS 참조 파일 (HTTP 서버용)
 ├── manifest.json       # PWA 매니페스트
-└── sw.js               # Service Worker
+├── sw.js               # Service Worker
+└── README.md           # 프로젝트 문서
 ```
 
 ### 📱 PWA 설치
@@ -123,10 +139,39 @@ kland-calculator-main/
 | Tailwind CSS | 3.x | 스타일링 (CDN) |
 | Babel | 7.x | JSX 트랜스파일링 (CDN) |
 | html2canvas | 1.4.x | 결과 이미지 저장 |
+| SheetJS | 0.20.x | 엑셀 파일 저장 |
 
 ---
 
 ## 📝 업데이트 내역
+
+### v3.4.0 (2026.01.06)
+- **새 기능 추가**
+  - 은행금리 비교 (6개 은행 금리 비교)
+  - 고정vs변동 금리 시뮬레이션 (5년 예측)
+  - 스트레스 테스트 (금리 인상 영향 분석)
+  - 중도상환 최적화+ (최적 상환 계산)
+  - 신용점수 분석 (대출 영향 분석)
+  - 필수서류 가이드 (매매/전세 체크리스트)
+  - 특약조항 가이드 (복사 가능)
+  - BEP 계산기 (투자회수기간)
+  - 역세권 프리미엄 (거리별 가치)
+- **도구 카테고리 시스템**
+  - 39개 도구를 4개 카테고리로 분류
+  - 카테고리 필터 탭 (전체/계산/금융/문서/유틸)
+  - 카테고리별 개수 배지 표시
+  - PC용 스크롤 화살표 추가
+- **성능 최적화**
+  - React.memo 적용 (IconBase 등)
+  - 정규식 상수 추출 (REGEX_COMMA)
+  - KOREAN_UNITS 캐싱
+- **디버깅 강화**
+  - safeDivide, safeParseFloat 등 안전 유틸리티 추가
+  - .tab-indicator CSS 충돌 수정
+- **UI/UX 개선**
+  - 4열 그리드 도구 레이아웃
+  - 카테고리/도구 호버 효과
+  - 상단 서브탭 접근성 수정
 
 ### v3.3.0 (2026.01.05)
 - **성능 최적화**

@@ -313,6 +313,131 @@
             background-size: 200% 100%;
         }
 
+        /* ========== UI/UX ENHANCEMENTS ========== */
+
+        /* Tab Indicator Animation - renamed to avoid conflict */
+        .tab-indicator-line {
+            position: absolute;
+            bottom: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            border-radius: 3px 3px 0 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Tool Category Header */
+        .tool-category-header {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border-left: 3px solid #6366f1;
+            padding: 8px 12px;
+            margin-bottom: 12px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Tool Card Enhanced */
+        .tool-card {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+        }
+
+        .tool-card:active {
+            transform: scale(0.98);
+        }
+
+        /* Result Card Glow */
+        .result-glow {
+            position: relative;
+        }
+
+        .result-glow::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(236, 72, 153, 0.3));
+            border-radius: inherit;
+            z-index: -1;
+            filter: blur(8px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .result-glow:hover::before {
+            opacity: 1;
+        }
+
+        /* Stagger Animation for Lists */
+        .stagger-item {
+            opacity: 0;
+            animation: slideUp 0.4s ease-out forwards;
+        }
+
+        .stagger-item:nth-child(1) {
+            animation-delay: 0.05s;
+        }
+
+        .stagger-item:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .stagger-item:nth-child(3) {
+            animation-delay: 0.15s;
+        }
+
+        .stagger-item:nth-child(4) {
+            animation-delay: 0.2s;
+        }
+
+        .stagger-item:nth-child(5) {
+            animation-delay: 0.25s;
+        }
+
+        .stagger-item:nth-child(6) {
+            animation-delay: 0.3s;
+        }
+
+        /* Input Focus Enhanced */
+        .input-enhanced {
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .input-enhanced:focus {
+            border-color: #6366f1;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        /* Number Display Animation */
+        .number-animate {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .number-animate.updated {
+            animation: numberPop 0.3s ease-out;
+        }
+
+        /* Scroll Arrow Enhanced */
+        .scroll-arrow {
+            transition: all 0.2s ease;
+            opacity: 0.7;
+        }
+
+        .scroll-arrow:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .scroll-arrow:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
         @media print {
             body {
                 background: white !important;
@@ -631,10 +756,10 @@
     </script>
 
     <script type="text/babel">
-        const { useState, useMemo, useEffect, useCallback, useId } = React;
+        const { useState, useMemo, useEffect, useCallback, useId, memo } = React;
 
-        // --- Icons (Inline SVGs to prevent dependency issues) ---
-        const IconBase = ({ children, size = 24, className = "", ...props }) => (
+        // --- Icons (Inline SVGs with React.memo for performance) ---
+        const IconBase = memo(({ children, size = 24, className = "", ...props }) => (
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width={size}
@@ -650,7 +775,7 @@
             >
                 {children}
             </svg>
-        );
+        ));
 
         const Home = (props) => <IconBase {...props}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></IconBase>;
         const Shield = (props) => <IconBase {...props}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></IconBase>;
@@ -702,6 +827,59 @@
         // 한국은행 기준금리 (2026.01.01 기준, 변동 시 업데이트 필요)
         const BOK_RATE_DEFAULT = 2.50;
         const BOK_RATE_DATE_DEFAULT = "2026.01.01";
+
+        // Precompiled regex patterns for performance
+        const REGEX_COMMA = /\B(?=(\d{3})+(?!\d))/g;
+        const REGEX_NON_DIGIT = /[^\d.-]/g;
+        const REGEX_LEADING_ZEROS = /^0+(?=\d)/;
+
+        // Korean number units (cached for formatKoreanNumber)
+        const KOREAN_UNITS = [
+            { value: 100000000, unit: '억' },
+            { value: 10000000, unit: '천만' },
+            { value: 10000, unit: '만' },
+            { value: 1000, unit: '천' }
+        ];
+
+        // Debounce delay constants
+        const DEBOUNCE_DELAY_DEFAULT = 300;
+        const DEBOUNCE_DELAY_FAST = 100;
+
+        // --- Safe Utility Functions for Defensive Programming ---
+
+        // Safe division - prevents NaN, Infinity, and division by zero
+        const safeDivide = (numerator, denominator, defaultValue = 0) => {
+            if (!denominator || denominator === 0) return defaultValue;
+            const result = numerator / denominator;
+            return isFinite(result) ? result : defaultValue;
+        };
+
+        // Safe parseFloat - always returns a valid number
+        const safeParseFloat = (value, defaultValue = 0) => {
+            if (value === null || value === undefined || value === '') return defaultValue;
+            const parsed = parseFloat(String(value).replace(/,/g, ''));
+            return isNaN(parsed) ? defaultValue : parsed;
+        };
+
+        // Safe parseInt - always returns a valid integer
+        const safeParseInt = (value, defaultValue = 0) => {
+            if (value === null || value === undefined || value === '') return defaultValue;
+            const parsed = parseInt(String(value).replace(/,/g, ''), 10);
+            return isNaN(parsed) ? defaultValue : parsed;
+        };
+
+        // Safe array access - prevents out of bounds errors
+        const safeArrayAccess = (arr, index, defaultValue = null) => {
+            if (!Array.isArray(arr)) return defaultValue;
+            if (index < 0 || index >= arr.length) return defaultValue;
+            return arr[index] ?? defaultValue;
+        };
+
+        // Clamp number within range
+        const clampNumber = (value, min, max) => {
+            const num = safeParseFloat(value, min);
+            return Math.min(Math.max(num, min), max);
+        };
 
         // --- Utils ---
         // LocalStorage cache to minimize redundant access
@@ -796,26 +974,19 @@
 
         const formatNumber = (num) => {
             if (!num && num !== 0) return '';
-            return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            return Math.round(num).toString().replace(REGEX_COMMA, ',');
         };
 
-        // 한글 금액 표시 (1억 5천만원 형식)
+        // 한글 금액 표시 (1억 5천만원 형식) - uses cached KOREAN_UNITS
         const formatKoreanNumber = (num) => {
             if (!num && num !== 0) return '';
             const value = Math.round(parseFloat(num) || 0);
             if (value === 0) return '0원';
 
-            const units = [
-                { value: 100000000, unit: '억' },
-                { value: 10000000, unit: '천만' },
-                { value: 10000, unit: '만' },
-                { value: 1000, unit: '천' }
-            ];
-
             let result = '';
             let remaining = value;
 
-            for (const { value: unitValue, unit } of units) {
+            for (const { value: unitValue, unit } of KOREAN_UNITS) {
                 if (remaining >= unitValue) {
                     const count = Math.floor(remaining / unitValue);
                     result += count + unit + ' ';
@@ -2176,14 +2347,17 @@
             const [wRate, setWRate] = useState(() => getSafeLocalStorage('wRate', '5.0'));
             const [income, setIncome] = useState(() => getSafeLocalStorage('income'));
 
-            useEffect(() => { debouncedSetStorage('jDeposit', jDeposit); }, [jDeposit]);
-            useEffect(() => { debouncedSetStorage('jLoanAmount', jLoanAmount); }, [jLoanAmount]);
-            useEffect(() => { debouncedSetStorage('jRate', jRate); }, [jRate]);
-            useEffect(() => { debouncedSetStorage('jRatio', jRatio); }, [jRatio]);
-            useEffect(() => { debouncedSetStorage('wDeposit', wDeposit); }, [wDeposit]);
-            useEffect(() => { debouncedSetStorage('wMonthly', wMonthly); }, [wMonthly]);
-            useEffect(() => { debouncedSetStorage('wRate', wRate); }, [wRate]);
-            useEffect(() => { debouncedSetStorage('income', income); }, [income]);
+            // 통합 localStorage 저장 (성능 최적화)
+            useEffect(() => {
+                debouncedSetStorage('jDeposit', jDeposit);
+                debouncedSetStorage('jLoanAmount', jLoanAmount);
+                debouncedSetStorage('jRate', jRate);
+                debouncedSetStorage('jRatio', jRatio);
+                debouncedSetStorage('wDeposit', wDeposit);
+                debouncedSetStorage('wMonthly', wMonthly);
+                debouncedSetStorage('wRate', wRate);
+                debouncedSetStorage('income', income);
+            }, [jDeposit, jLoanAmount, jRate, jRatio, wDeposit, wMonthly, wRate, income]);
 
             // 대출금액 입력시 자동 대출비율 계산
             const handleLoanAmountChange = useCallback((value) => {
@@ -2418,18 +2592,24 @@
             const [bond, setBond] = useState(() => getSafeLocalStorage('sBond'));
             const [deposit, setDeposit] = useState(() => getSafeLocalStorage('sDeposit'));
 
-            useEffect(() => { localStorage.setItem('sPrice', price); }, [price]);
-            useEffect(() => { localStorage.setItem('sBond', bond); }, [bond]);
-            useEffect(() => { localStorage.setItem('sDeposit', deposit); }, [deposit]);
+            useEffect(() => {
+                debouncedSetStorage('sPrice', price);
+                debouncedSetStorage('sBond', bond);
+                debouncedSetStorage('sDeposit', deposit);
+            }, [price, bond, deposit]);
 
             const analysis = useMemo(() => {
-                const priceVal = parseNumber(price);
-                const bondVal = parseNumber(bond);
-                const depositVal = parseNumber(deposit);
-                if (priceVal === 0) return null;
+                const priceVal = parseNumber(price) || 0;
+                const bondVal = parseNumber(bond) || 0;
+                const depositVal = parseNumber(deposit) || 0;
+                if (priceVal <= 0) return null;
 
                 const totalDebt = bondVal + depositVal;
                 const ratio = (totalDebt / priceVal) * 100;
+
+                // NaN/Infinity 방어
+                if (!isFinite(ratio) || isNaN(ratio)) return null;
+
 
                 let status = '안전';
                 let colorClass = 'bg-emerald-50 border-emerald-200 text-emerald-900';
@@ -6014,6 +6194,657 @@
             );
         };
 
+        // ========== NEW FEATURES START ==========
+
+        // 상수: 은행별 금리 데이터 (2026.01 기준)
+        const BANK_RATES_DATA = [
+            { name: '국민은행', rate: 3.85, color: 'from-yellow-50 to-amber-50', border: 'border-yellow-200' },
+            { name: '신한은행', rate: 3.92, color: 'from-blue-50 to-indigo-50', border: 'border-blue-200' },
+            { name: '우리은행', rate: 3.88, color: 'from-sky-50 to-cyan-50', border: 'border-sky-200' },
+            { name: '하나은행', rate: 3.79, color: 'from-teal-50 to-emerald-50', border: 'border-teal-200' },
+            { name: '카카오뱅크', rate: 3.65, color: 'from-yellow-50 to-orange-50', border: 'border-yellow-300' },
+            { name: '토스뱅크', rate: 3.72, color: 'from-indigo-50 to-purple-50', border: 'border-indigo-200' },
+        ];
+
+        // 1. 은행별 금리 비교
+        const BankRateComparison = () => {
+            const [loanAmount, setLoanAmount] = useState('');
+
+            const results = useMemo(() => {
+                const amount = parseNumber(loanAmount) || 0;
+                if (amount <= 0) return null;
+                return BANK_RATES_DATA.map(bank => {
+                    const monthlyInterest = Math.floor(amount * (bank.rate / 100) / 12);
+                    const yearlyInterest = Math.floor(amount * (bank.rate / 100));
+                    // NaN/Infinity 방어
+                    return {
+                        ...bank,
+                        monthlyInterest: isFinite(monthlyInterest) ? monthlyInterest : 0,
+                        yearlyInterest: isFinite(yearlyInterest) ? yearlyInterest : 0
+                    };
+                }).sort((a, b) => a.rate - b.rate);
+            }, [loanAmount]);
+
+            return (
+                <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 card-depth mt-2">
+                    <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
+                        <Building className="w-4 h-4 mr-2 text-blue-600" /> 은행별 금리 비교 (2026.01 기준)
+                    </h4>
+                    <NumberInput label="대출 금액" value={loanAmount} onChange={setLoanAmount} color="blue" />
+                    {results ? (
+                        <div className="mt-4 space-y-2">
+                            {results.map((bank, idx) => (
+                                <div key={bank.name} className={`p-4 rounded-xl bg-gradient-to-r ${bank.color} ${bank.border} border flex justify-between items-center ${idx === 0 ? 'ring-2 ring-green-300' : ''}`}>
+                                    <div>
+                                        <p className="font-bold text-sm">{bank.name} {idx === 0 && <span className="text-xs text-green-600 ml-1">최저!</span>}</p>
+                                        <p className="text-xs text-slate-500">연 {bank.rate}%</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-lg font-black text-slate-800">{formatNumber(bank.monthlyInterest)}원</p>
+                                        <p className="text-xs text-slate-500">월 이자</p>
+                                    </div>
+                                </div>
+                            ))}
+                            <p className="text-xs text-center text-slate-400 mt-3">* 금리는 신용등급/대출상품에 따라 달라질 수 있습니다</p>
+                        </div>
+                    ) : (
+                        <div className="text-center py-8 text-slate-400 text-sm mt-4">대출 금액을 입력하세요</div>
+                    )}
+                </div>
+            );
+        };
+
+        // 2. 고정 vs 변동금리 시뮬레이터
+        const FixedVsVariableRate = () => {
+            const [loanAmount, setLoanAmount] = useState('');
+            const [fixedRate, setFixedRate] = useState('4.5');
+            const [variableRate, setVariableRate] = useState('3.8');
+            const [scenario, setScenario] = useState('up'); // up, stable, down
+
+            const result = useMemo(() => {
+                const amount = parseNumber(loanAmount);
+                const fixed = parseFloat(fixedRate) || 0;
+                const variable = parseFloat(variableRate) || 0;
+                if (!amount) return null;
+
+                const years = 5;
+                const rateChanges = { up: [0, 0.5, 1.0, 1.5, 2.0], stable: [0, 0, 0, 0, 0], down: [0, -0.3, -0.5, -0.7, -1.0] };
+                const changes = rateChanges[scenario];
+
+                let fixedTotal = 0, variableTotal = 0;
+                const yearlyData = [];
+                for (let i = 0; i < years; i++) {
+                    const yearFixedInterest = amount * (fixed / 100);
+                    const yearVariableRate = Math.max(variable + changes[i], 1);
+                    const yearVariableInterest = amount * (yearVariableRate / 100);
+                    fixedTotal += yearFixedInterest;
+                    variableTotal += yearVariableInterest;
+                    yearlyData.push({ year: i + 1, fixed: yearFixedInterest, variable: yearVariableInterest, variableRate: yearVariableRate });
+                }
+
+                return { fixedTotal, variableTotal, diff: fixedTotal - variableTotal, yearlyData, winner: variableTotal < fixedTotal ? 'variable' : 'fixed' };
+            }, [loanAmount, fixedRate, variableRate, scenario]);
+
+            return (
+                <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 card-depth mt-2">
+                    <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
+                        <TrendingUp className="w-4 h-4 mr-2 text-purple-600" /> 고정 vs 변동금리 (5년 시뮬레이션)
+                    </h4>
+                    <div className="space-y-4">
+                        <NumberInput label="대출 금액" value={loanAmount} onChange={setLoanAmount} color="violet" />
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 block mb-1">고정금리 (%)</label>
+                                <input type="number" value={fixedRate} onChange={e => setFixedRate(e.target.value)} step="0.1" className="w-full px-3 py-2 bg-slate-50 rounded-xl text-right font-bold outline-none" />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 block mb-1">변동금리 (%)</label>
+                                <input type="number" value={variableRate} onChange={e => setVariableRate(e.target.value)} step="0.1" className="w-full px-3 py-2 bg-slate-50 rounded-xl text-right font-bold outline-none" />
+                            </div>
+                        </div>
+                        <div>
+                            <label className="text-xs font-bold text-slate-500 block mb-2">금리 시나리오</label>
+                            <div className="flex gap-2">
+                                {[{ id: 'up', label: '📈 상승', desc: '+2%p' }, { id: 'stable', label: '➡️ 유지', desc: '0%' }, { id: 'down', label: '📉 하락', desc: '-1%p' }].map(s => (
+                                    <button key={s.id} onClick={() => setScenario(s.id)} className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold transition-all ${scenario === s.id ? 'bg-purple-500 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                                        {s.label}<span className="block text-[10px] opacity-70">{s.desc}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                    {result && (
+                        <div className="mt-4">
+                            <div className="grid grid-cols-2 gap-3 mb-3">
+                                <div className={`p-4 rounded-xl text-center ${result.winner === 'fixed' ? 'bg-green-50 ring-2 ring-green-300' : 'bg-slate-50'}`}>
+                                    <p className="text-xs text-slate-500">고정금리 총 이자</p>
+                                    <p className="text-xl font-black text-slate-800">{formatCompactNumber(result.fixedTotal)}</p>
+                                </div>
+                                <div className={`p-4 rounded-xl text-center ${result.winner === 'variable' ? 'bg-green-50 ring-2 ring-green-300' : 'bg-slate-50'}`}>
+                                    <p className="text-xs text-slate-500">변동금리 총 이자</p>
+                                    <p className="text-xl font-black text-slate-800">{formatCompactNumber(result.variableTotal)}</p>
+                                </div>
+                            </div>
+                            <div className={`p-3 rounded-xl text-center ${result.diff > 0 ? 'bg-blue-50' : 'bg-orange-50'}`}>
+                                <p className="text-sm font-bold">{result.winner === 'variable' ? '변동금리' : '고정금리'}가 {formatCompactNumber(Math.abs(result.diff))} 유리!</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // 3. 스트레스 테스트
+        const InterestRateStressTest = () => {
+            const [loanAmount, setLoanAmount] = useState('');
+            const [currentRate, setCurrentRate] = useState('4.0');
+            const [period, setPeriod] = useState('360');
+
+            const result = useMemo(() => {
+                const amount = parseNumber(loanAmount) || 0;
+                const rate = parseFloat(currentRate) || 0;
+                const months = parseInt(period) || 360;
+                if (amount <= 0 || rate <= 0) return null;
+
+                const calcMonthly = (r) => {
+                    const monthlyRate = r / 100 / 12;
+                    if (monthlyRate <= 0) return 0;
+                    const factor = Math.pow(1 + monthlyRate, months);
+                    const denominator = factor - 1;
+                    if (denominator === 0) return 0;
+                    const payment = (amount * monthlyRate * factor) / denominator;
+                    return isFinite(payment) ? payment : 0;
+                };
+
+                const current = calcMonthly(rate);
+                if (current <= 0) return null;
+
+                const scenarios = [
+                    { change: 0, rate: rate, monthly: current, diff: 0, diffPercent: 0 },
+                    { change: 1, rate: rate + 1, monthly: calcMonthly(rate + 1), diff: 0, diffPercent: 0 },
+                    { change: 2, rate: rate + 2, monthly: calcMonthly(rate + 2), diff: 0, diffPercent: 0 },
+                    { change: 3, rate: rate + 3, monthly: calcMonthly(rate + 3), diff: 0, diffPercent: 0 },
+                ];
+                scenarios.forEach(s => {
+                    s.diff = s.monthly - current;
+                    s.diffPercent = current > 0 ? (s.diff / current) * 100 : 0;
+                });
+                return scenarios;
+            }, [loanAmount, currentRate, period]);
+
+            return (
+                <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 card-depth mt-2">
+                    <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
+                        <AlertTriangle className="w-4 h-4 mr-2 text-red-500" /> 금리 스트레스 테스트
+                    </h4>
+                    <div className="space-y-4">
+                        <NumberInput label="대출 금액" value={loanAmount} onChange={setLoanAmount} color="red" />
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 block mb-1">현재 금리 (%)</label>
+                                <input type="number" value={currentRate} onChange={e => setCurrentRate(e.target.value)} step="0.1" className="w-full px-3 py-2 bg-slate-50 rounded-xl text-right font-bold outline-none" />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 block mb-1">대출 기간 (개월)</label>
+                                <input type="number" value={period} onChange={e => setPeriod(e.target.value)} className="w-full px-3 py-2 bg-slate-50 rounded-xl text-right font-bold outline-none" />
+                            </div>
+                        </div>
+                    </div>
+                    {result && (
+                        <div className="mt-4 space-y-2">
+                            {result.map((s, idx) => (
+                                <div key={idx} className={`p-4 rounded-xl flex justify-between items-center ${idx === 0 ? 'bg-green-50' : idx === 3 ? 'bg-red-50' : 'bg-slate-50'}`}>
+                                    <div>
+                                        <p className="font-bold text-sm">{s.change === 0 ? '현재' : `+${s.change}%p 인상`}</p>
+                                        <p className="text-xs text-slate-500">연 {s.rate.toFixed(1)}%</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-lg font-black">{formatNumber(Math.round(s.monthly))}원</p>
+                                        {s.diff > 0 && <p className="text-xs text-red-500 font-bold">+{formatNumber(Math.round(s.diff))}원 ({s.diffPercent.toFixed(1)}%↑)</p>}
+                                    </div>
+                                </div>
+                            ))}
+                            <p className="text-xs text-center text-red-400 mt-2">⚠️ 금리 인상에 대비한 여유자금을 준비하세요</p>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // 4. 중도상환 최적화
+        const EarlyRepaymentOptimizer = () => {
+            const [remainingLoan, setRemainingLoan] = useState('');
+            const [rate, setRate] = useState('4.5');
+            const [remainingMonths, setRemainingMonths] = useState('240');
+            const [extraPayment, setExtraPayment] = useState('');
+
+            const result = useMemo(() => {
+                const loan = parseNumber(remainingLoan) || 0;
+                const extra = parseNumber(extraPayment) || 0;
+                const r = (parseFloat(rate) || 0) / 100 / 12;
+                const months = parseInt(remainingMonths) || 240;
+                if (loan <= 0 || extra <= 0 || r <= 0) return null;
+
+                const calcPayment = (principal) => {
+                    const factor = Math.pow(1 + r, months);
+                    const denominator = factor - 1;
+                    if (denominator === 0) return 0;
+                    const payment = (principal * r * factor) / denominator;
+                    return isFinite(payment) ? payment : 0;
+                };
+
+                const monthlyPayment = calcPayment(loan);
+                const totalInterestWithout = monthlyPayment * months - loan;
+
+                const newLoan = Math.max(loan - extra, 0);
+                const newMonthly = newLoan > 0 ? calcPayment(newLoan) : 0;
+                const totalInterestWith = newMonthly * months - newLoan;
+
+                const interestSaved = totalInterestWithout - totalInterestWith;
+                const prepaymentFee = extra * 0.012; // 1.2% 대략 수수료
+                const netSaving = interestSaved - prepaymentFee;
+
+                // NaN 방어
+                if (!isFinite(monthlyPayment) || !isFinite(netSaving)) return null;
+
+                return { monthlyPayment, newMonthly, monthlySaved: monthlyPayment - newMonthly, interestSaved, prepaymentFee, netSaving };
+            }, [remainingLoan, rate, remainingMonths, extraPayment]);
+
+            return (
+                <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 card-depth mt-2">
+                    <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
+                        <DollarSign className="w-4 h-4 mr-2 text-green-600" /> 중도상환 최적화
+                    </h4>
+                    <div className="space-y-4">
+                        <NumberInput label="남은 대출 잔액" value={remainingLoan} onChange={setRemainingLoan} color="green" />
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 block mb-1">금리 (%)</label>
+                                <input type="number" value={rate} onChange={e => setRate(e.target.value)} step="0.1" className="w-full px-3 py-2 bg-slate-50 rounded-xl text-right font-bold outline-none" />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 block mb-1">남은 기간 (개월)</label>
+                                <input type="number" value={remainingMonths} onChange={e => setRemainingMonths(e.target.value)} className="w-full px-3 py-2 bg-slate-50 rounded-xl text-right font-bold outline-none" />
+                            </div>
+                        </div>
+                        <NumberInput label="중도상환 금액" value={extraPayment} onChange={setExtraPayment} color="green" />
+                    </div>
+                    {result && (
+                        <div className="mt-4 space-y-3">
+                            <div className="p-4 bg-green-50 rounded-xl text-center">
+                                <p className="text-xs text-green-600 font-bold mb-1">순 절감액 (이자 절감 - 수수료)</p>
+                                <p className={`text-3xl font-black ${result.netSaving > 0 ? 'text-green-600' : 'text-red-500'}`}>{result.netSaving > 0 ? '+' : ''}{formatCompactNumber(result.netSaving)}</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                                <div className="p-3 bg-slate-50 rounded-xl">
+                                    <p className="text-slate-500">월 상환금 감소</p>
+                                    <p className="font-bold text-slate-800">{formatNumber(Math.round(result.monthlySaved))}원</p>
+                                </div>
+                                <div className="p-3 bg-slate-50 rounded-xl">
+                                    <p className="text-slate-500">총 이자 절감</p>
+                                    <p className="font-bold text-green-600">{formatCompactNumber(result.interestSaved)}</p>
+                                </div>
+                                <div className="p-3 bg-red-50 rounded-xl col-span-2">
+                                    <p className="text-slate-500">중도상환 수수료 (약 1.2%)</p>
+                                    <p className="font-bold text-red-500">-{formatNumber(Math.round(result.prepaymentFee))}원</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // 5. 신용점수 영향 분석
+        const CreditScoreImpact = () => {
+            const [currentScore, setCurrentScore] = useState('750');
+            const [loanType, setLoanType] = useState('mortgage');
+            const [hasMultipleLoans, setHasMultipleLoans] = useState(false);
+
+            const analysis = useMemo(() => {
+                const score = parseInt(currentScore) || 750;
+                const impacts = {
+                    mortgage: { change: -15, recovery: '6-12개월', desc: '주택담보대출은 담보가 있어 영향 적음' },
+                    jeonse: { change: -10, recovery: '6개월', desc: '전세자금대출도 보증이 있어 비교적 안정' },
+                    credit: { change: -30, recovery: '12-18개월', desc: '신용대출은 무담보라 영향 큼' },
+                    card: { change: -20, recovery: '3-6개월', desc: '카드론은 단기성으로 빠르게 회복' },
+                };
+                const impact = impacts[loanType];
+                const multiLoanPenalty = hasMultipleLoans ? -20 : 0;
+                const newScore = Math.max(score + impact.change + multiLoanPenalty, 300);
+                const grade = newScore >= 900 ? '1등급' : newScore >= 870 ? '2등급' : newScore >= 840 ? '3등급' : newScore >= 805 ? '4등급' : newScore >= 750 ? '5등급' : newScore >= 665 ? '6등급' : '7등급 이하';
+                return { ...impact, newScore, grade, multiLoanPenalty };
+            }, [currentScore, loanType, hasMultipleLoans]);
+
+            return (
+                <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 card-depth mt-2">
+                    <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
+                        <Award className="w-4 h-4 mr-2 text-amber-500" /> 신용점수 영향 분석
+                    </h4>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="text-xs font-bold text-slate-500 block mb-1">현재 신용점수</label>
+                            <input type="number" value={currentScore} onChange={e => setCurrentScore(e.target.value)} className="w-full px-3 py-2 bg-slate-50 rounded-xl text-right font-bold outline-none" />
+                        </div>
+                        <div>
+                            <label className="text-xs font-bold text-slate-500 block mb-2">대출 종류</label>
+                            <div className="grid grid-cols-2 gap-2">
+                                {[{ id: 'mortgage', label: '🏠 주담대' }, { id: 'jeonse', label: '🏢 전세대출' }, { id: 'credit', label: '💳 신용대출' }, { id: 'card', label: '🪙 카드론' }].map(l => (
+                                    <button key={l.id} onClick={() => setLoanType(l.id)} className={`py-2 rounded-xl text-xs font-bold ${loanType === l.id ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                                        {l.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <label className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl cursor-pointer">
+                            <input type="checkbox" checked={hasMultipleLoans} onChange={e => setHasMultipleLoans(e.target.checked)} className="w-4 h-4 rounded" />
+                            <span className="text-sm font-medium">다중채무 보유 (3개 이상)</span>
+                        </label>
+                    </div>
+                    <div className="mt-4 space-y-3">
+                        <div className="p-4 bg-amber-50 rounded-xl text-center">
+                            <p className="text-xs text-amber-600 font-bold mb-1">예상 신용점수</p>
+                            <p className="text-3xl font-black text-amber-700">{analysis.newScore}점 <span className="text-sm">({analysis.grade})</span></p>
+                            <p className="text-xs text-slate-500 mt-1">{analysis.change + analysis.multiLoanPenalty}점 변동 예상</p>
+                        </div>
+                        <div className="p-3 bg-slate-50 rounded-xl text-xs">
+                            <p className="font-bold text-slate-700 mb-1">💡 {analysis.desc}</p>
+                            <p className="text-slate-500">회복 기간: {analysis.recovery}</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // 6. 필수 서류 체크리스트
+        const RequiredDocuments = () => {
+            const [dealType, setDealType] = useState('buy');
+            const [role, setRole] = useState('buyer');
+            const [checked, setChecked] = usePersistedState('requiredDocsChecked', {});
+
+            const toggle = (id) => setChecked(prev => ({ ...prev, [id]: !prev[id] }));
+
+            const documents = {
+                buy: {
+                    buyer: [
+                        { id: 'b1', name: '신분증 (본인)', required: true },
+                        { id: 'b2', name: '인감증명서', required: true },
+                        { id: 'b3', name: '주민등록등본', required: true },
+                        { id: 'b4', name: '가족관계증명서', required: false },
+                        { id: 'b5', name: '인감도장', required: true },
+                        { id: 'b6', name: '계약금/잔금 입금 확인서', required: true },
+                        { id: 'b7', name: '취득자금조달계획서 (9억 이상)', required: false },
+                    ],
+                    seller: [
+                        { id: 's1', name: '신분증 (본인)', required: true },
+                        { id: 's2', name: '인감증명서 (매도용)', required: true },
+                        { id: 's3', name: '등기권리증', required: true },
+                        { id: 's4', name: '주민등록등본', required: true },
+                        { id: 's5', name: '인감도장', required: true },
+                        { id: 's6', name: '토지/건축물대장', required: true },
+                    ],
+                },
+                jeonse: {
+                    tenant: [
+                        { id: 't1', name: '신분증', required: true },
+                        { id: 't2', name: '주민등록등본', required: true },
+                        { id: 't3', name: '인감증명서', required: false },
+                        { id: 't4', name: '재직/소득증명서 (전세대출 시)', required: false },
+                    ],
+                    landlord: [
+                        { id: 'l1', name: '신분증', required: true },
+                        { id: 'l2', name: '등기부등본', required: true },
+                        { id: 'l3', name: '건축물대장', required: true },
+                        { id: 'l4', name: '임대인 본인 계좌', required: true },
+                    ],
+                },
+            };
+
+            const currentDocs = documents[dealType]?.[role] || [];
+            const doneCount = currentDocs.filter(d => checked[d.id]).length;
+
+            return (
+                <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 card-depth mt-2">
+                    <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
+                        <ClipboardList className="w-4 h-4 mr-2 text-indigo-600" /> 필수 서류 체크리스트
+                    </h4>
+                    <div className="flex gap-2 mb-3">
+                        <button onClick={() => { setDealType('buy'); setRole('buyer'); }} className={`flex-1 py-2 rounded-xl text-xs font-bold ${dealType === 'buy' ? 'bg-indigo-500 text-white' : 'bg-slate-100 text-slate-600'}`}>매매</button>
+                        <button onClick={() => { setDealType('jeonse'); setRole('tenant'); }} className={`flex-1 py-2 rounded-xl text-xs font-bold ${dealType === 'jeonse' ? 'bg-indigo-500 text-white' : 'bg-slate-100 text-slate-600'}`}>전세/월세</button>
+                    </div>
+                    <div className="flex gap-2 mb-4">
+                        {dealType === 'buy' ? (
+                            <>
+                                <button onClick={() => setRole('buyer')} className={`flex-1 py-2 rounded-lg text-xs font-bold ${role === 'buyer' ? 'bg-slate-800 text-white' : 'bg-slate-100'}`}>매수인</button>
+                                <button onClick={() => setRole('seller')} className={`flex-1 py-2 rounded-lg text-xs font-bold ${role === 'seller' ? 'bg-slate-800 text-white' : 'bg-slate-100'}`}>매도인</button>
+                            </>
+                        ) : (
+                            <>
+                                <button onClick={() => setRole('tenant')} className={`flex-1 py-2 rounded-lg text-xs font-bold ${role === 'tenant' ? 'bg-slate-800 text-white' : 'bg-slate-100'}`}>임차인</button>
+                                <button onClick={() => setRole('landlord')} className={`flex-1 py-2 rounded-lg text-xs font-bold ${role === 'landlord' ? 'bg-slate-800 text-white' : 'bg-slate-100'}`}>임대인</button>
+                            </>
+                        )}
+                    </div>
+                    <div className="w-full bg-slate-200 rounded-full h-2 mb-3">
+                        <div className="bg-indigo-500 h-2 rounded-full transition-all" style={{ width: `${(doneCount / currentDocs.length) * 100}%` }}></div>
+                    </div>
+                    <p className="text-xs text-slate-500 text-right mb-3">{doneCount}/{currentDocs.length} 완료</p>
+                    <div className="space-y-2">
+                        {currentDocs.map(doc => (
+                            <button key={doc.id} onClick={() => toggle(doc.id)} className={`w-full p-3 rounded-xl text-left flex items-center gap-3 transition-all ${checked[doc.id] ? 'bg-green-50 text-green-700' : 'bg-slate-50 text-slate-700'}`}>
+                                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${checked[doc.id] ? 'bg-green-500 text-white' : 'bg-slate-200'}`}>
+                                    {checked[doc.id] ? '✓' : ''}
+                                </span>
+                                <span className="font-medium text-sm">{doc.name}</span>
+                                {doc.required && <span className="ml-auto text-xs text-red-500 font-bold">필수</span>}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        // 7. 특약 조항 가이드
+        const SpecialClauseGuide = () => {
+            const [category, setCategory] = useState('safety');
+            const [copied, setCopied] = useState(null);
+
+            const clauses = {
+                safety: [
+                    { id: 1, title: '전세보증금 반환 보장', text: '임대인은 계약 종료 시 임차인에게 보증금 전액을 반환하여야 하며, 미반환 시 연 12%의 지연손해금을 지급한다.' },
+                    { id: 2, title: '근저당권 설정 제한', text: '계약 체결 후 임대인은 본 부동산에 추가 근저당권 설정 시 임차인에게 사전 서면 동의를 받아야 한다.' },
+                    { id: 3, title: '전세보증보험 가입', text: '임차인은 HUG 전세보증보험 가입을 요청할 수 있으며, 임대인은 이에 필요한 서류(확정일자부 임대차계약서 사본 등)를 제공한다.' },
+                ],
+                maintenance: [
+                    { id: 4, title: '하자 보수 책임', text: '입주 전 존재하는 하자(누수, 곰팡이, 보일러 고장 등)는 임대인 책임으로 입주일 전까지 보수 완료한다.' },
+                    { id: 5, title: '노후설비 교체', text: '에어컨, 보일러 등 주요 설비가 입주 중 노후로 인해 고장 시 임대인이 교체 또는 수리 비용을 부담한다.' },
+                ],
+                move: [
+                    { id: 6, title: '조기 퇴거 시 보증금', text: '임차인이 계약 기간 중 퇴거를 원할 경우, 2개월 전 통보 시 잔여 기간에 대한 월세 상당액만 공제 후 보증금을 반환한다.' },
+                    { id: 7, title: '계약 해지 통보', text: '계약 만료 1개월 전까지 쌍방 중 일방이 해지 의사를 통보하지 않으면 동일 조건으로 2년 연장된 것으로 본다.' },
+                ],
+                etc: [
+                    { id: 8, title: '반려동물 허용', text: '임차인은 소형 반려동물(10kg 이하)을 키울 수 있으며, 퇴거 시 반려동물로 인한 손상은 임차인이 원상복구한다.' },
+                    { id: 9, title: '관리비 범위', text: '관리비에는 공용전기, 수도, 엘리베이터 유지비가 포함되며, 개별 난방비 및 인터넷은 임차인 부담으로 한다.' },
+                ],
+            };
+
+            const handleCopy = (id, text) => {
+                navigator.clipboard.writeText(text);
+                setCopied(id);
+                setTimeout(() => setCopied(null), 2000);
+            };
+
+            const currentClauses = clauses[category] || [];
+
+            return (
+                <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 card-depth mt-2">
+                    <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
+                        <FileText className="w-4 h-4 mr-2 text-teal-600" /> 특약 조항 가이드
+                    </h4>
+                    <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+                        {[{ id: 'safety', label: '🛡️ 안전' }, { id: 'maintenance', label: '🔧 하자' }, { id: 'move', label: '🚚 퇴거' }, { id: 'etc', label: '📋 기타' }].map(c => (
+                            <button key={c.id} onClick={() => setCategory(c.id)} className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap ${category === c.id ? 'bg-teal-500 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                                {c.label}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="space-y-3">
+                        {currentClauses.map(clause => (
+                            <div key={clause.id} className="p-4 bg-slate-50 rounded-xl">
+                                <div className="flex justify-between items-start mb-2">
+                                    <p className="font-bold text-sm text-slate-800">{clause.title}</p>
+                                    <button onClick={() => handleCopy(clause.id, clause.text)} className={`px-2 py-1 rounded text-xs font-bold transition-all ${copied === clause.id ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-600 hover:bg-slate-300'}`}>
+                                        {copied === clause.id ? '복사됨!' : '복사'}
+                                    </button>
+                                </div>
+                                <p className="text-xs text-slate-600 leading-relaxed">{clause.text}</p>
+                            </div>
+                        ))}
+                    </div>
+                    <p className="text-xs text-center text-slate-400 mt-4">💡 필요에 따라 수정하여 사용하세요</p>
+                </div>
+            );
+        };
+
+        // 8. 투자회수기간(BEP) 계산기
+        const InvestmentBEPCalculator = () => {
+            const [totalInvestment, setTotalInvestment] = useState('');
+            const [monthlyRent, setMonthlyRent] = useState('');
+            const [vacancyRate, setVacancyRate] = useState('5');
+            const [expenses, setExpenses] = useState('10');
+
+            const result = useMemo(() => {
+                const investment = parseNumber(totalInvestment) || 0;
+                const rent = parseNumber(monthlyRent) || 0;
+                const vacancy = parseFloat(vacancyRate) / 100 || 0;
+                const exp = parseFloat(expenses) / 100 || 0;
+                if (investment <= 0 || rent <= 0) return null;
+
+                const effectiveRent = rent * (1 - vacancy);
+                const netRent = effectiveRent * (1 - exp);
+                const yearlyNet = netRent * 12;
+
+                // 0 나누기 방어
+                if (yearlyNet <= 0) return null;
+
+                const bepYears = investment / yearlyNet;
+                const bepMonths = Math.round(bepYears * 12);
+                const roi = (yearlyNet / investment) * 100;
+
+                // NaN/Infinity 방어
+                if (!isFinite(bepYears) || !isFinite(roi)) return null;
+
+                return { effectiveRent, netRent, yearlyNet, bepYears, bepMonths, roi };
+            }, [totalInvestment, monthlyRent, vacancyRate, expenses]);
+
+            return (
+                <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 card-depth mt-2">
+                    <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
+                        <TrendingUp className="w-4 h-4 mr-2 text-emerald-600" /> 투자회수기간 (BEP) 계산
+                    </h4>
+                    <div className="space-y-4">
+                        <NumberInput label="총 투자금액 (매매가+취득비용)" value={totalInvestment} onChange={setTotalInvestment} color="green" />
+                        <NumberInput label="월 임대료 (예상)" value={monthlyRent} onChange={setMonthlyRent} color="green" />
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 block mb-1">공실률 (%)</label>
+                                <input type="number" value={vacancyRate} onChange={e => setVacancyRate(e.target.value)} className="w-full px-3 py-2 bg-slate-50 rounded-xl text-right font-bold outline-none" />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 block mb-1">운영비용 (%)</label>
+                                <input type="number" value={expenses} onChange={e => setExpenses(e.target.value)} className="w-full px-3 py-2 bg-slate-50 rounded-xl text-right font-bold outline-none" />
+                            </div>
+                        </div>
+                    </div>
+                    {result && (
+                        <div className="mt-4 space-y-3">
+                            <div className="p-4 bg-emerald-50 rounded-xl text-center">
+                                <p className="text-xs text-emerald-600 font-bold mb-1">투자 회수 기간 (BEP)</p>
+                                <p className="text-3xl font-black text-emerald-700">{result.bepYears.toFixed(1)}년</p>
+                                <p className="text-xs text-slate-500">약 {result.bepMonths}개월</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="p-3 bg-slate-50 rounded-xl text-center">
+                                    <p className="text-xs text-slate-500">연 수익률</p>
+                                    <p className="text-lg font-black text-indigo-600">{result.roi.toFixed(2)}%</p>
+                                </div>
+                                <div className="p-3 bg-slate-50 rounded-xl text-center">
+                                    <p className="text-xs text-slate-500">실질 월 수익</p>
+                                    <p className="text-lg font-black text-slate-700">{formatNumber(Math.round(result.netRent))}원</p>
+                                </div>
+                            </div>
+                            <p className="text-xs text-center text-slate-400">* 공실률/운영비 반영된 순수익 기준</p>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // 9. 역세권 거리 계산기
+        const SubwayDistanceCalculator = () => {
+            const [distance, setDistance] = useState('');
+            const [propertyPrice, setPropertyPrice] = useState('');
+
+            const result = useMemo(() => {
+                const dist = parseFloat(distance) || 0;
+                const price = parseNumber(propertyPrice);
+                if (!dist) return null;
+
+                let grade = '';
+                let premium = 0;
+                let walkTime = Math.round(dist / 80); // 분속 80m
+
+                if (dist <= 200) { grade = '초역세권'; premium = 15; }
+                else if (dist <= 500) { grade = '역세권'; premium = 10; }
+                else if (dist <= 1000) { grade = '준역세권'; premium = 5; }
+                else { grade = '역세권 아님'; premium = 0; }
+
+                const premiumValue = price ? Math.round(price * (premium / 100)) : 0;
+
+                return { grade, premium, walkTime, premiumValue };
+            }, [distance, propertyPrice]);
+
+            return (
+                <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 card-depth mt-2">
+                    <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
+                        <Home className="w-4 h-4 mr-2 text-blue-600" /> 역세권 거리 계산
+                    </h4>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="text-xs font-bold text-slate-500 block mb-1">지하철역까지 거리 (m)</label>
+                            <input type="number" value={distance} onChange={e => setDistance(e.target.value)} placeholder="예: 300" className="w-full px-4 py-3 bg-slate-50 rounded-xl text-right font-bold outline-none" />
+                        </div>
+                        <NumberInput label="매물 가격 (선택사항)" value={propertyPrice} onChange={setPropertyPrice} color="blue" />
+                    </div>
+                    {result && (
+                        <div className="mt-4 space-y-3">
+                            <div className={`p-4 rounded-xl text-center ${result.premium >= 10 ? 'bg-blue-50' : result.premium > 0 ? 'bg-slate-50' : 'bg-red-50'}`}>
+                                <p className="text-xs text-slate-600 font-bold mb-1">역세권 등급</p>
+                                <p className={`text-2xl font-black ${result.premium >= 10 ? 'text-blue-600' : result.premium > 0 ? 'text-slate-700' : 'text-red-500'}`}>{result.grade}</p>
+                                <p className="text-sm text-slate-500 mt-1">🚶 도보 약 {result.walkTime}분</p>
+                            </div>
+                            {result.premium > 0 && (
+                                <div className="p-3 bg-green-50 rounded-xl text-center">
+                                    <p className="text-xs text-green-600 font-bold">예상 프리미엄</p>
+                                    <p className="text-lg font-black text-green-700">+{result.premium}%</p>
+                                    {result.premiumValue > 0 && <p className="text-xs text-slate-500">약 {formatCompactNumber(result.premiumValue)} 상승 효과</p>}
+                                </div>
+                            )}
+                            <div className="p-3 bg-slate-50 rounded-xl text-xs text-slate-600">
+                                <p className="font-bold mb-1">📍 역세권 기준</p>
+                                <p>• 초역세권: 200m 이내</p>
+                                <p>• 역세권: 500m 이내</p>
+                                <p>• 준역세권: 1km 이내</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // ========== NEW FEATURES END ==========
+
         // NEW: FAQ/가이드 (Phase 4)
         const GuidePanel = () => {
             const [activeGuide, setActiveGuide] = useState(null);
@@ -6047,42 +6878,98 @@
 
         const ToolsTab = () => {
             const [activeTool, setActiveTool] = usePersistedState('lastTool', 'pyung');
+            const [activeToolCategory, setActiveToolCategory] = useState('all');
             const toolsScrollRef = React.useRef(null);
             const [showLeftArrow, setShowLeftArrow] = useState(false);
             const [showRightArrow, setShowRightArrow] = useState(false);
 
-            const tools = [
-                { id: 'pyung', label: '평수계산', icon: Grid },
-                { id: 'convert', label: '전환계산', icon: Percent },
-                { id: 'compare', label: '매물비교', icon: ArrowRightLeft },
-                { id: 'preset', label: '프리셋', icon: Bookmark },
-                { id: 'export', label: '결과저장', icon: Download },
-                { id: 'excel', label: '엑셀저장', icon: FileDown },
-                { id: 'links', label: '외부연동', icon: Link2 },
-                { id: 'broker', label: '복비협상', icon: DollarSign },
-                { id: 'remodel', label: '리모델링ROI', icon: PenTool },
-                { id: 'joint', label: '공동명의', icon: Users },
-                { id: 'yieldtarget', label: '수익률목표', icon: TrendingUp },
-                { id: 'expiry', label: '만기D-day', icon: Calendar },
-                { id: 'taxcalendar', label: '세금캘린더', icon: Calendar },
-                { id: 'insurance', label: '보증보험', icon: Shield },
-                { id: 'increase', label: '인상률', icon: TrendingUp },
-                { id: 'registry', label: '등기비용', icon: ClipboardList },
-                { id: 'moving', label: '이사비용', icon: Home },
-                { id: 'interior', label: '인테리어', icon: PenTool },
-                { id: 'maintenance', label: '관리비', icon: BarChart3 },
-                { id: 'earlyrepay', label: '조기상환', icon: DollarSign },
-                { id: 'contract', label: '계약관리', icon: FileText },
-                { id: 'renewal', label: '갱신권', icon: RefreshCw },
-                { id: 'rentcap', label: '증액한도', icon: TrendingUp },
-                { id: 'pcheck', label: '매물점검', icon: Search },
-                { id: 'calendar', label: '세금일정', icon: Calendar },
-                { id: 'guide', label: '가이드', icon: HelpCircle },
-                { id: 'message', label: '문자마법사', icon: MessageCircle },
-                { id: 'checklist', label: '체크리스트', icon: CheckCircle },
-                { id: 'dic', label: '용어사전', icon: BookOpen },
-                { id: 'history', label: '히스토리', icon: History }
+            // 카테고리별 도구 그룹핑
+            const toolCategories = [
+                { id: 'all', label: '전체', icon: Grid },
+                { id: 'calc', label: '계산', icon: Calculator },
+                { id: 'finance', label: '금융', icon: DollarSign },
+                { id: 'docs', label: '문서', icon: FileText },
+                { id: 'util', label: '유틸', icon: PenTool },
             ];
+
+            const tools = [
+                // 계산 도구
+                { id: 'pyung', label: '평수계산', icon: Grid, category: 'calc' },
+                { id: 'convert', label: '전환계산', icon: Percent, category: 'calc' },
+                { id: 'compare', label: '매물비교', icon: ArrowRightLeft, category: 'calc' },
+                { id: 'yieldtarget', label: '수익률목표', icon: TrendingUp, category: 'calc' },
+                { id: 'bep', label: 'BEP계산', icon: TrendingUp, category: 'calc' },
+                { id: 'subway', label: '역세권', icon: Home, category: 'calc' },
+                // 금융 도구
+                { id: 'bankrate', label: '은행금리', icon: Building, category: 'finance' },
+                { id: 'fixedvar', label: '고정vs변동', icon: TrendingUp, category: 'finance' },
+                { id: 'stress', label: '스트레스', icon: AlertTriangle, category: 'finance' },
+                { id: 'earlyopt', label: '중도상환+', icon: DollarSign, category: 'finance' },
+                { id: 'credit', label: '신용점수', icon: Award, category: 'finance' },
+                { id: 'insurance', label: '보증보험', icon: Shield, category: 'finance' },
+                { id: 'earlyrepay', label: '조기상환', icon: DollarSign, category: 'finance' },
+                // 문서/계약 도구
+                { id: 'docs', label: '필수서류', icon: ClipboardList, category: 'docs' },
+                { id: 'clause', label: '특약조항', icon: FileText, category: 'docs' },
+                { id: 'contract', label: '계약관리', icon: FileText, category: 'docs' },
+                { id: 'renewal', label: '갱신권', icon: RefreshCw, category: 'docs' },
+                { id: 'message', label: '문자마법사', icon: MessageCircle, category: 'docs' },
+                // 유틸리티
+                { id: 'preset', label: '프리셋', icon: Bookmark, category: 'util' },
+                { id: 'export', label: '결과저장', icon: Download, category: 'util' },
+                { id: 'excel', label: '엑셀저장', icon: FileDown, category: 'util' },
+                { id: 'links', label: '외부연동', icon: Link2, category: 'util' },
+                { id: 'broker', label: '복비협상', icon: DollarSign, category: 'util' },
+                { id: 'remodel', label: '리모델링ROI', icon: PenTool, category: 'util' },
+                { id: 'joint', label: '공동명의', icon: Users, category: 'util' },
+                { id: 'expiry', label: '만기D-day', icon: Calendar, category: 'util' },
+                { id: 'taxcalendar', label: '세금캘린더', icon: Calendar, category: 'util' },
+                { id: 'increase', label: '인상률', icon: TrendingUp, category: 'util' },
+                { id: 'registry', label: '등기비용', icon: ClipboardList, category: 'util' },
+                { id: 'moving', label: '이사비용', icon: Home, category: 'util' },
+                { id: 'interior', label: '인테리어', icon: PenTool, category: 'util' },
+                { id: 'maintenance', label: '관리비', icon: BarChart3, category: 'util' },
+                { id: 'rentcap', label: '증액한도', icon: TrendingUp, category: 'util' },
+                { id: 'pcheck', label: '매물점검', icon: Search, category: 'util' },
+                { id: 'calendar', label: '세금일정', icon: Calendar, category: 'util' },
+                { id: 'guide', label: '가이드', icon: HelpCircle, category: 'util' },
+                { id: 'checklist', label: '체크리스트', icon: CheckCircle, category: 'util' },
+                { id: 'dic', label: '용어사전', icon: BookOpen, category: 'util' },
+                { id: 'history', label: '히스토리', icon: History, category: 'util' },
+            ];
+
+            const filteredTools = activeToolCategory === 'all'
+                ? tools
+                : tools.filter(t => t.category === activeToolCategory);
+
+            // Category tabs scroll
+            const categoryScrollRef = React.useRef(null);
+            const [showCatLeftArrow, setShowCatLeftArrow] = useState(false);
+            const [showCatRightArrow, setShowCatRightArrow] = useState(false);
+
+            const checkCategoryScroll = useCallback(() => {
+                const el = categoryScrollRef.current;
+                if (!el) return;
+                const { scrollLeft, scrollWidth, clientWidth } = el;
+                setShowCatLeftArrow(scrollLeft > 0);
+                setShowCatRightArrow(scrollLeft < scrollWidth - clientWidth - 5);
+            }, []);
+
+            useEffect(() => {
+                checkCategoryScroll();
+                window.addEventListener('resize', checkCategoryScroll);
+                return () => window.removeEventListener('resize', checkCategoryScroll);
+            }, [checkCategoryScroll]);
+
+            const scrollCategory = (direction) => {
+                const el = categoryScrollRef.current;
+                if (!el) return;
+                el.scrollBy({
+                    left: direction === 'left' ? -150 : 150,
+                    behavior: 'smooth'
+                });
+                setTimeout(checkCategoryScroll, 300);
+            };
 
             const checkScrollButtons = useCallback(() => {
                 const el = toolsScrollRef.current;
@@ -6140,14 +7027,71 @@
                 message: MessageWizard,
                 checklist: MovingChecklist,
                 dic: Dictionary,
-                history: HistoryPanel
+                history: HistoryPanel,
+                bankrate: BankRateComparison,
+                fixedvar: FixedVsVariableRate,
+                stress: InterestRateStressTest,
+                earlyopt: EarlyRepaymentOptimizer,
+                credit: CreditScoreImpact,
+                docs: RequiredDocuments,
+                clause: SpecialClauseGuide,
+                bep: InvestmentBEPCalculator,
+                subway: SubwayDistanceCalculator
             }[activeTool];
 
             return (
-                <div className="space-y-6 pb-32 animate-slide-up px-1">
-                    {/* Quick Select & Tools Grid */}
-                    <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-5 relative overflow-hidden">
+                <div className="space-y-4 pb-32 animate-slide-up px-1">
+                    {/* Category Filter Tabs with Arrows */}
+                    <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-4 relative">
+                        {/* Left Arrow */}
+                        {showCatLeftArrow && (
+                            <button
+                                onClick={() => scrollCategory('left')}
+                                className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-1.5 bg-white shadow-md border border-slate-200 rounded-full text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
+                            >
+                                <ChevronLeft size={18} />
+                            </button>
+                        )}
 
+                        {/* Right Arrow */}
+                        {showCatRightArrow && (
+                            <button
+                                onClick={() => scrollCategory('right')}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-1.5 bg-white shadow-md border border-slate-200 rounded-full text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
+                            >
+                                <ChevronRight size={18} />
+                            </button>
+                        )}
+
+                        <div
+                            ref={categoryScrollRef}
+                            onScroll={checkCategoryScroll}
+                            className="flex gap-2 overflow-x-auto pb-1 no-scrollbar scroll-smooth px-6"
+                        >
+                            {toolCategories.map(cat => {
+                                const count = cat.id === 'all' ? tools.length : tools.filter(t => t.category === cat.id).length;
+                                return (
+                                    <button
+                                        key={cat.id}
+                                        onClick={() => setActiveToolCategory(cat.id)}
+                                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all shrink-0 ${activeToolCategory === cat.id
+                                            ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-200'
+                                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                            }`}
+                                    >
+                                        <cat.icon size={16} />
+                                        {cat.label}
+                                        <span className={`ml-1 px-1.5 py-0.5 rounded text-xs ${activeToolCategory === cat.id ? 'bg-white/20' : 'bg-slate-200'}`}>
+                                            {count}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* Tools Grid */}
+                    <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-5 relative overflow-hidden">
                         {/* Dropdown for quick access */}
                         <div className="mb-4">
                             <select
@@ -6163,54 +7107,36 @@
                             </select>
                         </div>
 
-                        {/* Navigation Arrows Container - Absolute positioned over grid */}
-                        <div className="relative group">
-                            {/* Left Arrow */}
-                            <button
-                                type="button"
-                                onClick={() => scrollToolsMenu('left')}
-                                disabled={!showLeftArrow}
-                                className={`absolute left-0 top-1/2 -translate-y-1/2 z-50 p-2 bg-white/95 shadow-md border border-slate-100 rounded-full transition-all duration-200 ${!showLeftArrow ? 'opacity-30 cursor-default' : 'opacity-100 hover:bg-white hover:text-indigo-600 hover:scale-110 cursor-pointer text-slate-600'}`}
-                                aria-label="Previous tools"
-                            >
-                                <ChevronLeft size={20} />
-                            </button>
-
-                            {/* Right Arrow */}
-                            <button
-                                type="button"
-                                onClick={() => scrollToolsMenu('right')}
-                                disabled={!showRightArrow}
-                                className={`absolute right-0 top-1/2 -translate-y-1/2 z-50 p-2 bg-white/95 shadow-md border border-slate-100 rounded-full transition-all duration-200 ${!showRightArrow ? 'opacity-30 cursor-default' : 'opacity-100 hover:bg-white hover:text-indigo-600 hover:scale-110 cursor-pointer text-slate-600'}`}
-                                aria-label="Next tools"
-                            >
-                                <ChevronRight size={20} />
-                            </button>
-
-                            {/* Scrollable Grid */}
-                            <div
-                                ref={toolsScrollRef}
-                                onScroll={checkScrollButtons}
-                                className="grid grid-rows-2 grid-flow-col gap-2 overflow-x-auto pb-2 scroll-smooth px-10"
-                                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                            >
-                                {tools.map(tool => {
-                                    const isActive = activeTool === tool.id;
-                                    return (
-                                        <button
-                                            key={tool.id}
-                                            onClick={() => setActiveTool(tool.id)}
-                                            className={`w-[4.5rem] flex flex-col items-center justify-center p-2 rounded-2xl transition-all duration-200 shrink-0 ${isActive ? 'bg-indigo-50 text-indigo-600 shadow-sm ring-1 ring-indigo-200' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}
-                                        >
-                                            <div className={`mb-1 p-2 rounded-xl transition-colors ${isActive ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400'}`}>
-                                                <tool.icon size={18} />
-                                            </div>
-                                            <span className={`text-[10px] font-bold tracking-tight whitespace-nowrap ${isActive ? 'text-indigo-700' : 'text-slate-500'}`}>{tool.label}</span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
+                        {/* Tools Grid - Fixed 4 Columns */}
+                        <div className="grid grid-cols-4 gap-2">
+                            {filteredTools.map((tool) => {
+                                const isActive = activeTool === tool.id;
+                                return (
+                                    <button
+                                        key={tool.id}
+                                        onClick={() => setActiveTool(tool.id)}
+                                        className={`flex flex-col items-center justify-center p-3 rounded-2xl transition-all ${isActive
+                                            ? 'bg-indigo-50 text-indigo-600 ring-2 ring-indigo-300 shadow-sm'
+                                            : 'text-slate-500 hover:bg-slate-100 bg-slate-50'
+                                            }`}
+                                    >
+                                        <div className={`mb-1.5 p-2.5 rounded-xl transition-all ${isActive ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400'
+                                            }`}>
+                                            <tool.icon size={20} />
+                                        </div>
+                                        <span className={`text-[10px] font-bold tracking-tight text-center leading-tight ${isActive ? 'text-indigo-700' : 'text-slate-500'
+                                            }`}>{tool.label}</span>
+                                    </button>
+                                );
+                            })}
                         </div>
+
+                        {/* Empty State */}
+                        {filteredTools.length === 0 && (
+                            <div className="text-center py-10 text-slate-400">
+                                해당 카테고리에 도구가 없습니다
+                            </div>
+                        )}
                     </div>
 
                     {/* Active Tool Content */}
@@ -6428,7 +7354,7 @@
                                                 // Optional: Center the clicked tab
                                                 setTimeout(checkScrollButtons, 300);
                                             }}
-                                            className={`flex-shrink-0 min-w-[72px] min-h-[40px] px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap snap-start tab-indicator ${currentSubTabIdx === idx ? 'bg-gradient-to-r from-slate-900 to-slate-800 text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'}`}
+                                            className={`flex-shrink-0 min-w-[72px] min-h-[40px] px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap snap-start ${currentSubTabIdx === idx ? 'bg-gradient-to-r from-slate-900 to-slate-800 text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'}`}
                                             aria-selected={currentSubTabIdx === idx}
                                             role="tab"
                                         >
