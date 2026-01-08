@@ -5,7 +5,7 @@
 ![React](https://img.shields.io/badge/React-18.x-61DAFB?logo=react)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?logo=tailwind-css)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Version](https://img.shields.io/badge/Version-3.5.0-blue)
+![Version](https://img.shields.io/badge/Version-3.6.0-blue)
 
 ## ✨ 주요 기능
 
@@ -99,7 +99,7 @@ open index.html   # macOS
 - `useCallback`/`useMemo` 최적화
 - **미리 컴파일된 정규식** (`REGEX_COMMA`, `REGEX_NON_DIGIT`)
 - **상수 캐싱** (`KOREAN_UNITS`, `DEBOUNCE_DELAY_*`)
-- `localStorage` 캐싱 및 debounced 저장
+- `localStorage` 캐싱 및 debounced 저장 (500ms)
 - 타이머 클린업으로 메모리 누수 방지
 - NaN/Infinity 방어 로직으로 계산 안정성 확보
 
@@ -109,7 +109,7 @@ open index.html   # macOS
 - `safeParseInt(value, default)` - 안전한 정수 변환
 - `safeArrayAccess(arr, idx, default)` - 배열 범위 초과 방어
 - `clampNumber(value, min, max)` - 숫자 범위 제한
-- ErrorBoundary 오류 폴백 UI
+- **ErrorBoundary 강화** (다시 시도/캐시 초기화/에러 로깅)
 - usePersistedState 강화된 에러 처리
 - 입력 유효성 검사 및 시각적 피드백
 - Try-Catch localStorage 예외 처리
@@ -122,9 +122,9 @@ open index.html   # macOS
 kland-calculator-main/
 ├── index.html          # 메인 애플리케이션 (SPA)
 ├── app.js              # JavaScript 참조 파일 (HTTP 서버용)
-├── styles.css          # CSS 참조 파일 (HTTP 서버용)
+├── styles.css          # 외부 스타일시트
 ├── manifest.json       # PWA 매니페스트
-├── sw.js               # Service Worker
+├── sw.js               # Service Worker (v3.1.0)
 └── README.md           # 프로젝트 문서
 ```
 
@@ -148,6 +148,23 @@ kland-calculator-main/
 ---
 
 ## 📝 업데이트 내역
+
+### v3.6.0 (2026.01.08)
+- **코드 품질 개선**
+  - 외부 `styles.css` 파일 연결 및 통합
+  - Service Worker 캐시 업데이트 (v3.1.0)
+- **성능 최적화**
+  - localStorage debounce 간격 최적화 (300ms → 500ms)
+- **에러 처리 강화**
+  - ErrorBoundary 개선: 다시 시도/캐시 초기화 버튼 추가
+  - 에러 로깅 기능 (localStorage에 최근 10개 에러 기록)
+  - 사용자 친화적 에러 메시지 표시
+- **코드 구조 개선**
+  - `REAL_ESTATE_RATES` 상수 객체 추가 (세금/중개보수/보험 요율 중앙화)
+  - 정책 변경 시 쉽게 업데이트 가능한 구조
+- **정리 작업**
+  - 미완성 다크모드 코드 전체 제거
+  - 중복 CSS 정리
 
 ### v3.5.0 (2026.01.08)
 - **Phase 2 새 기능 추가**

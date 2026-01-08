@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -16,6 +16,10 @@
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
+
+    <!-- External Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+
     <link rel="apple-touch-icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%234f46e5' rx='20' width='100' height='100'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='white'>🏠</text></svg>">
 
@@ -256,12 +260,7 @@
             pointer-events: none;
             opacity: 0.8;
         }
-
-        .dark .scroll-fade-container::after {
-            background: linear-gradient(to left, #1e293b, transparent);
-        }
-
-        /* Hide scrollbar but keep functionality */
+/* Hide scrollbar but keep functionality */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -283,13 +282,7 @@
             background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
             background-size: 200% 100%;
         }
-
-        .dark .shimmer {
-            background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
-            background-size: 200% 100%;
-        }
-
-        /* ========== UI/UX ENHANCEMENTS ========== */
+/* ========== UI/UX ENHANCEMENTS ========== */
 
         /* Tab Indicator Animation - renamed to avoid conflict */
         .tab-indicator-line {
@@ -483,13 +476,7 @@
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
             transition: box-shadow 0.2s ease;
         }
-
-        .dark input:focus,
-        .dark select:focus {
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
-        }
-
-        /* Error Input State */
+/* Error Input State */
         .input-error {
             border-color: #ef4444 !important;
             box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
@@ -509,12 +496,7 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
         }
-
-        .dark .card-hover:hover {
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-        }
-
-        /* Result Number Pop Animation */
+/* Result Number Pop Animation */
         .result-number {
             animation: resultPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
@@ -523,12 +505,7 @@
         .header-shadow {
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
-
-        .dark .header-shadow {
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        /* Tab Indicator Animation */
+/* Tab Indicator Animation */
         .tab-indicator {
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -611,13 +588,7 @@
             animation: shimmer 1.5s infinite;
             border-radius: 0.5rem;
         }
-
-        .dark .skeleton {
-            background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
-            background-size: 200% 100%;
-        }
-
-        /* Improved Transition for Theme Toggle */
+/* Improved Transition for Theme Toggle */
         .theme-transition {
             transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
         }
@@ -628,11 +599,7 @@
         }
 
         /* Enhanced Dark Mode Depth */
-        .dark .card-depth {
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
-        }
-
-        .card-depth {
+.card-depth {
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
 
@@ -658,12 +625,7 @@
             outline: none;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
         }
-
-        .dark .input-unified:focus {
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
-        }
-
-        /* Sub-tab scrollable area gradient */
+/* Sub-tab scrollable area gradient */
         .subtab-scroll {
             position: relative;
             overflow-x: auto;
@@ -815,8 +777,40 @@
         ];
 
         // Debounce delay constants
-        const DEBOUNCE_DELAY_DEFAULT = 300;
+        const DEBOUNCE_DELAY_DEFAULT = 500;
         const DEBOUNCE_DELAY_FAST = 100;
+
+        // 부동산 관련 요율 상수 (2026년 기준, 정책 변경 시 업데이트 필요)
+        const REAL_ESTATE_RATES = {
+            // 취득세율
+            ACQUISITION_TAX: {
+                GENERAL_1_HOME: 0.01,       // 1주택자 일반 1%
+                GENERAL_2_HOME: 0.08,       // 2주택자 8%
+                GENERAL_3_HOME: 0.12,       // 3주택 이상 12%
+                LUXURY: 0.04,               // 고급주택 4%
+            },
+            // 중개보수 요율 (거래금액별)
+            BROKERAGE_FEE: {
+                UNDER_50M: { rate: 0.006, max: 250000 },
+                UNDER_200M: { rate: 0.005, max: 800000 },
+                UNDER_600M: { rate: 0.004, max: null },
+                UNDER_900M: { rate: 0.005, max: null },
+                OVER_900M: { rate: 0.009, max: null },
+            },
+            // 전세보증보험료 (HUG 기준)
+            INSURANCE: {
+                HUG_RATE: 0.00128,          // 약 0.128%
+            },
+            // 전월세전환율 기본값
+            CONVERSION_RATE_DEFAULT: 4.5,
+            // DSR 상한
+            DSR_LIMIT: 0.40,                // 40%
+            // LTV 상한 (지역별)
+            LTV_LIMIT: {
+                REGULATED: 0.50,            // 규제지역 50%
+                NON_REGULATED: 0.70,        // 비규제지역 70%
+            },
+        };
 
         // --- Safe Utility Functions for Defensive Programming ---
 
@@ -887,7 +881,7 @@
         // Debounced localStorage write (reduces write frequency)
         const debouncedSetStorage = (() => {
             const timers = {};
-            return (key, value, delay = 300) => {
+            return (key, value, delay = 500) => {
                 clearTimeout(timers[key]);
                 timers[key] = setTimeout(() => setSafeLocalStorage(key, value), delay);
             };
@@ -1150,8 +1144,8 @@
                     {isOpen && (
                         <>
                             <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-                            <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 z-50 animate-fade-in overflow-hidden">
-                                <div className="p-3 border-b border-slate-100 dark:border-slate-700">
+                            <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 animate-fade-in overflow-hidden">
+                                <div className="p-3 border-b border-slate-100">
                                     <p className="text-xs font-bold text-slate-400 uppercase">최근 계산</p>
                                 </div>
                                 <div className="max-h-60 overflow-y-auto">
@@ -1162,13 +1156,13 @@
                                                 if (onSelect) onSelect(item);
                                                 setIsOpen(false);
                                             }}
-                                            className="w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border-b border-slate-50 dark:border-slate-700 last:border-0"
+                                            className="w-full px-4 py-3 text-left hover:bg-slate-50:bg-slate-700 transition-colors border-b border-slate-50 last:border-0"
                                         >
                                             <div className="flex justify-between items-center">
                                                 <span className="text-xs font-bold text-blue-500">{typeLabels[item.type] || item.type}</span>
                                                 <span className="text-[10px] text-slate-400">{formatDate(item.timestamp)}</span>
                                             </div>
-                                            <p className="text-sm font-bold text-slate-700 dark:text-slate-200 mt-1 truncate">
+                                            <p className="text-sm font-bold text-slate-700 mt-1 truncate">
                                                 {item.result || '결과 없음'}
                                             </p>
                                         </button>
@@ -1183,14 +1177,14 @@
 
         // --- Skeleton Loading Component ---
         const Skeleton = ({ className = "" }) => (
-            <div className={`animate-pulse bg-slate-200 dark:bg-slate-700 rounded-xl ${className}`}></div>
+            <div className={`animate-pulse bg-slate-200 rounded-xl ${className}`}></div>
         );
 
         // --- Error Boundary Component ---
         class ErrorBoundary extends React.Component {
             constructor(props) {
                 super(props);
-                this.state = { hasError: false, error: null };
+                this.state = { hasError: false, error: null, errorInfo: null };
             }
 
             static getDerivedStateFromError(error) {
@@ -1199,21 +1193,67 @@
 
             componentDidCatch(error, errorInfo) {
                 console.error('ErrorBoundary caught an error:', error, errorInfo);
+                this.setState({ errorInfo });
+
+                // 에러를 localStorage에 로깅 (디버깅용)
+                try {
+                    const errorLog = JSON.parse(localStorage.getItem('errorLog') || '[]');
+                    errorLog.unshift({
+                        timestamp: new Date().toISOString(),
+                        message: error.message,
+                        stack: error.stack?.substring(0, 500)
+                    });
+                    localStorage.setItem('errorLog', JSON.stringify(errorLog.slice(0, 10)));
+                } catch (e) {
+                    // localStorage 실패 시 무시
+                }
             }
+
+            handleReset = () => {
+                this.setState({ hasError: false, error: null, errorInfo: null });
+            };
+
+            handleClearCache = () => {
+                try {
+                    localStorage.clear();
+                    window.location.reload();
+                } catch (e) {
+                    window.location.reload();
+                }
+            };
 
             render() {
                 if (this.state.hasError) {
                     return (
-                        <div className="p-8 m-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-3xl text-center">
+                        <div className="p-8 m-4 bg-red-50 border border-red-200 rounded-3xl text-center">
                             <div className="text-4xl mb-4">⚠️</div>
-                            <h2 className="text-lg font-bold text-red-800 dark:text-red-200 mb-2">문제가 발생했습니다</h2>
-                            <p className="text-sm text-red-600 dark:text-red-300 mb-4">페이지를 새로고침하거나 다시 시도해 주세요.</p>
-                            <button
-                                onClick={() => window.location.reload()}
-                                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-sm transition-colors"
-                            >
-                                새로고침
-                            </button>
+                            <h2 className="text-lg font-bold text-red-800 mb-2">문제가 발생했습니다</h2>
+                            <p className="text-sm text-red-600 mb-4">
+                                {this.state.error?.message || '알 수 없는 오류가 발생했습니다.'}
+                            </p>
+                            <div className="flex flex-col gap-2 justify-center items-center">
+                                <button
+                                    onClick={this.handleReset}
+                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm transition-colors"
+                                    aria-label="다시 시도"
+                                >
+                                    다시 시도
+                                </button>
+                                <button
+                                    onClick={() => window.location.reload()}
+                                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-sm transition-colors"
+                                    aria-label="새로고침"
+                                >
+                                    새로고침
+                                </button>
+                                <button
+                                    onClick={this.handleClearCache}
+                                    className="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-xl font-bold text-sm transition-colors"
+                                    aria-label="캐시 초기화"
+                                >
+                                    캐시 초기화 후 새로고침
+                                </button>
+                            </div>
                         </div>
                     );
                 }
@@ -1226,19 +1266,19 @@
         const LoadingSpinner = ({ size = 'md', className = '' }) => {
             const sizes = { sm: 'w-4 h-4', md: 'w-6 h-6', lg: 'w-10 h-10' };
             return (
-                <div className={`animate-spin rounded-full border-2 border-slate-200 dark:border-slate-600 border-t-indigo-600 dark:border-t-indigo-400 ${sizes[size]} ${className}`}></div>
+                <div className={`animate-spin rounded-full border-2 border-slate-200 border-t-indigo-600 ${sizes[size]} ${className}`}></div>
             );
         };
 
         // Empty State Component with hint support
         const EmptyState = ({ message, hint, icon: Icon = Info, action, actionLabel }) => (
-            <div className="text-center py-16 text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600 animate-fade-in">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+            <div className="text-center py-16 text-slate-400 bg-white rounded-[2rem] border-2 border-dashed border-slate-200 animate-fade-in">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
                     <Icon className="w-8 h-8 opacity-60" />
                 </div>
-                <p className="font-bold text-slate-500 dark:text-slate-400">{message}</p>
+                <p className="font-bold text-slate-500">{message}</p>
                 {hint && (
-                    <p className="text-sm mt-2 text-slate-400 dark:text-slate-500 max-w-xs mx-auto">{hint}</p>
+                    <p className="text-sm mt-2 text-slate-400 max-w-xs mx-auto">{hint}</p>
                 )}
                 {action && (
                     <button
@@ -1267,8 +1307,8 @@
                 <button
                     onClick={handleCopy}
                     className={`p-2 rounded-xl transition-all active:scale-95 ${copied
-                        ? 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400'
-                        : 'bg-white/60 dark:bg-slate-700/60 text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700'} ${className}`}
+                        ? 'bg-green-100 text-green-600'
+                        : 'bg-white/60 text-slate-500 hover:bg-white:bg-slate-700'} ${className}`}
                     title="결과 복사"
                 >
                     {copied ? <Check size={16} /> : <Copy size={16} />}
@@ -1286,15 +1326,15 @@
                         onMouseEnter={() => setShow(true)}
                         onMouseLeave={() => setShow(false)}
                         onClick={() => setShow(!show)}
-                        className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                        className="p-1 text-slate-400 hover:text-slate-600:text-slate-300 transition-colors"
                         aria-label="도움말"
                     >
                         <HelpCircle size={14} />
                     </button>
                     {show && (
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 dark:bg-slate-700 text-white text-xs rounded-lg shadow-lg z-50 w-48 animate-fade-in">
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg shadow-lg z-50 w-48 animate-fade-in">
                             {content}
-                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800 dark:border-t-slate-700"></div>
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
                         </div>
                     )}
                 </div>
@@ -1511,7 +1551,7 @@
             return (
                 <button
                     onClick={handleExport}
-                    className="flex items-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-sm transition-all active:scale-95 shadow-lg shadow-green-200 dark:shadow-none w-full justify-center"
+                    className="flex items-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-sm transition-all active:scale-95 shadow-lg shadow-green-200 w-full justify-center"
                 >
                     <FileDown size={18} />
                     Excel 다운로드
@@ -1527,42 +1567,42 @@
                     label: '한국은행 기준금리',
                     url: 'https://www.bok.or.kr/portal/singl/baseRate/progress.do',
                     icon: '🏦',
-                    color: 'from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border-blue-100 dark:border-blue-800'
+                    color: 'from-blue-50 to-indigo-50 border-blue-100'
                 },
                 {
                     id: 'molit',
                     label: '국토부 공시가격',
                     url: 'https://www.realtyprice.kr/',
                     icon: '🏛️',
-                    color: 'from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30 border-emerald-100 dark:border-emerald-800'
+                    color: 'from-emerald-50 to-teal-50 border-emerald-100'
                 },
                 {
                     id: 'kb',
                     label: 'KB부동산 시세',
                     url: 'https://kbland.kr/',
                     icon: '🏠',
-                    color: 'from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30 border-amber-100 dark:border-amber-800'
+                    color: 'from-amber-50 to-orange-50 border-amber-100'
                 },
                 {
                     id: 'naver',
                     label: '네이버 부동산',
                     url: 'https://land.naver.com/',
                     icon: '📍',
-                    color: 'from-green-50 to-lime-50 dark:from-green-900/30 dark:to-lime-900/30 border-green-100 dark:border-green-800'
+                    color: 'from-green-50 to-lime-50 border-green-100'
                 },
                 {
                     id: 'registry',
                     label: '등기부등본 열람',
                     url: 'https://www.iros.go.kr/',
                     icon: '📜',
-                    color: 'from-purple-50 to-violet-50 dark:from-purple-900/30 dark:to-violet-900/30 border-purple-100 dark:border-purple-800'
+                    color: 'from-purple-50 to-violet-50 border-purple-100'
                 },
                 {
                     id: 'hug',
                     label: 'HUG 전세보증보험',
                     url: 'https://www.khug.or.kr/',
                     icon: '🛡️',
-                    color: 'from-rose-50 to-pink-50 dark:from-rose-900/30 dark:to-pink-900/30 border-rose-100 dark:border-rose-800'
+                    color: 'from-rose-50 to-pink-50 border-rose-100'
                 }
             ];
 
@@ -3106,7 +3146,7 @@
                 <div className="space-y-6 pb-32 animate-slide-up px-1">
                     <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
                         <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
-                            <PieChart className="w-5 h-5 mr-3 text-purple-600 dark:text-purple-400" /> 주택담보대출 비율 (LTV)
+                            <PieChart className="w-5 h-5 mr-3 text-purple-600" /> 주택담보대출 비율 (LTV)
                         </h3>
                         <div className="space-y-5">
                             <NumberInput label="주택 자산 가치 (매매가)" value={value} onChange={setValue} color="violet" />
@@ -3648,15 +3688,15 @@
                         <div className="space-y-5">
                             <NumberInput label="총 상속재산" value={totalAssets} onChange={setTotalAssets} color="violet" />
                             <NumberInput label="채무 및 공과금" value={debts} onChange={setDebts} color="violet" />
-                            <label className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl cursor-pointer">
+                            <label className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl cursor-pointer">
                                 <input type="checkbox" checked={hasSpouse} onChange={(e) => setHasSpouse(e.target.checked)} className="w-5 h-5 rounded" />
-                                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">배우자 생존 (배우자 공제 적용)</span>
+                                <span className="text-sm font-medium text-slate-700">배우자 생존 (배우자 공제 적용)</span>
                             </label>
                             <div>
                                 <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">자녀 수</label>
                                 <div className="flex gap-2">
                                     {['0', '1', '2', '3', '4'].map(n => (
-                                        <button key={n} onClick={() => setChildCount(n)} className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${childCount === n ? 'bg-indigo-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>{n}명</button>
+                                        <button key={n} onClick={() => setChildCount(n)} className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${childCount === n ? 'bg-indigo-500 text-white' : 'bg-slate-100 text-slate-500'}`}>{n}명</button>
                                     ))}
                                 </div>
                             </div>
@@ -3664,12 +3704,12 @@
                     </div>
 
                     {result ? (
-                        <div className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/40 dark:to-blue-900/40 p-6 rounded-[2.5rem] border border-indigo-100 dark:border-indigo-800 shadow-lg">
+                        <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-6 rounded-[2.5rem] border border-indigo-100 shadow-lg">
                             <div className="text-center mb-6">
                                 <p className="text-sm font-bold text-indigo-400 uppercase tracking-widest mb-2">예상 상속세</p>
-                                <p className="text-4xl font-black text-indigo-900 dark:text-indigo-100">{formatNumber(result.finalTax)}원</p>
+                                <p className="text-4xl font-black text-indigo-900">{formatNumber(result.finalTax)}원</p>
                             </div>
-                            <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 space-y-2 text-sm">
+                            <div className="bg-white rounded-2xl p-4 space-y-2 text-sm">
                                 <div className="flex justify-between"><span className="text-slate-500">순 상속재산</span><span className="font-bold">{formatCompactNumber(result.netAssets)}</span></div>
                                 <div className="flex justify-between"><span className="text-slate-500">총 공제액</span><span className="font-bold text-green-600">-{formatCompactNumber(result.deductions)}</span></div>
                                 <div className="flex justify-between"><span className="text-slate-500">과세표준</span><span className="font-bold">{formatCompactNumber(result.taxableAmount)}</span></div>
@@ -3677,7 +3717,7 @@
                             </div>
                         </div>
                     ) : (
-                        <div className="text-center py-20 text-slate-300 dark:text-slate-500 bg-white dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-600">상속재산을 입력해주세요</div>
+                        <div className="text-center py-20 text-slate-300 bg-white rounded-[2rem] border-2 border-dashed border-slate-200">상속재산을 입력해주세요</div>
                     )}
                 </div>
             );
@@ -5641,6 +5681,8 @@
         // NEW: 계약 관리 대시보드 (Phase 3)
         const ContractManager = () => {
             const [contracts, setContracts] = usePersistedState('contracts', []);
+            const [newContract, setNewContract] = useState({ name: '', startDate: '', endDate: '', deposit: '', rent: '' });
+            const [showForm, setShowForm] = useState(false);
 
             const addContract = () => {
                 if (!newContract.name || !newContract.endDate) return;
@@ -8249,3 +8291,4 @@
 </body>
 
 </html>
+

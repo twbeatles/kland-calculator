@@ -1,8 +1,9 @@
 // Service Worker for 부동산 마스터 Pro
-const CACHE_NAME = 'kland-calculator-v3.0.0';
+const CACHE_NAME = 'kland-calculator-v3.1.0';
 const urlsToCache = [
     './',
     './index.html',
+    './styles.css',
     './manifest.json',
     'https://unpkg.com/react@18/umd/react.production.min.js',
     'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
