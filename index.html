@@ -53,13 +53,6 @@
                     colors: {
                         primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' },
                     },
-                    animation: {
-                        'fade-in': 'fadeIn 0.5s ease-out',
-                        'slide-up': 'slideUp 0.5s ease-out',
-                        'result-pop': 'resultPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                        'number-pop': 'numberPop 0.3s ease-out',
-                        'toast': 'toast 3s ease-in-out forwards',
-                    },
                     keyframes: {
                         fadeIn: {
                             '0%': { opacity: '0' },
@@ -116,18 +109,17 @@
                         }
                     },
                     animation: {
-                        \r
-                        'fade-in': 'fadeIn 0.3s ease-out', \r
-                        'slide-up': 'slideUp 0.4s ease-out', \r
-                        'result-pop': 'resultPop 0.3s ease-out', \r
-                        'number-pop': 'numberPop 0.2s ease-out', \r
-                        'toast': 'toast 3s ease-in-out', \r
-                        'count-up': 'countUp 0.4s ease-out', \r
-                        'pulse-slow': 'pulse 2s ease-in-out infinite', \r
-                        'shimmer': 'shimmer 2s linear infinite', \r
-                        'float': 'float 3s ease-in-out infinite', \r
-                        'glow': 'glow 2s ease-in-out infinite', \r
-                        'bounce-soft': 'bounceSoft 0.5s ease-out', \r
+                        'fade-in': 'fadeIn 0.3s ease-out',
+                        'slide-up': 'slideUp 0.4s ease-out',
+                        'result-pop': 'resultPop 0.3s ease-out',
+                        'number-pop': 'numberPop 0.2s ease-out',
+                        'toast': 'toast 3s ease-in-out forwards',
+                        'count-up': 'countUp 0.4s ease-out',
+                        'pulse-slow': 'pulse 2s ease-in-out infinite',
+                        'shimmer': 'shimmer 2s linear infinite',
+                        'float': 'float 3s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite',
+                        'bounce-soft': 'bounceSoft 0.5s ease-out',
                     }
                 }
             }
@@ -151,15 +143,6 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
         }
 
-        /* Premium Card Hover */
-        .card-hover {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .card-hover:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
-        }
 
         /* Button Shine Effect */
         .btn-shine {
@@ -217,13 +200,6 @@
             background-clip: text;
         }
 
-        /* Card Depth Effect */
-        .card-depth {
-            box-shadow:
-                0 1px 2px rgba(0, 0, 0, 0.04),
-                0 4px 8px rgba(0, 0, 0, 0.04),
-                0 8px 16px rgba(0, 0, 0, 0.04);
-        }
 
         /* Toast Notification */
         .toast-container {
@@ -777,51 +753,48 @@
             </svg>
         ));
 
-        const Home = (props) => <IconBase {...props}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></IconBase>;
-        const Shield = (props) => <IconBase {...props}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></IconBase>;
-        const Calculator = (props) => <IconBase {...props}><rect width="16" height="20" x="4" y="2" rx="2" /><line x1="8" x2="16" y1="6" y2="6" /><line x1="16" x2="16" y1="14" y2="18" /><path d="M16 10h.01" /><path d="M12 10h.01" /><path d="M8 10h.01" /><path d="M12 14h.01" /><path d="M8 14h.01" /><path d="M12 18h.01" /><path d="M8 18h.01" /></IconBase>;
-        const DollarSign = (props) => <IconBase {...props}><line x1="12" x2="12" y1="2" y2="22" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></IconBase>;
-        const PenTool = (props) => <IconBase {...props}><path d="m12 19 7-7 3 3-7 7-3-3z" /><path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" /><path d="m2 2 7.586 7.586" /><circle cx="11" cy="11" r="2" /></IconBase>;
-        const CheckCircle = (props) => <IconBase {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></IconBase>;
-        const AlertTriangle = (props) => <IconBase {...props}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><path d="M12 9v4" /><path d="M12 17h.01" /></IconBase>;
-        const Info = (props) => <IconBase {...props}><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></IconBase>;
-        const ArrowRightLeft = (props) => <IconBase {...props}><path d="m16 3 4 4-4 4" /><path d="M20 7H4" /><path d="m8 21-4-4 4-4" /><path d="M4 17h16" /></IconBase>;
-        const MessageCircle = (props) => <IconBase {...props}><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z" /></IconBase>;
-        const Copy = (props) => <IconBase {...props}><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></IconBase>;
-        const Check = (props) => <IconBase {...props}><polyline points="20 6 9 17 4 12" /></IconBase>;
-        const Grid = (props) => <IconBase {...props}><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M3 9h18" /><path d="M9 21V9" /></IconBase>;
-        const ClipboardList = (props) => <IconBase {...props}><rect width="8" height="4" x="8" y="2" rx="1" ry="1" /><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><path d="M12 11h4" /><path d="M12 16h4" /><path d="M8 11h.01" /><path d="M8 16h.01" /></IconBase>;
-        const BookOpen = (props) => <IconBase {...props}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></IconBase>;
-        const Search = (props) => <IconBase {...props}><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></IconBase>;
-        const CheckSquare = (props) => <IconBase {...props}><polyline points="9 11 12 14 22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></IconBase>;
-        const Printer = (props) => <IconBase {...props}><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect width="12" height="8" x="6" y="14" /></IconBase>;
-        const TrendingUp = (props) => <IconBase {...props}><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></IconBase>;
-        const PieChart = (props) => <IconBase {...props}><path d="M21.21 15.89A10 10 0 1 1 8 2.83" /><path d="M22 12A10 10 0 0 0 12 2v10z" /></IconBase>;
-        const Sun = (props) => <IconBase {...props}><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></IconBase>;
-        const Download = (props) => <IconBase {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></IconBase>;
-        const Bookmark = (props) => <IconBase {...props}><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" /></IconBase>;
-        const RefreshCw = (props) => <IconBase {...props}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" /></IconBase>;
-        const X = (props) => <IconBase {...props}><path d="M18 6 6 18" /><path d="m6 6 12 12" /></IconBase>;
-        const Moon = (props) => <IconBase {...props}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></IconBase>;
-        const Share2 = (props) => <IconBase {...props}><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" x2="15.42" y1="13.51" y2="17.49" /><line x1="15.41" x2="8.59" y1="6.51" y2="10.49" /></IconBase>;
-        const RotateCcw = (props) => <IconBase {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></IconBase>;
-        const History = (props) => <IconBase {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /><path d="M12 7v5l4 2" /></IconBase>;
-        const ChevronLeft = (props) => <IconBase {...props}><path d="m15 18-6-6 6-6" /></IconBase>;
-        const ChevronRight = (props) => <IconBase {...props}><path d="m9 18 6-6-6-6" /></IconBase>;
-
-        const HelpCircle = (props) => <IconBase {...props}><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></IconBase>;
-        const Trash2 = (props) => <IconBase {...props}><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></IconBase>;
-
-        const Percent = (props) => <IconBase {...props}><line x1="19" y1="5" x2="5" y2="19" /><circle cx="6.5" cy="6.5" r="2.5" /><circle cx="17.5" cy="17.5" r="2.5" /></IconBase>;
-        const Users = (props) => <IconBase {...props}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></IconBase>;
-        const Building = (props) => <IconBase {...props}><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M12 6h.01" /><path d="M12 10h.01" /><path d="M12 14h.01" /><path d="M16 10h.01" /><path d="M16 14h.01" /><path d="M8 10h.01" /><path d="M8 14h.01" /></IconBase>;
-        const Link2 = (props) => <IconBase {...props}><path d="M9 17H7A5 5 0 0 1 7 7h2" /><path d="M15 7h2a5 5 0 1 1 0 10h-2" /><line x1="8" x2="16" y1="12" y2="12" /></IconBase>;
-        const FileDown = (props) => <IconBase {...props}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><path d="M12 18v-6" /><path d="m9 15 3 3 3-3" /></IconBase>;
-        const Award = (props) => <IconBase {...props}><circle cx="12" cy="8" r="6" /><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" /></IconBase>;
-        const Banknote = (props) => <IconBase {...props}><rect width="20" height="12" x="2" y="6" rx="2" /><circle cx="12" cy="12" r="2" /><path d="M6 12h.01M18 12h.01" /></IconBase>;
-        const BarChart3 = (props) => <IconBase {...props}><path d="M3 3v18h18" /><path d="M18 17V9" /><path d="M13 17V5" /><path d="M8 17v-3" /></IconBase>;
-        const FileText = (props) => <IconBase {...props}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><line x1="16" x2="8" y1="13" y2="13" /><line x1="16" x2="8" y1="17" y2="17" /><line x1="10" x2="8" y1="9" y2="9" /></IconBase>;
-        const Calendar = (props) => <IconBase {...props}><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" /></IconBase>;
+        // --- Icons (Memoized for performance) ---
+        const Home = memo((props) => <IconBase {...props}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></IconBase>);
+        const Shield = memo((props) => <IconBase {...props}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /></IconBase>);
+        const Calculator = memo((props) => <IconBase {...props}><rect width="16" height="20" x="4" y="2" rx="2" /><line x1="8" x2="16" y1="6" y2="6" /><line x1="16" x2="16" y1="14" y2="18" /><path d="M16 10h.01" /><path d="M12 10h.01" /><path d="M8 10h.01" /><path d="M12 14h.01" /><path d="M8 14h.01" /><path d="M12 18h.01" /><path d="M8 18h.01" /></IconBase>);
+        const DollarSign = memo((props) => <IconBase {...props}><line x1="12" x2="12" y1="2" y2="22" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></IconBase>);
+        const PenTool = memo((props) => <IconBase {...props}><path d="m12 19 7-7 3 3-7 7-3-3z" /><path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" /><path d="m2 2 7.586 7.586" /><circle cx="11" cy="11" r="2" /></IconBase>);
+        const CheckCircle = memo((props) => <IconBase {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></IconBase>);
+        const AlertTriangle = memo((props) => <IconBase {...props}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><path d="M12 9v4" /><path d="M12 17h.01" /></IconBase>);
+        const Info = memo((props) => <IconBase {...props}><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></IconBase>);
+        const ArrowRightLeft = memo((props) => <IconBase {...props}><path d="m16 3 4 4-4 4" /><path d="M20 7H4" /><path d="m8 21-4-4 4-4" /><path d="M4 17h16" /></IconBase>);
+        const MessageCircle = memo((props) => <IconBase {...props}><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z" /></IconBase>);
+        const Copy = memo((props) => <IconBase {...props}><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></IconBase>);
+        const Check = memo((props) => <IconBase {...props}><polyline points="20 6 9 17 4 12" /></IconBase>);
+        const Grid = memo((props) => <IconBase {...props}><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M3 9h18" /><path d="M9 21V9" /></IconBase>);
+        const ClipboardList = memo((props) => <IconBase {...props}><rect width="8" height="4" x="8" y="2" rx="1" ry="1" /><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><path d="M12 11h4" /><path d="M12 16h4" /><path d="M8 11h.01" /><path d="M8 16h.01" /></IconBase>);
+        const BookOpen = memo((props) => <IconBase {...props}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></IconBase>);
+        const Search = memo((props) => <IconBase {...props}><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></IconBase>);
+        const CheckSquare = memo((props) => <IconBase {...props}><polyline points="9 11 12 14 22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></IconBase>);
+        const Printer = memo((props) => <IconBase {...props}><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect width="12" height="8" x="6" y="14" /></IconBase>);
+        const TrendingUp = memo((props) => <IconBase {...props}><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></IconBase>);
+        const PieChart = memo((props) => <IconBase {...props}><path d="M21.21 15.89A10 10 0 1 1 8 2.83" /><path d="M22 12A10 10 0 0 0 12 2v10z" /></IconBase>);
+        const Download = memo((props) => <IconBase {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></IconBase>);
+        const Bookmark = memo((props) => <IconBase {...props}><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" /></IconBase>);
+        const RefreshCw = memo((props) => <IconBase {...props}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" /></IconBase>);
+        const X = memo((props) => <IconBase {...props}><path d="M18 6 6 18" /><path d="m6 6 12 12" /></IconBase>);
+        const Share2 = memo((props) => <IconBase {...props}><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" x2="15.42" y1="13.51" y2="17.49" /><line x1="15.41" x2="8.59" y1="6.51" y2="10.49" /></IconBase>);
+        const RotateCcw = memo((props) => <IconBase {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></IconBase>);
+        const History = memo((props) => <IconBase {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /><path d="M12 7v5l4 2" /></IconBase>);
+        const ChevronLeft = memo((props) => <IconBase {...props}><path d="m15 18-6-6 6-6" /></IconBase>);
+        const ChevronRight = memo((props) => <IconBase {...props}><path d="m9 18 6-6-6-6" /></IconBase>);
+        const HelpCircle = memo((props) => <IconBase {...props}><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></IconBase>);
+        const Trash2 = memo((props) => <IconBase {...props}><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></IconBase>);
+        const Percent = memo((props) => <IconBase {...props}><line x1="19" y1="5" x2="5" y2="19" /><circle cx="6.5" cy="6.5" r="2.5" /><circle cx="17.5" cy="17.5" r="2.5" /></IconBase>);
+        const Users = memo((props) => <IconBase {...props}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></IconBase>);
+        const Building = memo((props) => <IconBase {...props}><rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01" /><path d="M16 6h.01" /><path d="M12 6h.01" /><path d="M12 10h.01" /><path d="M12 14h.01" /><path d="M16 10h.01" /><path d="M16 14h.01" /><path d="M8 10h.01" /><path d="M8 14h.01" /></IconBase>);
+        const Link2 = memo((props) => <IconBase {...props}><path d="M9 17H7A5 5 0 0 1 7 7h2" /><path d="M15 7h2a5 5 0 1 1 0 10h-2" /><line x1="8" x2="16" y1="12" y2="12" /></IconBase>);
+        const FileDown = memo((props) => <IconBase {...props}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><path d="M12 18v-6" /><path d="m9 15 3 3 3-3" /></IconBase>);
+        const Award = memo((props) => <IconBase {...props}><circle cx="12" cy="8" r="6" /><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" /></IconBase>);
+        const Banknote = memo((props) => <IconBase {...props}><rect width="20" height="12" x="2" y="6" rx="2" /><circle cx="12" cy="12" r="2" /><path d="M6 12h.01M18 12h.01" /></IconBase>);
+        const BarChart3 = memo((props) => <IconBase {...props}><path d="M3 3v18h18" /><path d="M18 17V9" /><path d="M13 17V5" /><path d="M8 17v-3" /></IconBase>);
+        const FileText = memo((props) => <IconBase {...props}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><line x1="16" x2="8" y1="13" y2="13" /><line x1="16" x2="8" y1="17" y2="17" /><line x1="10" x2="8" y1="9" y2="9" /></IconBase>);
+        const Calendar = memo((props) => <IconBase {...props}><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" /></IconBase>);
 
         // --- Constants ---
         // 한국은행 기준금리 (2026.01.01 기준, 변동 시 업데이트 필요)
@@ -6845,6 +6818,801 @@
 
         // ========== NEW FEATURES END ==========
 
+        // ========== PHASE 2 NEW FEATURES START ==========
+
+        // 1. 전세사기 진단 체크리스트
+        const JeonseFraudChecker = () => {
+            const [deposit, setDeposit] = useState('');
+            const [marketPrice, setMarketPrice] = useState('');
+            const [checks, setChecks] = usePersistedState('fraudChecks', {});
+
+            const toggle = (id) => setChecks(prev => ({ ...prev, [id]: !prev[id] }));
+
+            const checkItems = [
+                { id: 'owner', label: '등기부등본 소유자와 계약자 동일 확인', critical: true, category: '신원' },
+                { id: 'mortgage', label: '근저당 설정 금액 확인 (채권최고액)', critical: true, category: '등기' },
+                { id: 'seizure', label: '가압류/가처분 없음 확인', critical: true, category: '등기' },
+                { id: 'tax', label: '임대인 세금체납 여부 확인', critical: true, category: '신원' },
+                { id: 'insurance', label: 'HUG/SGI 전세보증보험 가입', critical: true, category: '보험' },
+                { id: 'ratio', label: '전세가율 80% 이하 확인', critical: false, category: '시세' },
+                { id: 'id', label: '임대인 신분증 확인 (등기권리증 대조)', critical: false, category: '신원' },
+                { id: 'visit', label: '현장 방문 및 실거주자 확인', critical: false, category: '현장' },
+                { id: 'account', label: '임대인 본인 명의 계좌 확인', critical: false, category: '계좌' },
+                { id: 'report', label: '전입신고 + 확정일자 예정', critical: true, category: '권리' },
+            ];
+
+            const depositVal = parseNumber(deposit);
+            const priceVal = parseNumber(marketPrice);
+            const jeonseRate = priceVal > 0 ? (depositVal / priceVal * 100) : 0;
+
+            const criticalChecked = checkItems.filter(c => c.critical && checks[c.id]).length;
+            const criticalTotal = checkItems.filter(c => c.critical).length;
+            const totalChecked = Object.values(checks).filter(Boolean).length;
+
+            const getRiskLevel = () => {
+                if (jeonseRate > 90) return { level: '고위험', color: 'red', icon: '🚨' };
+                if (jeonseRate > 80) return { level: '주의', color: 'orange', icon: '⚠️' };
+                if (criticalChecked < criticalTotal) return { level: '확인필요', color: 'yellow', icon: '📋' };
+                return { level: '안전', color: 'green', icon: '✅' };
+            };
+
+            const risk = getRiskLevel();
+
+            return (
+                <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 card-depth mt-2">
+                    <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
+                        <Shield className="w-4 h-4 mr-2 text-red-500" /> 전세사기 진단 체크리스트
+                    </h4>
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-3">
+                            <NumberInput label="전세 보증금" value={deposit} onChange={setDeposit} color="red" />
+                            <NumberInput label="시세 (매매가)" value={marketPrice} onChange={setMarketPrice} color="slate" />
+                        </div>
+                        {priceVal > 0 && (
+                            <div className={`p-4 rounded-xl text-center ${jeonseRate > 90 ? 'bg-red-50' : jeonseRate > 80 ? 'bg-orange-50' : 'bg-green-50'}`}>
+                                <p className="text-xs text-slate-500 mb-1">전세가율</p>
+                                <p className={`text-3xl font-black ${jeonseRate > 90 ? 'text-red-600' : jeonseRate > 80 ? 'text-orange-500' : 'text-green-600'}`}>
+                                    {jeonseRate.toFixed(1)}%
+                                </p>
+                                <p className="text-xs mt-1">{jeonseRate > 80 ? '⚠️ 깡통전세 위험' : '✅ 적정 수준'}</p>
+                            </div>
+                        )}
+                        <div className="space-y-2">
+                            <p className="text-xs font-bold text-slate-500">필수 확인사항 ({criticalChecked}/{criticalTotal})</p>
+                            {checkItems.map(item => (
+                                <label key={item.id} className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all ${checks[item.id] ? 'bg-green-50 border border-green-200' : 'bg-slate-50 border border-transparent'}`}>
+                                    <input type="checkbox" checked={checks[item.id] || false} onChange={() => toggle(item.id)} className="w-5 h-5 rounded" />
+                                    <span className={`text-sm flex-1 ${checks[item.id] ? 'text-green-700' : 'text-slate-600'}`}>
+                                        {item.critical && <span className="text-red-500 mr-1">*</span>}
+                                        {item.label}
+                                    </span>
+                                    <span className="text-[10px] px-2 py-0.5 bg-slate-200 text-slate-500 rounded">{item.category}</span>
+                                </label>
+                            ))}
+                        </div>
+                        <div className={`p-4 rounded-xl text-center bg-${risk.color}-50`}>
+                            <p className="text-xs text-slate-500 mb-1">종합 판정</p>
+                            <p className={`text-2xl font-black text-${risk.color}-600`}>{risk.icon} {risk.level}</p>
+                            <p className="text-xs text-slate-500 mt-1">체크완료: {totalChecked}/{checkItems.length}개</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // 2. 월세 ↔ 전세 양방향 환산기
+        const BidirectionalRentConverter = () => {
+            const [mode, setMode] = useState('jeonseToMonthly');
+            const [jeonseDeposit, setJeonseDeposit] = useState('');
+            const [monthlyDeposit, setMonthlyDeposit] = useState('');
+            const [monthlyRent, setMonthlyRent] = useState('');
+            const [conversionRate, setConversionRate] = useState('5.5');
+
+            const result = useMemo(() => {
+                const rate = parseFloat(conversionRate) || 5.5;
+                if (mode === 'jeonseToMonthly') {
+                    const jeonse = parseNumber(jeonseDeposit);
+                    const newDeposit = parseNumber(monthlyDeposit);
+                    if (jeonse <= 0) return null;
+                    const diff = jeonse - newDeposit;
+                    const monthly = Math.floor(diff * (rate / 100) / 12);
+                    return { monthly, diff, description: `보증금 ${formatCompactNumber(newDeposit)} + 월세 ${formatNumber(monthly)}원` };
+                } else {
+                    const deposit = parseNumber(monthlyDeposit);
+                    const monthly = parseNumber(monthlyRent);
+                    if (monthly <= 0) return null;
+                    const convertedDeposit = Math.floor(monthly * 12 / (rate / 100));
+                    const totalJeonse = deposit + convertedDeposit;
+                    return { totalJeonse, convertedDeposit, description: `순수전세 ${formatCompactNumber(totalJeonse)}` };
+                }
+            }, [mode, jeonseDeposit, monthlyDeposit, monthlyRent, conversionRate]);
+
+            return (
+                <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 card-depth mt-2">
+                    <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
+                        <ArrowRightLeft className="w-4 h-4 mr-2 text-purple-500" /> 월세 ↔ 전세 양방향 환산
+                    </h4>
+                    <div className="flex gap-2 mb-4">
+                        <button onClick={() => setMode('jeonseToMonthly')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${mode === 'jeonseToMonthly' ? 'bg-purple-500 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                            전세 → 월세
+                        </button>
+                        <button onClick={() => setMode('monthlyToJeonse')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${mode === 'monthlyToJeonse' ? 'bg-purple-500 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                            월세 → 전세
+                        </button>
+                    </div>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="text-xs font-bold text-slate-500 block mb-1">전월세전환율 (%)</label>
+                            <input type="number" value={conversionRate} onChange={e => setConversionRate(e.target.value)} step="0.1" className="w-full px-4 py-3 bg-slate-50 rounded-xl text-right font-bold outline-none" />
+                            <p className="text-[10px] text-slate-400 mt-1">* 법정 상한: 기준금리(2.5%) + 3.5% = 6.0%</p>
+                        </div>
+                        {mode === 'jeonseToMonthly' ? (
+                            <>
+                                <NumberInput label="현재 전세금" value={jeonseDeposit} onChange={setJeonseDeposit} color="purple" />
+                                <NumberInput label="전환 후 보증금" value={monthlyDeposit} onChange={setMonthlyDeposit} color="slate" />
+                            </>
+                        ) : (
+                            <>
+                                <NumberInput label="현재 보증금" value={monthlyDeposit} onChange={setMonthlyDeposit} color="slate" />
+                                <NumberInput label="현재 월세" value={monthlyRent} onChange={setMonthlyRent} color="purple" />
+                            </>
+                        )}
+                    </div>
+                    {result && (
+                        <div className="mt-4 p-4 bg-purple-50 rounded-xl text-center">
+                            <p className="text-xs text-purple-600 font-bold mb-1">{mode === 'jeonseToMonthly' ? '전환 결과' : '전세 환산액'}</p>
+                            <p className="text-2xl font-black text-purple-700">{result.description}</p>
+                            {mode === 'jeonseToMonthly' && (
+                                <p className="text-xs text-slate-500 mt-1">차액 {formatCompactNumber(result.diff)} 전환</p>
+                            )}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // 3. 보증금 분할납부 스케줄러
+        const DepositScheduler = () => {
+            const [totalDeposit, setTotalDeposit] = useState('');
+            const [contractDate, setContractDate] = useState('');
+            const [moveInDate, setMoveInDate] = useState('');
+            const [schedule, setSchedule] = useState([
+                { id: 'contract', label: '계약금', percent: 10, date: '' },
+                { id: 'interim', label: '중도금', percent: 10, date: '' },
+                { id: 'balance', label: '잔금', percent: 80, date: '' },
+            ]);
+
+            const updateSchedule = (id, field, value) => {
+                setSchedule(schedule.map(s => s.id === id ? { ...s, [field]: value } : s));
+            };
+
+            const totalPercent = schedule.reduce((sum, s) => sum + (parseInt(s.percent) || 0), 0);
+            const depositVal = parseNumber(totalDeposit);
+
+            const getDday = (dateStr) => {
+                if (!dateStr) return null;
+                const target = new Date(dateStr);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                target.setHours(0, 0, 0, 0);
+                const diff = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+                return diff;
+            };
+
+            const exportToICS = () => {
+                let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//부동산마스터Pro//KR\n`;
+                schedule.forEach(s => {
+                    if (s.date) {
+                        const dateFormatted = s.date.replace(/-/g, '');
+                        const amount = Math.floor(depositVal * (parseInt(s.percent) || 0) / 100);
+                        icsContent += `BEGIN:VEVENT\nDTSTART;VALUE=DATE:${dateFormatted}\nSUMMARY:${s.label} 납부 (${formatNumber(amount)}원)\nDESCRIPTION:부동산 ${s.label} 납부일\nEND:VEVENT\n`;
+                    }
+                });
+                icsContent += `END:VCALENDAR`;
+                const blob = new Blob([icsContent], { type: 'text/calendar' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = '보증금_일정.ics';
+                a.click();
+            };
+
+            return (
+                <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 card-depth mt-2">
+                    <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
+                        <Calendar className="w-4 h-4 mr-2 text-teal-500" /> 보증금 분할납부 스케줄러
+                    </h4>
+                    <div className="space-y-4">
+                        <NumberInput label="총 보증금" value={totalDeposit} onChange={setTotalDeposit} color="teal" />
+                        <div className="space-y-3">
+                            {schedule.map((s, idx) => {
+                                const amount = Math.floor(depositVal * (parseInt(s.percent) || 0) / 100);
+                                const dday = getDday(s.date);
+                                return (
+                                    <div key={s.id} className="p-4 bg-slate-50 rounded-xl">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <span className="font-bold text-sm text-slate-700">{s.label}</span>
+                                            {dday !== null && (
+                                                <span className={`text-xs font-bold px-2 py-0.5 rounded ${dday < 0 ? 'bg-slate-200 text-slate-500' : dday <= 7 ? 'bg-red-100 text-red-600' : 'bg-teal-100 text-teal-600'}`}>
+                                                    {dday < 0 ? '완료' : dday === 0 ? 'D-Day' : `D-${dday}`}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label className="text-[10px] text-slate-400">비율 (%)</label>
+                                                <input type="number" value={s.percent} onChange={e => updateSchedule(s.id, 'percent', e.target.value)} className="w-full px-3 py-2 bg-white rounded-lg text-right font-bold text-sm outline-none" />
+                                            </div>
+                                            <div>
+                                                <label className="text-[10px] text-slate-400">날짜</label>
+                                                <input type="date" value={s.date} onChange={e => updateSchedule(s.id, 'date', e.target.value)} className="w-full px-3 py-2 bg-white rounded-lg text-sm outline-none" />
+                                            </div>
+                                        </div>
+                                        {depositVal > 0 && (
+                                            <p className="text-xs text-teal-600 font-bold mt-2 text-right">{formatNumber(amount)}원</p>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        {totalPercent !== 100 && (
+                            <p className="text-xs text-red-500 text-center">⚠️ 비율 합계: {totalPercent}% (100% 필요)</p>
+                        )}
+                        <button onClick={exportToICS} disabled={!depositVal || totalPercent !== 100} className="w-full py-3 bg-teal-500 hover:bg-teal-600 text-white rounded-xl font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                            📅 캘린더에 내보내기 (.ics)
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        // ========== PHASE 2 NEW FEATURES CONTINUE ==========
+
+        // 4. 시세 트래커 (데모 데이터)
+        const MarketPriceTracker = () => {
+            const chartRef = React.useRef(null);
+            const chartInstanceRef = React.useRef(null);
+            const [selectedDistrict, setSelectedDistrict] = useState('강남구');
+
+            const seoulData = [
+                { district: '강남구', apt: 185000, jeonse: 92000, change: 2.1 },
+                { district: '서초구', apt: 175000, jeonse: 87000, change: 1.8 },
+                { district: '송파구', apt: 145000, jeonse: 72000, change: 1.5 },
+                { district: '용산구', apt: 155000, jeonse: 78000, change: 2.5 },
+                { district: '마포구', apt: 115000, jeonse: 57000, change: 1.2 },
+                { district: '성동구', apt: 125000, jeonse: 62000, change: 1.0 },
+                { district: '영등포구', apt: 95000, jeonse: 48000, change: 0.8 },
+                { district: '광진구', apt: 105000, jeonse: 52000, change: 0.9 },
+                { district: '동작구', apt: 98000, jeonse: 49000, change: 0.7 },
+                { district: '강동구', apt: 110000, jeonse: 55000, change: 1.1 },
+            ];
+
+            useEffect(() => {
+                if (!chartRef.current || !window.Chart) return;
+                if (chartInstanceRef.current) chartInstanceRef.current.destroy();
+
+                const ctx = chartRef.current.getContext('2d');
+                const top5 = [...seoulData].sort((a, b) => b.apt - a.apt).slice(0, 5);
+
+                chartInstanceRef.current = new window.Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: top5.map(d => d.district),
+                        datasets: [{
+                            label: '매매 (만원/㎡)',
+                            data: top5.map(d => d.apt),
+                            backgroundColor: '#6366f1',
+                            borderRadius: 8,
+                        }, {
+                            label: '전세 (만원/㎡)',
+                            data: top5.map(d => d.jeonse),
+                            backgroundColor: '#ec4899',
+                            borderRadius: 8,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: { legend: { position: 'bottom', labels: { font: { size: 11, weight: 'bold' } } } },
+                        scales: { y: { beginAtZero: true, ticks: { callback: v => formatCompactNumber(v * 10000) } } }
+                    }
+                });
+
+                return () => { if (chartInstanceRef.current) chartInstanceRef.current.destroy(); };
+            }, []);
+
+            const selected = seoulData.find(d => d.district === selectedDistrict);
+
+            return (
+                <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 card-depth mt-2">
+                    <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
+                        <BarChart3 className="w-4 h-4 mr-2 text-indigo-500" /> 서울 시세 트래커 (2026.01 기준)
+                    </h4>
+                    <div className="mb-4">
+                        <canvas ref={chartRef} height="200"></canvas>
+                    </div>
+                    <div>
+                        <label className="text-xs font-bold text-slate-500 block mb-2">지역 선택</label>
+                        <select value={selectedDistrict} onChange={e => setSelectedDistrict(e.target.value)} className="w-full px-4 py-3 bg-slate-50 rounded-xl font-bold outline-none">
+                            {seoulData.map(d => <option key={d.district} value={d.district}>{d.district}</option>)}
+                        </select>
+                    </div>
+                    {selected && (
+                        <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+                            <div className="p-3 bg-indigo-50 rounded-xl">
+                                <p className="text-[10px] text-slate-500">매매가</p>
+                                <p className="text-lg font-black text-indigo-600">{formatCompactNumber(selected.apt * 10000)}</p>
+                            </div>
+                            <div className="p-3 bg-pink-50 rounded-xl">
+                                <p className="text-[10px] text-slate-500">전세가</p>
+                                <p className="text-lg font-black text-pink-600">{formatCompactNumber(selected.jeonse * 10000)}</p>
+                            </div>
+                            <div className={`p-3 rounded-xl ${selected.change >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
+                                <p className="text-[10px] text-slate-500">전월대비</p>
+                                <p className={`text-lg font-black ${selected.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>{selected.change >= 0 ? '+' : ''}{selected.change}%</p>
+                            </div>
+                        </div>
+                    )}
+                    <p className="text-[10px] text-slate-400 text-center mt-3">* 데모 데이터입니다. 실제 시세는 KB부동산/네이버부동산 참고</p>
+                </div>
+            );
+        };
+
+        // 5. 복합 대출 계산기 (주담대 + 신용대출 DSR)
+        const CombinedLoanCalculator = () => {
+            const [annualIncome, setAnnualIncome] = useState('');
+            const [mortgageAmount, setMortgageAmount] = useState('');
+            const [mortgageRate, setMortgageRate] = useState('4.5');
+            const [mortgagePeriod, setMortgagePeriod] = useState('360');
+            const [creditAmount, setCreditAmount] = useState('');
+            const [creditRate, setCreditRate] = useState('6.5');
+            const [creditPeriod, setCreditPeriod] = useState('60');
+
+            const result = useMemo(() => {
+                const income = parseNumber(annualIncome);
+                const mortgage = parseNumber(mortgageAmount);
+                const credit = parseNumber(creditAmount);
+                if (income <= 0) return null;
+
+                const calcMonthlyPayment = (principal, rate, months) => {
+                    if (principal <= 0 || months <= 0) return 0;
+                    const r = (parseFloat(rate) || 0) / 100 / 12;
+                    if (r <= 0) return principal / months;
+                    const factor = Math.pow(1 + r, months);
+                    return (principal * r * factor) / (factor - 1);
+                };
+
+                const mortgageMonthly = calcMonthlyPayment(mortgage, mortgageRate, parseInt(mortgagePeriod));
+                const creditMonthly = calcMonthlyPayment(credit, creditRate, parseInt(creditPeriod));
+                const totalMonthly = mortgageMonthly + creditMonthly;
+                const annualPayment = totalMonthly * 12;
+                const dsr = (annualPayment / income) * 100;
+                const limit = 40;
+                const remaining = Math.max(0, (income * (limit / 100) - annualPayment) / 12);
+
+                return { mortgageMonthly, creditMonthly, totalMonthly, dsr, remaining, isOver: dsr > limit };
+            }, [annualIncome, mortgageAmount, mortgageRate, mortgagePeriod, creditAmount, creditRate, creditPeriod]);
+
+            return (
+                <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 card-depth mt-2">
+                    <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
+                        <Banknote className="w-4 h-4 mr-2 text-emerald-500" /> 복합 대출 계산기 (DSR 합산)
+                    </h4>
+                    <div className="space-y-4">
+                        <NumberInput label="연 소득" value={annualIncome} onChange={setAnnualIncome} color="emerald" />
+                        <div className="p-4 bg-indigo-50 rounded-xl">
+                            <p className="text-xs font-bold text-indigo-600 mb-2">🏠 주택담보대출</p>
+                            <div className="grid grid-cols-3 gap-2">
+                                <div className="col-span-3"><NumberInput label="대출금액" value={mortgageAmount} onChange={setMortgageAmount} color="indigo" /></div>
+                                <div><label className="text-[10px] text-slate-500">금리(%)</label><input type="number" value={mortgageRate} onChange={e => setMortgageRate(e.target.value)} className="w-full px-2 py-1.5 bg-white rounded-lg text-sm font-bold text-right outline-none" /></div>
+                                <div className="col-span-2"><label className="text-[10px] text-slate-500">기간(개월)</label><input type="number" value={mortgagePeriod} onChange={e => setMortgagePeriod(e.target.value)} className="w-full px-2 py-1.5 bg-white rounded-lg text-sm font-bold text-right outline-none" /></div>
+                            </div>
+                        </div>
+                        <div className="p-4 bg-orange-50 rounded-xl">
+                            <p className="text-xs font-bold text-orange-600 mb-2">💳 신용대출</p>
+                            <div className="grid grid-cols-3 gap-2">
+                                <div className="col-span-3"><NumberInput label="대출금액" value={creditAmount} onChange={setCreditAmount} color="orange" /></div>
+                                <div><label className="text-[10px] text-slate-500">금리(%)</label><input type="number" value={creditRate} onChange={e => setCreditRate(e.target.value)} className="w-full px-2 py-1.5 bg-white rounded-lg text-sm font-bold text-right outline-none" /></div>
+                                <div className="col-span-2"><label className="text-[10px] text-slate-500">기간(개월)</label><input type="number" value={creditPeriod} onChange={e => setCreditPeriod(e.target.value)} className="w-full px-2 py-1.5 bg-white rounded-lg text-sm font-bold text-right outline-none" /></div>
+                            </div>
+                        </div>
+                    </div>
+                    {result && (
+                        <div className="mt-4 space-y-3">
+                            <div className={`p-4 rounded-xl text-center ${result.isOver ? 'bg-red-50' : 'bg-green-50'}`}>
+                                <p className="text-xs text-slate-500 mb-1">총 DSR</p>
+                                <p className={`text-3xl font-black ${result.isOver ? 'text-red-600' : 'text-green-600'}`}>{result.dsr.toFixed(1)}%</p>
+                                <p className="text-xs mt-1">{result.isOver ? '❌ 한도 초과 (40% 이상)' : '✅ 대출 가능'}</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                                <div className="p-3 bg-indigo-50 rounded-xl"><p className="text-slate-500">주담대 월상환</p><p className="font-bold text-indigo-600">{formatNumber(Math.round(result.mortgageMonthly))}원</p></div>
+                                <div className="p-3 bg-orange-50 rounded-xl"><p className="text-slate-500">신용 월상환</p><p className="font-bold text-orange-600">{formatNumber(Math.round(result.creditMonthly))}원</p></div>
+                            </div>
+                            <div className="p-3 bg-slate-50 rounded-xl text-center">
+                                <p className="text-xs text-slate-500">추가 대출 여력 (월)</p>
+                                <p className="text-lg font-black text-slate-700">{formatNumber(Math.round(result.remaining))}원</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // 6. 금리 인하 시뮬레이터
+        const InterestRateCutSimulator = () => {
+            const [loanAmount, setLoanAmount] = useState('');
+            const [currentRate, setCurrentRate] = useState('4.5');
+            const [period, setPeriod] = useState('360');
+
+            const result = useMemo(() => {
+                const amount = parseNumber(loanAmount);
+                const rate = parseFloat(currentRate) || 0;
+                const months = parseInt(period) || 360;
+                if (amount <= 0 || rate <= 0) return null;
+
+                const calcMonthly = (r) => {
+                    const monthlyRate = r / 100 / 12;
+                    if (monthlyRate <= 0) return 0;
+                    const factor = Math.pow(1 + monthlyRate, months);
+                    return (amount * monthlyRate * factor) / (factor - 1);
+                };
+
+                const scenarios = [0, 0.25, 0.5, 1.0, 1.5].map(cut => {
+                    const newRate = Math.max(rate - cut, 0.5);
+                    const monthly = calcMonthly(newRate);
+                    const baseMonthly = calcMonthly(rate);
+                    return { cut, rate: newRate, monthly, saved: baseMonthly - monthly, yearlySaved: (baseMonthly - monthly) * 12 };
+                });
+
+                return scenarios;
+            }, [loanAmount, currentRate, period]);
+
+            return (
+                <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 card-depth mt-2">
+                    <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
+                        <TrendingUp className="w-4 h-4 mr-2 text-cyan-500" /> 금리 인하 시뮬레이터
+                    </h4>
+                    <div className="space-y-4">
+                        <NumberInput label="대출 잔액" value={loanAmount} onChange={setLoanAmount} color="cyan" />
+                        <div className="grid grid-cols-2 gap-3">
+                            <div><label className="text-xs font-bold text-slate-500 block mb-1">현재 금리 (%)</label><input type="number" value={currentRate} onChange={e => setCurrentRate(e.target.value)} step="0.1" className="w-full px-4 py-3 bg-slate-50 rounded-xl text-right font-bold outline-none" /></div>
+                            <div><label className="text-xs font-bold text-slate-500 block mb-1">잔여 기간 (개월)</label><input type="number" value={period} onChange={e => setPeriod(e.target.value)} className="w-full px-4 py-3 bg-slate-50 rounded-xl text-right font-bold outline-none" /></div>
+                        </div>
+                    </div>
+                    {result && (
+                        <div className="mt-4 space-y-2">
+                            {result.map((s, idx) => (
+                                <div key={idx} className={`p-4 rounded-xl flex justify-between items-center ${idx === 0 ? 'bg-slate-100' : 'bg-cyan-50'}`}>
+                                    <div>
+                                        <p className="font-bold text-sm">{s.cut === 0 ? '현재' : `-${s.cut}%p 인하`}</p>
+                                        <p className="text-xs text-slate-500">연 {s.rate.toFixed(2)}%</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-lg font-black text-slate-800">{formatNumber(Math.round(s.monthly))}원</p>
+                                        {s.saved > 0 && <p className="text-xs text-cyan-600 font-bold">월 -{formatNumber(Math.round(s.saved))}원</p>}
+                                    </div>
+                                </div>
+                            ))}
+                            <p className="text-xs text-center text-slate-400 mt-2">💡 대환대출 또는 금통위 금리 인하 시 참고</p>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // ========== PHASE 2 NEW FEATURES MORE ==========
+
+        // 7. 대환대출 분석기
+        const LoanRefinancingAnalyzer = () => {
+            const [currentLoan, setCurrentLoan] = useState('');
+            const [currentRate, setCurrentRate] = useState('5.0');
+            const [remainingMonths, setRemainingMonths] = useState('300');
+            const [newRate, setNewRate] = useState('4.0');
+            const [newPeriod, setNewPeriod] = useState('360');
+            const [refinanceFee, setRefinanceFee] = useState('0.5');
+
+            const result = useMemo(() => {
+                const loan = parseNumber(currentLoan);
+                const oldRate = parseFloat(currentRate) || 0;
+                const oldMonths = parseInt(remainingMonths) || 0;
+                const nRate = parseFloat(newRate) || 0;
+                const nMonths = parseInt(newPeriod) || 0;
+                const fee = parseFloat(refinanceFee) || 0;
+                if (loan <= 0 || oldRate <= 0 || nRate <= 0) return null;
+
+                const calcMonthly = (principal, rate, months) => {
+                    const r = rate / 100 / 12;
+                    if (r <= 0) return principal / months;
+                    const factor = Math.pow(1 + r, months);
+                    return (principal * r * factor) / (factor - 1);
+                };
+
+                const oldMonthly = calcMonthly(loan, oldRate, oldMonths);
+                const oldTotalInterest = oldMonthly * oldMonths - loan;
+                const newMonthly = calcMonthly(loan, nRate, nMonths);
+                const newTotalInterest = newMonthly * nMonths - loan;
+                const refinanceCost = loan * (fee / 100);
+                const interestSaved = oldTotalInterest - newTotalInterest;
+                const netSaving = interestSaved - refinanceCost;
+                const monthlySaved = oldMonthly - newMonthly;
+                const breakEvenMonths = monthlySaved > 0 ? Math.ceil(refinanceCost / monthlySaved) : 0;
+
+                return { oldMonthly, newMonthly, monthlySaved, oldTotalInterest, newTotalInterest, refinanceCost, interestSaved, netSaving, breakEvenMonths, isWorth: netSaving > 0 };
+            }, [currentLoan, currentRate, remainingMonths, newRate, newPeriod, refinanceFee]);
+
+            return (
+                <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 card-depth mt-2">
+                    <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
+                        <RefreshCw className="w-4 h-4 mr-2 text-violet-500" /> 대환대출 분석기
+                    </h4>
+                    <div className="space-y-4">
+                        <NumberInput label="현재 대출 잔액" value={currentLoan} onChange={setCurrentLoan} color="violet" />
+                        <div className="p-4 bg-slate-50 rounded-xl">
+                            <p className="text-xs font-bold text-slate-600 mb-2">📌 현재 대출</p>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div><label className="text-[10px] text-slate-500">금리(%)</label><input type="number" value={currentRate} onChange={e => setCurrentRate(e.target.value)} className="w-full px-3 py-2 bg-white rounded-lg text-sm font-bold text-right outline-none" /></div>
+                                <div><label className="text-[10px] text-slate-500">잔여기간(개월)</label><input type="number" value={remainingMonths} onChange={e => setRemainingMonths(e.target.value)} className="w-full px-3 py-2 bg-white rounded-lg text-sm font-bold text-right outline-none" /></div>
+                            </div>
+                        </div>
+                        <div className="p-4 bg-violet-50 rounded-xl">
+                            <p className="text-xs font-bold text-violet-600 mb-2">🔄 신규 대출</p>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div><label className="text-[10px] text-slate-500">금리(%)</label><input type="number" value={newRate} onChange={e => setNewRate(e.target.value)} className="w-full px-3 py-2 bg-white rounded-lg text-sm font-bold text-right outline-none" /></div>
+                                <div><label className="text-[10px] text-slate-500">기간(개월)</label><input type="number" value={newPeriod} onChange={e => setNewPeriod(e.target.value)} className="w-full px-3 py-2 bg-white rounded-lg text-sm font-bold text-right outline-none" /></div>
+                            </div>
+                        </div>
+                        <div><label className="text-xs font-bold text-slate-500 block mb-1">대환 수수료 (%)</label><input type="number" value={refinanceFee} onChange={e => setRefinanceFee(e.target.value)} step="0.1" className="w-full px-4 py-3 bg-slate-50 rounded-xl text-right font-bold outline-none" /></div>
+                    </div>
+                    {result && (
+                        <div className="mt-4 space-y-3">
+                            <div className={`p-4 rounded-xl text-center ${result.isWorth ? 'bg-green-50' : 'bg-red-50'}`}>
+                                <p className="text-xs text-slate-500 mb-1">순 절감액</p>
+                                <p className={`text-3xl font-black ${result.isWorth ? 'text-green-600' : 'text-red-600'}`}>{result.netSaving > 0 ? '+' : ''}{formatCompactNumber(result.netSaving)}</p>
+                                <p className="text-xs mt-1">{result.isWorth ? '✅ 대환 추천' : '❌ 대환 비추천'}</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                                <div className="p-3 bg-slate-50 rounded-xl"><p className="text-slate-500">현재 월상환</p><p className="font-bold">{formatNumber(Math.round(result.oldMonthly))}원</p></div>
+                                <div className="p-3 bg-violet-50 rounded-xl"><p className="text-slate-500">대환 후 월상환</p><p className="font-bold text-violet-600">{formatNumber(Math.round(result.newMonthly))}원</p></div>
+                            </div>
+                            {result.breakEvenMonths > 0 && (
+                                <div className="p-3 bg-amber-50 rounded-xl text-center text-xs">
+                                    <p className="text-slate-500">손익분기점</p>
+                                    <p className="font-bold text-amber-600">{result.breakEvenMonths}개월 후</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // 8. 정부 정책 대출 자격 확인
+        const GovernmentLoanEligibility = () => {
+            const [age, setAge] = useState('');
+            const [income, setIncome] = useState('');
+            const [assets, setAssets] = useState('');
+            const [homeOwnership, setHomeOwnership] = useState('none');
+            const [isMarried, setIsMarried] = useState(false);
+            const [marriageYears, setMarriageYears] = useState('');
+
+            const programs = useMemo(() => {
+                const ageVal = parseInt(age) || 0;
+                const incomeVal = parseNumber(income);
+                const assetVal = parseNumber(assets);
+                const marriedYrs = parseInt(marriageYears) || 0;
+
+                const results = [];
+
+                // 특례보금자리론
+                const bogeumjari = {
+                    name: '특례보금자리론',
+                    icon: '🏠',
+                    eligible: incomeVal <= 70000000 && (homeOwnership === 'none' || homeOwnership === 'one') && assetVal <= 469000000,
+                    conditions: ['소득 7천만원 이하', '무주택/1주택', '순자산 4.69억 이하'],
+                    rate: '3.25%~3.95%',
+                    maxAmount: '5억원'
+                };
+                results.push(bogeumjari);
+
+                // 신혼부부 전용
+                const newlywed = {
+                    name: '신혼부부 전용 대출',
+                    icon: '💑',
+                    eligible: isMarried && marriedYrs <= 7 && incomeVal <= 85000000 && homeOwnership === 'none',
+                    conditions: ['결혼 7년 이내', '부부합산 8.5천만 이하', '무주택'],
+                    rate: '2.15%~3.0%',
+                    maxAmount: '4억원'
+                };
+                results.push(newlywed);
+
+                // 생애최초
+                const firstTime = {
+                    name: '생애최초 주택구입',
+                    icon: '🎉',
+                    eligible: homeOwnership === 'none' && incomeVal <= 70000000,
+                    conditions: ['생애 첫 주택', '소득 7천만 이하'],
+                    rate: '3.3%~4.0%',
+                    maxAmount: '5억원'
+                };
+                results.push(firstTime);
+
+                // 청년 버팀목
+                const youth = {
+                    name: '청년 버팀목 대출',
+                    icon: '👦',
+                    eligible: ageVal >= 19 && ageVal <= 34 && incomeVal <= 50000000 && homeOwnership === 'none',
+                    conditions: ['만 19~34세', '소득 5천만 이하', '무주택'],
+                    rate: '1.8%~2.4%',
+                    maxAmount: '2억원'
+                };
+                results.push(youth);
+
+                return results;
+            }, [age, income, assets, homeOwnership, isMarried, marriageYears]);
+
+            return (
+                <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 card-depth mt-2">
+                    <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
+                        <Building className="w-4 h-4 mr-2 text-blue-500" /> 정부 정책 대출 자격 확인
+                    </h4>
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-3">
+                            <div><label className="text-xs font-bold text-slate-500 block mb-1">나이</label><input type="number" value={age} onChange={e => setAge(e.target.value)} placeholder="만 나이" className="w-full px-4 py-3 bg-slate-50 rounded-xl text-right font-bold outline-none" /></div>
+                            <NumberInput label="연 소득" value={income} onChange={setIncome} color="blue" />
+                        </div>
+                        <NumberInput label="총 자산" value={assets} onChange={setAssets} color="slate" />
+                        <div>
+                            <label className="text-xs font-bold text-slate-500 block mb-2">주택 보유</label>
+                            <div className="flex gap-2">
+                                {[{ id: 'none', label: '무주택' }, { id: 'one', label: '1주택' }, { id: 'multi', label: '다주택' }].map(o => (
+                                    <button key={o.id} onClick={() => setHomeOwnership(o.id)} className={`flex-1 py-2.5 rounded-xl text-xs font-bold ${homeOwnership === o.id ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-600'}`}>{o.label}</button>
+                                ))}
+                            </div>
+                        </div>
+                        <label className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl cursor-pointer">
+                            <input type="checkbox" checked={isMarried} onChange={e => setIsMarried(e.target.checked)} className="w-4 h-4 rounded" />
+                            <span className="text-sm font-medium">기혼</span>
+                            {isMarried && <input type="number" value={marriageYears} onChange={e => setMarriageYears(e.target.value)} placeholder="결혼년수" className="w-20 px-2 py-1 bg-white rounded text-sm text-right outline-none" />}
+                        </label>
+                    </div>
+                    <div className="mt-4 space-y-2">
+                        {programs.map((p, idx) => (
+                            <div key={idx} className={`p-4 rounded-xl border ${p.eligible ? 'bg-green-50 border-green-200' : 'bg-slate-50 border-slate-200'}`}>
+                                <div className="flex justify-between items-center mb-2">
+                                    <p className="font-bold text-sm">{p.icon} {p.name}</p>
+                                    <span className={`text-xs font-bold px-2 py-0.5 rounded ${p.eligible ? 'bg-green-200 text-green-700' : 'bg-slate-200 text-slate-500'}`}>{p.eligible ? '자격 충족' : '미충족'}</span>
+                                </div>
+                                <div className="text-xs text-slate-500 space-y-1">
+                                    <p>금리: {p.rate} | 한도: {p.maxAmount}</p>
+                                    <p className="text-[10px]">{p.conditions.join(' / ')}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        // 9. 대출 상환 타임라인 차트
+        const LoanRepaymentChart = () => {
+            const chartRef = React.useRef(null);
+            const chartInstanceRef = React.useRef(null);
+            const [loanAmount, setLoanAmount] = useState('');
+            const [rate, setRate] = useState('4.5');
+            const [period, setPeriod] = useState('360');
+            const [viewYears, setViewYears] = useState('5');
+
+            useEffect(() => {
+                if (!chartRef.current || !window.Chart) return;
+                if (chartInstanceRef.current) chartInstanceRef.current.destroy();
+
+                const amount = parseNumber(loanAmount);
+                const r = (parseFloat(rate) || 0) / 100 / 12;
+                const months = parseInt(period) || 360;
+                const years = parseInt(viewYears) || 5;
+                if (amount <= 0 || r <= 0) return;
+
+                const factor = Math.pow(1 + r, months);
+                const monthly = (amount * r * factor) / (factor - 1);
+
+                let balance = amount;
+                const data = [];
+                const maxMonths = Math.min(months, years * 12);
+
+                for (let i = 1; i <= maxMonths; i++) {
+                    const interest = balance * r;
+                    const principal = monthly - interest;
+                    balance = Math.max(0, balance - principal);
+                    if (i % 12 === 0 || i === maxMonths) {
+                        data.push({ year: Math.ceil(i / 12), principal: amount - balance, interest: (monthly * i) - (amount - balance), balance });
+                    }
+                }
+
+                const ctx = chartRef.current.getContext('2d');
+                chartInstanceRef.current = new window.Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.map(d => `${d.year}년`),
+                        datasets: [{
+                            label: '원금 상환',
+                            data: data.map(d => d.principal),
+                            borderColor: '#6366f1',
+                            backgroundColor: 'rgba(99,102,241,0.1)',
+                            fill: true,
+                            tension: 0.3,
+                        }, {
+                            label: '누적 이자',
+                            data: data.map(d => d.interest),
+                            borderColor: '#ec4899',
+                            backgroundColor: 'rgba(236,72,153,0.1)',
+                            fill: true,
+                            tension: 0.3,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: { legend: { position: 'bottom', labels: { font: { size: 11, weight: 'bold' } } } },
+                        scales: { y: { beginAtZero: true, ticks: { callback: v => formatCompactNumber(v) } } }
+                    }
+                });
+
+                return () => { if (chartInstanceRef.current) chartInstanceRef.current.destroy(); };
+            }, [loanAmount, rate, period, viewYears]);
+
+            return (
+                <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 card-depth mt-2">
+                    <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
+                        <PieChart className="w-4 h-4 mr-2 text-pink-500" /> 대출 상환 타임라인
+                    </h4>
+                    <div className="space-y-4">
+                        <NumberInput label="대출 금액" value={loanAmount} onChange={setLoanAmount} color="pink" />
+                        <div className="grid grid-cols-3 gap-2">
+                            <div><label className="text-[10px] text-slate-500">금리(%)</label><input type="number" value={rate} onChange={e => setRate(e.target.value)} className="w-full px-3 py-2 bg-slate-50 rounded-lg text-sm font-bold text-right outline-none" /></div>
+                            <div><label className="text-[10px] text-slate-500">기간(개월)</label><input type="number" value={period} onChange={e => setPeriod(e.target.value)} className="w-full px-3 py-2 bg-slate-50 rounded-lg text-sm font-bold text-right outline-none" /></div>
+                            <div><label className="text-[10px] text-slate-500">조회(년)</label>
+                                <select value={viewYears} onChange={e => setViewYears(e.target.value)} className="w-full px-2 py-2 bg-slate-50 rounded-lg text-sm font-bold outline-none">
+                                    <option value="1">1년</option><option value="5">5년</option><option value="10">10년</option><option value="30">전체</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="mt-4">
+                        <canvas ref={chartRef} height="200"></canvas>
+                    </div>
+                    {parseNumber(loanAmount) > 0 && (
+                        <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-center">
+                            <div className="p-3 bg-indigo-50 rounded-xl">
+                                <p className="text-slate-500">월 상환금</p>
+                                <p className="font-bold text-indigo-600">{(() => {
+                                    const r = (parseFloat(rate) || 0) / 100 / 12;
+                                    const n = parseInt(period) || 360;
+                                    const p = parseNumber(loanAmount);
+                                    if (r <= 0 || p <= 0) return '0';
+                                    const f = Math.pow(1 + r, n);
+                                    return formatNumber(Math.round((p * r * f) / (f - 1)));
+                                })()}원</p>
+                            </div>
+                            <div className="p-3 bg-pink-50 rounded-xl">
+                                <p className="text-slate-500">총 이자</p>
+                                <p className="font-bold text-pink-600">{(() => {
+                                    const r = (parseFloat(rate) || 0) / 100 / 12;
+                                    const n = parseInt(period) || 360;
+                                    const p = parseNumber(loanAmount);
+                                    if (r <= 0 || p <= 0) return '0';
+                                    const f = Math.pow(1 + r, n);
+                                    const m = (p * r * f) / (f - 1);
+                                    return formatCompactNumber(Math.round(m * n - p));
+                                })()}</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // ========== PHASE 2 COMPLETE ==========
+
         // NEW: FAQ/가이드 (Phase 4)
         const GuidePanel = () => {
             const [activeGuide, setActiveGuide] = useState(null);
@@ -6886,21 +7654,33 @@
             // 카테고리별 도구 그룹핑
             const toolCategories = [
                 { id: 'all', label: '전체', icon: Grid },
+                { id: 'diagnose', label: '진단', icon: Shield },
                 { id: 'calc', label: '계산', icon: Calculator },
                 { id: 'finance', label: '금융', icon: DollarSign },
+                { id: 'analysis', label: '분석', icon: BarChart3 },
                 { id: 'docs', label: '문서', icon: FileText },
                 { id: 'util', label: '유틸', icon: PenTool },
             ];
 
             const tools = [
-                // 계산 도구
+                // ====== 진단 도구 ======
+                { id: 'fraudcheck', label: '전세사기진단', icon: Shield, category: 'diagnose' },
+                { id: 'pcheck', label: '매물점검', icon: Search, category: 'diagnose' },
+                { id: 'checklist', label: '체크리스트', icon: CheckCircle, category: 'diagnose' },
+                // ====== 계산 도구 ======
                 { id: 'pyung', label: '평수계산', icon: Grid, category: 'calc' },
                 { id: 'convert', label: '전환계산', icon: Percent, category: 'calc' },
+                { id: 'biconvert', label: '월세↔전세', icon: ArrowRightLeft, category: 'calc' },
                 { id: 'compare', label: '매물비교', icon: ArrowRightLeft, category: 'calc' },
                 { id: 'yieldtarget', label: '수익률목표', icon: TrendingUp, category: 'calc' },
                 { id: 'bep', label: 'BEP계산', icon: TrendingUp, category: 'calc' },
                 { id: 'subway', label: '역세권', icon: Home, category: 'calc' },
-                // 금융 도구
+                // ====== 금융 도구 ======
+                { id: 'combinedloan', label: '복합대출', icon: Banknote, category: 'finance' },
+                { id: 'refinance', label: '대환분석', icon: RefreshCw, category: 'finance' },
+                { id: 'ratecut', label: '금리인하', icon: TrendingUp, category: 'finance' },
+                { id: 'govloan', label: '정책대출', icon: Building, category: 'finance' },
+                { id: 'loanchart', label: '상환차트', icon: PieChart, category: 'finance' },
                 { id: 'bankrate', label: '은행금리', icon: Building, category: 'finance' },
                 { id: 'fixedvar', label: '고정vs변동', icon: TrendingUp, category: 'finance' },
                 { id: 'stress', label: '스트레스', icon: AlertTriangle, category: 'finance' },
@@ -6908,13 +7688,18 @@
                 { id: 'credit', label: '신용점수', icon: Award, category: 'finance' },
                 { id: 'insurance', label: '보증보험', icon: Shield, category: 'finance' },
                 { id: 'earlyrepay', label: '조기상환', icon: DollarSign, category: 'finance' },
-                // 문서/계약 도구
+                // ====== 분석 도구 ======
+                { id: 'marketprice', label: '시세트래커', icon: BarChart3, category: 'analysis' },
+                { id: 'schedule', label: '보증금일정', icon: Calendar, category: 'analysis' },
+                { id: 'expiry', label: '만기D-day', icon: Calendar, category: 'analysis' },
+                { id: 'taxcalendar', label: '세금캘린더', icon: Calendar, category: 'analysis' },
+                // ====== 문서/계약 도구 ======
                 { id: 'docs', label: '필수서류', icon: ClipboardList, category: 'docs' },
                 { id: 'clause', label: '특약조항', icon: FileText, category: 'docs' },
                 { id: 'contract', label: '계약관리', icon: FileText, category: 'docs' },
                 { id: 'renewal', label: '갱신권', icon: RefreshCw, category: 'docs' },
                 { id: 'message', label: '문자마법사', icon: MessageCircle, category: 'docs' },
-                // 유틸리티
+                // ====== 유틸리티 ======
                 { id: 'preset', label: '프리셋', icon: Bookmark, category: 'util' },
                 { id: 'export', label: '결과저장', icon: Download, category: 'util' },
                 { id: 'excel', label: '엑셀저장', icon: FileDown, category: 'util' },
@@ -6922,18 +7707,14 @@
                 { id: 'broker', label: '복비협상', icon: DollarSign, category: 'util' },
                 { id: 'remodel', label: '리모델링ROI', icon: PenTool, category: 'util' },
                 { id: 'joint', label: '공동명의', icon: Users, category: 'util' },
-                { id: 'expiry', label: '만기D-day', icon: Calendar, category: 'util' },
-                { id: 'taxcalendar', label: '세금캘린더', icon: Calendar, category: 'util' },
                 { id: 'increase', label: '인상률', icon: TrendingUp, category: 'util' },
                 { id: 'registry', label: '등기비용', icon: ClipboardList, category: 'util' },
                 { id: 'moving', label: '이사비용', icon: Home, category: 'util' },
                 { id: 'interior', label: '인테리어', icon: PenTool, category: 'util' },
                 { id: 'maintenance', label: '관리비', icon: BarChart3, category: 'util' },
                 { id: 'rentcap', label: '증액한도', icon: TrendingUp, category: 'util' },
-                { id: 'pcheck', label: '매물점검', icon: Search, category: 'util' },
                 { id: 'calendar', label: '세금일정', icon: Calendar, category: 'util' },
                 { id: 'guide', label: '가이드', icon: HelpCircle, category: 'util' },
-                { id: 'checklist', label: '체크리스트', icon: CheckCircle, category: 'util' },
                 { id: 'dic', label: '용어사전', icon: BookOpen, category: 'util' },
                 { id: 'history', label: '히스토리', icon: History, category: 'util' },
             ];
@@ -6998,9 +7779,43 @@
             };
 
             const ActiveComponent = {
+                // 진단 도구
+                fraudcheck: JeonseFraudChecker,
+                pcheck: PropertyChecklistTool,
+                checklist: MovingChecklist,
+                // 계산 도구
                 pyung: UnitConverter,
                 convert: ConversionCalculator,
+                biconvert: BidirectionalRentConverter,
                 compare: CompareTab,
+                yieldtarget: RentYieldTargetCalculator,
+                bep: InvestmentBEPCalculator,
+                subway: SubwayDistanceCalculator,
+                // 금융 도구
+                combinedloan: CombinedLoanCalculator,
+                refinance: LoanRefinancingAnalyzer,
+                ratecut: InterestRateCutSimulator,
+                govloan: GovernmentLoanEligibility,
+                loanchart: LoanRepaymentChart,
+                bankrate: BankRateComparison,
+                fixedvar: FixedVsVariableRate,
+                stress: InterestRateStressTest,
+                earlyopt: EarlyRepaymentOptimizer,
+                credit: CreditScoreImpact,
+                insurance: InsuranceCalculator,
+                earlyrepay: EarlyRepaymentAnalyzer,
+                // 분석 도구
+                marketprice: MarketPriceTracker,
+                schedule: DepositScheduler,
+                expiry: LeaseExpiryCalculator,
+                taxcalendar: EnhancedTaxCalendar,
+                // 문서 도구
+                docs: RequiredDocuments,
+                clause: SpecialClauseGuide,
+                contract: ContractManager,
+                renewal: RenewalRightTracker,
+                message: MessageWizard,
+                // 유틸리티
                 preset: PresetManager,
                 export: ExportButton,
                 excel: ExcelExportButton,
@@ -7008,35 +7823,16 @@
                 broker: BrokerFeeNegotiator,
                 remodel: RemodelingROICalculator,
                 joint: JointOwnershipSimulator,
-                yieldtarget: RentYieldTargetCalculator,
-                expiry: LeaseExpiryCalculator,
-                taxcalendar: EnhancedTaxCalendar,
-                insurance: InsuranceCalculator,
                 increase: RentIncreaseCalc,
                 registry: RegistrationFeeCalc,
                 moving: MovingCostCalculator,
                 interior: InteriorCostCalculator,
                 maintenance: MaintenanceFeeAnalyzer,
-                earlyrepay: EarlyRepaymentAnalyzer,
-                contract: ContractManager,
-                renewal: RenewalRightTracker,
                 rentcap: RentCapCalculator,
-                pcheck: PropertyChecklistTool,
                 calendar: TaxCalendar,
                 guide: GuidePanel,
-                message: MessageWizard,
-                checklist: MovingChecklist,
                 dic: Dictionary,
                 history: HistoryPanel,
-                bankrate: BankRateComparison,
-                fixedvar: FixedVsVariableRate,
-                stress: InterestRateStressTest,
-                earlyopt: EarlyRepaymentOptimizer,
-                credit: CreditScoreImpact,
-                docs: RequiredDocuments,
-                clause: SpecialClauseGuide,
-                bep: InvestmentBEPCalculator,
-                subway: SubwayDistanceCalculator
             }[activeTool];
 
             return (
@@ -7107,24 +7903,24 @@
                             </select>
                         </div>
 
-                        {/* Tools Grid - Fixed 4 Columns */}
-                        <div className="grid grid-cols-4 gap-2">
+                        {/* Tools Grid - 3 Columns for better readability */}
+                        <div className="grid grid-cols-3 gap-3">
                             {filteredTools.map((tool) => {
                                 const isActive = activeTool === tool.id;
                                 return (
                                     <button
                                         key={tool.id}
                                         onClick={() => setActiveTool(tool.id)}
-                                        className={`flex flex-col items-center justify-center p-3 rounded-2xl transition-all ${isActive
+                                        className={`flex flex-col items-center justify-center p-4 rounded-2xl transition-all min-h-[88px] ${isActive
                                             ? 'bg-indigo-50 text-indigo-600 ring-2 ring-indigo-300 shadow-sm'
                                             : 'text-slate-500 hover:bg-slate-100 bg-slate-50'
                                             }`}
                                     >
-                                        <div className={`mb-1.5 p-2.5 rounded-xl transition-all ${isActive ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400'
+                                        <div className={`mb-2 p-3 rounded-xl transition-all ${isActive ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400'
                                             }`}>
-                                            <tool.icon size={20} />
+                                            <tool.icon size={24} />
                                         </div>
-                                        <span className={`text-[10px] font-bold tracking-tight text-center leading-tight ${isActive ? 'text-indigo-700' : 'text-slate-500'
+                                        <span className={`text-[11px] font-bold tracking-tight text-center leading-tight ${isActive ? 'text-indigo-700' : 'text-slate-600'
                                             }`}>{tool.label}</span>
                                     </button>
                                 );
