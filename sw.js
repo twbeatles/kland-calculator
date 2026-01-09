@@ -18,15 +18,7 @@ const debugLog = (...args) => DEBUG_MODE && console.log(...args);
 const STATIC_ASSETS = [
     './index.html',
     './styles.css',
-    './manifest.json',
-    'https://unpkg.com/react@18/umd/react.production.min.js',
-    'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
-    'https://unpkg.com/@babel/standalone/babel.min.js',
-    'https://cdn.tailwindcss.com',
-    'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css',
-    'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
-    'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js',
-    'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js'
+    './manifest.json'
 ];
 
 
@@ -77,6 +69,10 @@ self.addEventListener('fetch', (event) => {
 
     // Skip chrome-extension and other non-http requests
     if (!request.url.startsWith('http')) return;
+
+    // IMPORTANT: Skip cross-origin requests (CDNs) to avoid CORS issues and 503 errors
+    // Browsers will handle these naturally (with standard browser caching)
+    if (!url.origin.startsWith(self.location.origin)) return;
 
     // Strategy based on request type
     if (isStaticAsset(request)) {
