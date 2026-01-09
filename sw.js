@@ -16,7 +16,6 @@ const debugLog = (...args) => DEBUG_MODE && console.log(...args);
 
 // Static assets to cache immediately
 const STATIC_ASSETS = [
-    './',
     './index.html',
     './styles.css',
     './manifest.json',
@@ -29,6 +28,8 @@ const STATIC_ASSETS = [
     'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js',
     'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js'
 ];
+
+
 
 // Install event - precache static assets
 self.addEventListener('install', (event) => {
@@ -163,8 +164,8 @@ self.addEventListener('push', (event) => {
         const data = event.data.json();
         self.registration.showNotification(data.title, {
             body: data.body,
-            icon: './icon-192.png',
-            badge: './icon-192.png'
+            // icon: './icon-192.png',
+            // badge: './icon-192.png'
         });
     }
 });
