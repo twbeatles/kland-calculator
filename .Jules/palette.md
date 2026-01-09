@@ -1,3 +1,0 @@
-## 2024-05-23 - Accessibility of Reusable Input Components
-**Learning:** Reusable input components often link `label` and `input` incorrectly or not at all, relying on visual proximity. `React.useId` (available in React 18+) is the standard way to generate unique IDs for linking labels and inputs in reusable components, ensuring screen readers can announce the label when the input is focused, and clicking the label focuses the input.
-**Action:** When refactoring or creating reusable form components, always use `React.useId` to generate a unique ID and bind `htmlFor` on the label to `id` on the input.
