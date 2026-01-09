@@ -1,0 +1,75 @@
+{
+  "_description": "부동산 규제지역 데이터 (2026년 1월 기준)",
+  "_lastUpdated": "2026-01-09",
+  "_source": "국토교통부 부동산 정책",
+  
+  "서울": {
+    "강남구": { "type": "투기과열", "ltvLimit": 40, "dtiLimit": 40, "dsrLimit": 40 },
+    "서초구": { "type": "투기과열", "ltvLimit": 40, "dtiLimit": 40, "dsrLimit": 40 },
+    "송파구": { "type": "조정대상", "ltvLimit": 50, "dtiLimit": 50, "dsrLimit": 40 },
+    "용산구": { "type": "투기과열", "ltvLimit": 40, "dtiLimit": 40, "dsrLimit": 40 },
+    "성동구": { "type": "조정대상", "ltvLimit": 50, "dtiLimit": 50, "dsrLimit": 40 },
+    "광진구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "동대문구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "중랑구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "성북구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "강북구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "도봉구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "노원구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "은평구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "서대문구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "마포구": { "type": "조정대상", "ltvLimit": 50, "dtiLimit": 50, "dsrLimit": 40 },
+    "양천구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "강서구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "구로구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "금천구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "영등포구": { "type": "조정대상", "ltvLimit": 50, "dtiLimit": 50, "dsrLimit": 40 },
+    "동작구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "관악구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "종로구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "중구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "강동구": { "type": "조정대상", "ltvLimit": 50, "dtiLimit": 50, "dsrLimit": 40 }
+  },
+  
+  "경기": {
+    "과천시": { "type": "투기과열", "ltvLimit": 40, "dtiLimit": 40, "dsrLimit": 40 },
+    "성남시분당구": { "type": "투기과열", "ltvLimit": 40, "dtiLimit": 40, "dsrLimit": 40 },
+    "하남시": { "type": "조정대상", "ltvLimit": 50, "dtiLimit": 50, "dsrLimit": 40 },
+    "광명시": { "type": "조정대상", "ltvLimit": 50, "dtiLimit": 50, "dsrLimit": 40 },
+    "수원시": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "용인시": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "고양시": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "성남시수정구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "성남시중원구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "화성시": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "안양시": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "부천시": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "의정부시": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "남양주시": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 }
+  },
+  
+  "인천": {
+    "연수구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "남동구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "부평구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "서구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "계양구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "미추홀구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 }
+  },
+  
+  "부산": {
+    "해운대구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "수영구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "남구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "동래구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 }
+  },
+  
+  "대구": {
+    "수성구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 },
+    "달서구": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 }
+  },
+  
+  "세종": {
+    "세종시": { "type": "비규제", "ltvLimit": 70, "dtiLimit": 60, "dsrLimit": 40 }
+  }
+}

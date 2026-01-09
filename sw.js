@@ -1,9 +1,14 @@
-// Service Worker for 부동산 마스터 Pro v4.0.0
+// Service Worker for 부동산 마스터 Pro v4.1.0
 // Enhanced Offline Mode with improved caching strategies
 
-const CACHE_NAME = 'kland-calculator-v4.0.0';
-const STATIC_CACHE = 'kland-static-v4.0.0';
-const DYNAMIC_CACHE = 'kland-dynamic-v4.0.0';
+// Cache version: Use BUILD_TIMESTAMP for automatic cache busting
+// This will be replaced by build tools or manually updated on deployment
+const BUILD_VERSION = '4.1.0';
+const BUILD_TIMESTAMP = '20260109190100'; // Format: YYYYMMDDHHMMSS
+
+const CACHE_NAME = `kland-calculator-v${BUILD_VERSION}-${BUILD_TIMESTAMP}`;
+const STATIC_CACHE = `kland-static-v${BUILD_VERSION}-${BUILD_TIMESTAMP}`;
+const DYNAMIC_CACHE = `kland-dynamic-v${BUILD_VERSION}-${BUILD_TIMESTAMP}`;
 
 // Debug mode flag - set to true for development logging
 const DEBUG_MODE = false;

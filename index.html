@@ -886,11 +886,71 @@
 
         const setSafeLocalStorage = (key, value) => {
             try {
+                // value가 null이면 삭제 처리
+                if (value === null) {
+                    localStorage.removeItem(key);
+                    delete localStorageCache[key];
+                    return;
+                }
+
+                // Check quota before writing
+                checkAndCleanupStorage();
                 const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
                 localStorage.setItem(key, stringValue);
                 localStorageCache[key] = stringValue; // Update cache
             } catch (e) {
-                console.warn('localStorage write failed:', e);
+                if (e.name === 'QuotaExceededError') {
+                    // Auto-cleanup and retry
+                    cleanupOldStorageData();
+                    try {
+                        const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
+                        localStorage.setItem(key, stringValue);
+                        localStorageCache[key] = stringValue;
+                    } catch (retryError) {
+                        console.warn('localStorage write failed after cleanup:', retryError);
+                    }
+                } else {
+                    console.warn('localStorage write failed:', e);
+                }
+            }
+        };
+
+        // Check localStorage quota and cleanup if approaching limit
+        const checkAndCleanupStorage = () => {
+            try {
+                let totalSize = 0;
+                for (let key in localStorage) {
+                    if (localStorage.hasOwnProperty(key)) {
+                        totalSize += (localStorage[key].length + key.length) * 2; // UTF-16
+                    }
+                }
+                const limitBytes = 5 * 1024 * 1024; // 5MB typical limit
+                if (totalSize > limitBytes * 0.85) { // 85% threshold
+                    cleanupOldStorageData();
+                }
+            } catch (e) {
+                // Ignore quota check errors
+            }
+        };
+
+        // Cleanup old storage data to free space
+        const cleanupOldStorageData = () => {
+            try {
+                // Clean old history entries
+                const history = JSON.parse(localStorage.getItem('calcHistory') || '[]');
+                if (history.length > 10) {
+                    localStorage.setItem('calcHistory', JSON.stringify(history.slice(0, 10)));
+                }
+                // Clean old error logs
+                const errorLog = JSON.parse(localStorage.getItem('errorLog') || '[]');
+                if (errorLog.length > 5) {
+                    localStorage.setItem('errorLog', JSON.stringify(errorLog.slice(0, 5)));
+                }
+                // Clear cache to reflect changes
+                delete localStorageCache['calcHistory'];
+                delete localStorageCache['errorLog'];
+            } catch (e) {
+                // Ignore cleanup errors
             }
         };
 
@@ -902,6 +962,85 @@
                 timers[key] = setTimeout(() => setSafeLocalStorage(key, value), delay);
             };
         })();
+
+        // ========== 계산 히스토리 유틸리티 ==========
+        const CALC_HISTORY_KEY = 'calcHistory';
+        const MAX_HISTORY_ITEMS = 50;
+
+        const saveToHistory = (type, data) => {
+            try {
+                const historyRaw = getSafeLocalStorage(CALC_HISTORY_KEY, '[]');
+                const history = JSON.parse(historyRaw) || [];
+                const newEntry = {
+                    id: Date.now(),
+                    type,
+                    data,
+                    timestamp: new Date().toISOString(),
+                    date: new Date().toLocaleDateString('ko-KR')
+                };
+                const updated = [newEntry, ...history].slice(0, MAX_HISTORY_ITEMS);
+                setSafeLocalStorage(CALC_HISTORY_KEY, JSON.stringify(updated));
+            } catch (e) {
+                console.warn('히스토리 저장 실패:', e);
+            }
+        };
+
+        const getHistory = () => {
+            try {
+                const historyRaw = getSafeLocalStorage(CALC_HISTORY_KEY, '[]');
+                return JSON.parse(historyRaw) || [];
+            } catch (e) {
+                return [];
+            }
+        };
+
+        const clearHistory = () => {
+            setSafeLocalStorage(CALC_HISTORY_KEY, '[]');
+        };
+
+        // ========== URL 파라미터 유틸리티 ==========
+        const generateShareUrl = (data) => {
+            const params = new URLSearchParams();
+            Object.entries(data).forEach(([key, value]) => {
+                if (value !== null && value !== undefined && value !== '') {
+                    params.set(key, String(value));
+                }
+            });
+            return `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+        };
+
+        const parseShareUrl = () => {
+            const params = new URLSearchParams(window.location.search);
+            const data = {};
+            params.forEach((value, key) => {
+                data[key] = value;
+            });
+            return data;
+        };
+
+        const applyUrlParams = () => {
+            const params = parseShareUrl();
+            if (Object.keys(params).length === 0) return false;
+
+            // localStorage에 파라미터 값 적용
+            const keyMappings = {
+                jd: 'jDeposit', jr: 'jRate', wd: 'wDeposit', wm: 'wMonthly',
+                mp: 'marketPrice', rb: 'rankingBond', dp: 'deposit'
+            };
+            Object.entries(params).forEach(([key, value]) => {
+                const mappedKey = keyMappings[key] || key;
+                if (value) setSafeLocalStorage(mappedKey, value);
+            });
+
+            // URL 정리 (파라미터 제거)
+            if (window.history.replaceState) {
+                window.history.replaceState({}, '', window.location.pathname);
+            }
+            return true;
+        };
+
+        // 앱 로드 시 URL 파라미터 적용
+        const urlParamsApplied = applyUrlParams();
 
         // Input validation utilities
         const ValidationRules = {
@@ -1023,48 +1162,24 @@
             return `${month}/${day} ${hours}:${minutes}`;
         };
 
-        // 계산 히스토리 관리
-        const saveToHistory = (type, data) => {
-            try {
-                const history = JSON.parse(localStorage.getItem('calcHistory') || '[]');
-                history.unshift({
-                    type,
-                    data,
-                    timestamp: Date.now()
-                });
-                localStorage.setItem('calcHistory', JSON.stringify(history.slice(0, 20)));
-            } catch (e) {
-                console.warn('Failed to save history:', e);
-            }
-        };
-
-        const getHistory = () => {
-            try {
-                return JSON.parse(localStorage.getItem('calcHistory') || '[]');
-            } catch (e) {
-                return [];
-            }
-        };
-
-        const clearHistory = () => {
-            try {
-                localStorage.removeItem('calcHistory');
-            } catch (e) {
-                console.warn('Failed to clear history:', e);
-            }
-        };
-
         // 보증보험료 계산 유틸
-        const calculateInsuranceFee = (deposit, years = 1) => {
-            // HUG 전세보증보험 기준 (2024 기준 약 0.115%~0.154%)
-            const baseRate = 0.00128; // 평균 0.128%
-            return Math.floor(deposit * baseRate * years);
+        // 보증 유형: 'hug_general' (HUG 일반), 'hug_preferred' (HUG 우대), 'sgi' (SGI서울보증)
+        const INSURANCE_RATES = {
+            hug_general: 0.00154,    // HUG 일반 0.154%
+            hug_preferred: 0.00115,  // HUG 우대 (저소득 등) 0.115%
+            sgi: 0.00178,            // SGI 서울보증 0.178%
+            default: 0.00128         // 평균 0.128%
+        };
+        const calculateInsuranceFee = (deposit, years = 1, type = 'default') => {
+            const rate = INSURANCE_RATES[type] || INSURANCE_RATES.default;
+            return Math.floor(deposit * rate * years);
         };
 
-        // 전월세전환율 계산
+        // 전월세전환율 계산 (안전한 나눗셈 적용)
         const calculateConversion = (deposit, rate) => {
             // 월세 = (보증금 × 전환율) / 12
-            return Math.floor((deposit * (rate / 100)) / 12);
+            if (!rate || rate <= 0) return 0;
+            return Math.floor(safeDivide(deposit * (rate / 100), 12, 0));
         };
 
         const calculateDepositFromMonthly = (monthly, rate) => {
@@ -1073,8 +1188,8 @@
             return Math.floor((monthly * 12) / (rate / 100));
         };
 
-        // --- URL 공유 유틸리티 ---
-        const generateShareUrl = (calcType, params) => {
+        // --- URL 공유 유틸리티 (계산기용) ---
+        const generateCalcShareUrl = (calcType, params) => {
             const url = new URL(window.location.href.split('?')[0]);
             url.searchParams.set('calc', calcType);
             Object.entries(params).forEach(([key, value]) => {
@@ -1083,18 +1198,10 @@
             return url.toString();
         };
 
-        const parseShareUrl = () => {
-            const params = new URLSearchParams(window.location.search);
-            return {
-                calc: params.get('calc'),
-                params: Object.fromEntries(params.entries())
-            };
-        };
-
         // Share Button Component
         const ShareButton = ({ calcType, params, showToast }) => {
             const handleShare = async () => {
-                const url = generateShareUrl(calcType, params);
+                const url = generateCalcShareUrl(calcType, params);
 
                 if (navigator.share) {
                     try {
@@ -1307,15 +1414,29 @@
             </div>
         );
 
-        // Copy Button Component
+        // Copy Button Component with proper timer cleanup
         const CopyButton = ({ text, showToast, className = '' }) => {
             const [copied, setCopied] = useState(false);
+            const timerRef = React.useRef(null);
+
+            // Cleanup timer on unmount to prevent memory leaks
+            useEffect(() => {
+                return () => {
+                    if (timerRef.current) {
+                        clearTimeout(timerRef.current);
+                    }
+                };
+            }, []);
 
             const handleCopy = async () => {
                 const success = await copyToClipboard(text, showToast);
                 if (success) {
                     setCopied(true);
-                    setTimeout(() => setCopied(false), 2000);
+                    // Clear existing timer before setting new one
+                    if (timerRef.current) {
+                        clearTimeout(timerRef.current);
+                    }
+                    timerRef.current = setTimeout(() => setCopied(false), 2000);
                 }
             };
 
@@ -1324,7 +1445,7 @@
                     onClick={handleCopy}
                     className={`p-2 rounded-xl transition-all active:scale-95 ${copied
                         ? 'bg-green-100 text-green-600'
-                        : 'bg-white/60 text-slate-500 hover:bg-white:bg-slate-700'} ${className}`}
+                        : 'bg-white/60 text-slate-500 hover:bg-white'} ${className}`}
                     title="결과 복사"
                 >
                     {copied ? <Check size={16} /> : <Copy size={16} />}
@@ -1359,51 +1480,88 @@
 
         // ========== NEW COMPONENTS START ==========
 
-        // Kakao Share Button Component
-        const KakaoShareButton = ({ title, description, buttonText = '결과 확인하기' }) => {
+        // Kakao Share Button Component with improved error handling
+        const KakaoShareButton = ({ title, description, buttonText = '결과 확인하기', showToast }) => {
             const [isInitialized, setIsInitialized] = useState(false);
+            const [shareMode, setShareMode] = useState('auto'); // 'auto', 'kakao', 'clipboard'
 
             useEffect(() => {
-                // Initialize Kakao SDK (use your own app key in production)
-                if (window.Kakao && !window.Kakao.isInitialized()) {
-                    // Note: Replace with your Kakao JavaScript Key for production
-                    try {
-                        window.Kakao.init('YOUR_KAKAO_APP_KEY');
+                // Check Kakao SDK availability
+                if (window.Kakao) {
+                    if (!window.Kakao.isInitialized()) {
+                        // Check for environment-provided key or localStorage config
+                        const appKey = window.KAKAO_APP_KEY || localStorage.getItem('kakaoAppKey');
+                        if (appKey && appKey !== 'YOUR_KAKAO_APP_KEY') {
+                            try {
+                                window.Kakao.init(appKey);
+                                setIsInitialized(true);
+                                setShareMode('kakao');
+                            } catch (e) {
+                                setShareMode('clipboard');
+                            }
+                        } else {
+                            // No valid key - use clipboard fallback
+                            setShareMode('clipboard');
+                        }
+                    } else {
                         setIsInitialized(true);
-                    } catch (e) {
-                        // console.warn('Kakao SDK not initialized - demo mode');
+                        setShareMode('kakao');
                     }
-                } else if (window.Kakao?.isInitialized()) {
-                    setIsInitialized(true);
+                } else {
+                    setShareMode('clipboard');
                 }
             }, []);
 
-            const handleKakaoShare = () => {
-                if (window.Kakao?.Share) {
-                    window.Kakao.Share.sendDefault({
-                        objectType: 'feed',
-                        content: {
-                            title: title || '부동산 마스터 Pro 계산 결과',
-                            description: description || '부동산 계산 결과를 확인해보세요!',
-                            imageUrl: 'https://via.placeholder.com/300x200?text=부동산마스터Pro',
-                            link: {
-                                webUrl: window.location.href,
-                                mobileWebUrl: window.location.href
-                            }
-                        },
-                        buttons: [{
-                            title: buttonText,
-                            link: {
-                                webUrl: window.location.href,
-                                mobileWebUrl: window.location.href
-                            }
-                        }]
-                    });
-                } else {
-                    // Fallback: URL copy
-                    const shareText = `${title}\n${description}\n${window.location.href}`;
-                    navigator.clipboard.writeText(shareText);
-                    alert('공유 링크가 클립보드에 복사되었습니다!\n카카오톡에 붙여넣기 하세요.');
+            const handleKakaoShare = async () => {
+                const shareText = `${title || '부동산 마스터 Pro 계산 결과'}\n${description || ''}\n${window.location.href}`;
+
+                // Try Kakao Share first if available
+                if (shareMode === 'kakao' && window.Kakao?.Share) {
+                    try {
+                        await window.Kakao.Share.sendDefault({
+                            objectType: 'feed',
+                            content: {
+                                title: title || '부동산 마스터 Pro 계산 결과',
+                                description: description || '부동산 계산 결과를 확인해보세요!',
+                                imageUrl: 'https://via.placeholder.com/300x200?text=부동산마스터Pro',
+                                link: {
+                                    webUrl: window.location.href,
+                                    mobileWebUrl: window.location.href
+                                }
+                            },
+                            buttons: [{
+                                title: buttonText,
+                                link: {
+                                    webUrl: window.location.href,
+                                    mobileWebUrl: window.location.href
+                                }
+                            }]
+                        });
+                        return;
+                    } catch (e) {
+                        // Fall through to clipboard
+                    }
+                }
+
+                // Fallback: Copy to clipboard with toast notification
+                try {
+                    await navigator.clipboard.writeText(shareText);
+                    if (showToast) {
+                        showToast('공유 링크가 클립보드에 복사되었습니다! 카카오톡에 붙여넣기 하세요.');
+                    } else {
+                        alert('공유 링크가 클립보드에 복사되었습니다!\n카카오톡에 붙여넣기 하세요.');
+                    }
+                } catch (e) {
+                    // Last resort fallback
+                    const textArea = document.createElement('textarea');
+                    textArea.value = shareText;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    if (showToast) {
+                        showToast('공유 링크가 복사되었습니다!');
+                    }
                 }
             };
 
@@ -1411,12 +1569,12 @@
                 <button
                     onClick={handleKakaoShare}
                     className="flex items-center gap-2 px-4 py-2.5 bg-[#FEE500] hover:bg-[#FDD835] text-[#3C1E1E] rounded-xl font-bold text-sm transition-all active:scale-95 shadow-sm"
-                    title="카카오톡으로 공유"
+                    title={shareMode === 'kakao' ? '카카오톡으로 공유' : '클립보드에 복사 후 공유'}
                 >
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
                         <path d="M12 3C6.48 3 2 6.48 2 10.5c0 2.53 1.67 4.76 4.17 6.07l-.87 3.25c-.08.3.23.55.5.39l3.85-2.56c.78.1 1.58.15 2.35.15 5.52 0 10-3.48 10-7.8S17.52 3 12 3z" />
                     </svg>
-                    카카오톡 공유
+                    {shareMode === 'kakao' ? '카카오톡 공유' : '공유하기'}
                 </button>
             );
         };
@@ -1425,9 +1583,16 @@
         const LoanPieChart = ({ principal, interest, title = "원금 vs 이자" }) => {
             const chartRef = React.useRef(null);
             const chartInstanceRef = React.useRef(null);
+            const [chartLoaded, setChartLoaded] = React.useState(!!window.Chart);
 
             useEffect(() => {
-                if (!chartRef.current || !window.Chart) return;
+                // Chart.js 로드 상태 확인
+                if (!window.Chart) {
+                    setChartLoaded(false);
+                    return;
+                }
+                setChartLoaded(true);
+                if (!chartRef.current) return;
 
                 // Destroy existing chart
                 if (chartInstanceRef.current) {
@@ -1487,6 +1652,32 @@
 
             const total = principal + interest;
             const interestRatio = total > 0 ? ((interest / total) * 100).toFixed(1) : 0;
+
+            // Chart.js 미로드 시 폴백 UI
+            if (!chartLoaded) {
+                return (
+                    <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                        <h4 className="text-sm font-bold text-slate-700 text-center mb-4 flex items-center justify-center gap-2">
+                            <PieChart size={16} className="text-indigo-500" />
+                            {title}
+                        </h4>
+                        <div className="bg-slate-50 rounded-xl p-6 text-center">
+                            <p className="text-sm text-slate-500 mb-3">차트를 로드할 수 없습니다</p>
+                            <div className="grid grid-cols-2 gap-3 text-xs">
+                                <div className="p-3 bg-indigo-100 rounded-lg">
+                                    <span className="text-slate-500 block">원금</span>
+                                    <span className="font-bold text-indigo-700 text-lg">{formatCompactNumber(principal)}</span>
+                                </div>
+                                <div className="p-3 bg-pink-100 rounded-lg">
+                                    <span className="text-slate-500 block">이자</span>
+                                    <span className="font-bold text-pink-700 text-lg">{formatCompactNumber(interest)}</span>
+                                </div>
+                            </div>
+                            <p className="text-xs text-slate-400 mt-3">이자 비율: {interestRatio}%</p>
+                        </div>
+                    </div>
+                );
+            }
 
             return (
                 <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
@@ -1644,6 +1835,32 @@
                             </a>
                         ))}
                     </div>
+            );
+        };
+
+        // 오프라인 상태 감지 및 알림 Indicator
+        const OfflineIndicator = () => {
+            const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+            useEffect(() => {
+                const handleOnline = () => setIsOffline(false);
+                const handleOffline = () => setIsOffline(true);
+
+                window.addEventListener('online', handleOnline);
+                window.addEventListener('offline', handleOffline);
+
+                return () => {
+                    window.removeEventListener('online', handleOnline);
+                    window.removeEventListener('offline', handleOffline);
+                };
+            }, []);
+
+            if (!isOffline) return null;
+
+            return (
+                <div className="bg-slate-800 text-white px-4 py-2 flex items-center justify-center gap-2 text-xs font-bold animate-slide-down sticky top-0 z-[60] shadow-md">
+                    <WifiOff size={14} className="text-slate-400" />
+                    <span>네트워크 연결이 끊겼습니다.</span>
                 </div>
             );
         };
@@ -1806,7 +2023,12 @@
 
                 const calcTax = (amount) => {
                     if (amount <= 600000000) return amount * 0.01;
-                    if (amount <= 900000000) return amount * 0.01 + (amount - 600000000) * 0.02 / 300000000 * (amount - 600000000);
+                    if (amount <= 900000000) {
+                        // 6억 초과 9억 이하: 1% + (초과분 비율에 따라 0~2% 가산)
+                        const excessRatio = (amount - 600000000) / 300000000;
+                        const rate = 0.01 + (excessRatio * 0.02);
+                        return amount * rate;
+                    }
                     return amount * 0.03;
                 };
 
@@ -2066,6 +2288,16 @@
 
             const eventsThisMonth = taxSchedule.filter(e => e.month === selectedMonth);
 
+            // Tailwind CSS는 동적 클래스를 지원하지 않으므로 정적 매핑 사용
+            const colorClasses = {
+                blue: { bg: 'bg-blue-50', border: 'border-blue-500', text: 'text-blue-600', badge: 'bg-blue-100' },
+                purple: { bg: 'bg-purple-50', border: 'border-purple-500', text: 'text-purple-600', badge: 'bg-purple-100' },
+                indigo: { bg: 'bg-indigo-50', border: 'border-indigo-500', text: 'text-indigo-600', badge: 'bg-indigo-100' },
+                teal: { bg: 'bg-teal-50', border: 'border-teal-500', text: 'text-teal-600', badge: 'bg-teal-100' },
+                rose: { bg: 'bg-rose-50', border: 'border-rose-500', text: 'text-rose-600', badge: 'bg-rose-100' }
+            };
+            const getColorClasses = (color) => colorClasses[color] || colorClasses.blue;
+
             const addEvent = () => {
                 if (!newEvent.date || !newEvent.title) return;
                 const updated = [...customEvents, { ...newEvent, id: Date.now() }];
@@ -2102,17 +2334,20 @@
                     {/* Events List */}
                     <div className="space-y-2 mb-4">
                         {eventsThisMonth.length > 0 ? (
-                            eventsThisMonth.map((event, idx) => (
-                                <div key={idx} className={`p-3 rounded-xl bg-${event.color}-50 border-l-4 border-${event.color}-500`}>
-                                    <div className="flex justify-between items-center">
-                                        <span className={`text-xs font-bold text-${event.color}-600`}>{event.day}일</span>
-                                        <span className={`text-[10px] px-2 py-0.5 rounded-full bg-${event.color}-100 text-${event.color}-600`}>
-                                            {event.type}
-                                        </span>
+                            eventsThisMonth.map((event, idx) => {
+                                const colors = getColorClasses(event.color);
+                                return (
+                                    <div key={idx} className={`p-3 rounded-xl ${colors.bg} border-l-4 ${colors.border}`}>
+                                        <div className="flex justify-between items-center">
+                                            <span className={`text-xs font-bold ${colors.text}`}>{event.day}일</span>
+                                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${colors.badge} ${colors.text}`}>
+                                                {event.type}
+                                            </span>
+                                        </div>
+                                        <p className="text-sm font-bold text-slate-700 mt-1">{event.title}</p>
                                     </div>
-                                    <p className="text-sm font-bold text-slate-700 mt-1">{event.title}</p>
-                                </div>
-                            ))
+                                );
+                            })
                         ) : (
                             <div className="text-center py-6 text-slate-400">
                                 이 달에는 예정된 세금 일정이 없습니다
@@ -2237,14 +2472,22 @@
 
             const handleChange = (e) => {
                 const rawValue = e.target.value.replace(/,/g, '');
-                if (!isNaN(rawValue) && rawValue !== '') {
-                    if (enableUnitToggle && unitMode === '만원') {
-                        onChange(String(Math.round(parseFloat(rawValue || 0) * 10000)));
-                    } else {
-                        onChange(rawValue);
-                    }
-                } else if (rawValue === '') {
+                // 빈 값 처리
+                if (rawValue === '') {
                     onChange('');
+                    return;
+                }
+                // 숫자 변환 및 음수 방지
+                if (!isNaN(rawValue)) {
+                    let numValue = parseFloat(rawValue || 0);
+                    // 음수 방지: 0 미만이면 0으로 치환
+                    if (numValue < 0) numValue = 0;
+
+                    if (enableUnitToggle && unitMode === '만원') {
+                        onChange(String(Math.round(numValue * 10000)));
+                    } else {
+                        onChange(String(numValue));
+                    }
                 }
             };
 
@@ -2314,9 +2557,9 @@
                             {enableUnitToggle ? unitMode : unit}
                         </span>
                     </div>
-                    {hasError && errorMessage && (
-                        <p className="text-xs text-red-500 ml-1 flex items-center gap-1">
-                            <AlertTriangle size={12} /> {errorMessage}
+                    {hasError && (
+                        <p className="text-xs text-red-500 ml-1 flex items-center gap-1 animate-pulse">
+                            <AlertTriangle size={12} /> {errorMessage || '입력값을 확인해주세요'}
                         </p>
                     )}
                     {showKorean && koreanDisplay && !hasError && (
@@ -2650,7 +2893,12 @@
                 let barColor = 'bg-emerald-500';
                 let icon = <CheckCircle className="w-8 h-8 text-emerald-500" />;
 
-                if (ratio > 80) {
+                if (ratio > 100) {
+                    status = '🚨 매우 위험 (역전세 경고)';
+                    colorClass = 'bg-red-100 border-red-300 text-red-900';
+                    barColor = 'bg-red-600';
+                    icon = <AlertTriangle className="w-8 h-8 text-red-600 animate-pulse" />;
+                } else if (ratio > 80) {
                     status = '위험 (깡통전세)';
                     colorClass = 'bg-red-50 border-red-200 text-red-900';
                     barColor = 'bg-red-500';
@@ -2843,7 +3091,12 @@
                 let totalInterest = 0;
                 let desc = "";
 
-                if (method === '만기일시') {
+                // 0% 금리 처리
+                if (r === 0 || !isFinite(r)) {
+                    monthlyPayment = principal / n;
+                    totalInterest = 0;
+                    desc = "무이자 상환 (원금만)";
+                } else if (method === '만기일시') {
                     monthlyPayment = principal * r;
                     totalInterest = monthlyPayment * n;
                     desc = "매달 이자만, 원금은 만기에";
@@ -2862,6 +3115,23 @@
 
                 return { monthlyPayment, totalInterest, totalPayment: principal + totalInterest, desc };
             }, [loanAmount, rate, period, method]);
+
+            // 결과가 변경되면 히스토리에 저장 (디바운싱)
+            useEffect(() => {
+                if (result && parseNumber(loanAmount) > 0) {
+                    const timer = setTimeout(() => {
+                        saveToHistory('대출계산', {
+                            loanAmount: parseNumber(loanAmount),
+                            rate: parseFloat(rate),
+                            period: parseInt(period),
+                            method,
+                            monthlyPayment: result.monthlyPayment,
+                            totalInterest: result.totalInterest
+                        });
+                    }, 2000); // 2초 디바운싱
+                    return () => clearTimeout(timer);
+                }
+            }, [result]);
 
             return (
                 <div className="space-y-6 pb-32 animate-slide-up px-1">
@@ -3081,7 +3351,8 @@
                 if (!inc) return null;
 
                 const totalDebtPayment = d + nd;
-                const dsr = (totalDebtPayment / inc) * 100;
+                // safeDivide로 0원 소득 시 안전 처리
+                const dsr = safeDivide(totalDebtPayment, inc, 0) * 100;
 
                 let status = '여유';
                 let colorClass = 'bg-emerald-50 border-emerald-200 text-emerald-900';
@@ -3845,7 +4116,8 @@
 
             const result = useMemo(() => {
                 const property = parseNumber(propertyValue);
-                const ageNum = parseInt(age) || 55;
+                // 나이 범위 제한: 55~84세 (한국주택금융공사 기준)
+                const ageNum = clampNumber(parseInt(age) || 55, 55, 84);
                 if (!property || ageNum < 55) return null;
 
                 // 주택금융공사 주택연금 예상 월지급금 (간이 추정)
@@ -3880,8 +4152,25 @@
                             <NumberInput label="주택 시세" value={propertyValue} onChange={setPropertyValue} color="orange" />
                             <div>
                                 <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2 ml-1">신청자 연령</label>
-                                <input type="number" value={age} onChange={(e) => setAge(e.target.value)} min="55" max="90" className="w-full px-4 py-3 text-right bg-slate-50 rounded-2xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-amber-500" />
-                                <p className="text-xs text-slate-400 mt-1 ml-1">만 55세 이상 신청 가능</p>
+                                <input
+                                    type="number"
+                                    value={age}
+                                    onChange={(e) => setAge(e.target.value)}
+                                    min="55"
+                                    max="84"
+                                    className={`w-full px-4 py-3 text-right bg-slate-50 rounded-2xl font-bold text-slate-700 outline-none focus:ring-2 transition-all ${parseInt(age) < 55 || parseInt(age) > 84
+                                            ? 'ring-2 ring-red-400 bg-red-50'
+                                            : 'focus:ring-amber-500'
+                                        }`}
+                                    aria-describedby="age-validation-msg"
+                                />
+                                {parseInt(age) < 55 ? (
+                                    <p id="age-validation-msg" className="text-xs text-red-500 mt-1 ml-1 font-bold">⚠️ 만 55세 이상부터 신청 가능합니다</p>
+                                ) : parseInt(age) > 84 ? (
+                                    <p id="age-validation-msg" className="text-xs text-red-500 mt-1 ml-1 font-bold">⚠️ 만 84세 이하만 신청 가능합니다</p>
+                                ) : (
+                                    <p id="age-validation-msg" className="text-xs text-slate-400 mt-1 ml-1">만 55세 ~ 84세 신청 가능</p>
+                                )}
                             </div>
                             <div className="flex gap-2">
                                 <button onClick={() => setPensionType('lifetime')} className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${pensionType === 'lifetime' ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-500'}`}>종신형</button>
@@ -4207,8 +4496,8 @@
                 const deps = parseInt(dependents) || 0;
                 const accYears = parseInt(accountYears) || 0;
 
-                // 무주택 기간 점수 (최대 32점)
-                let noHouseScore = 0;
+                // 무주택 기간 점수 (최대 32점) - 0년 포함 완전한 기준표
+                let noHouseScore = 0; // 1년 미만: 0점
                 if (years >= 15) noHouseScore = 32;
                 else if (years >= 14) noHouseScore = 30;
                 else if (years >= 13) noHouseScore = 28;
@@ -4224,6 +4513,7 @@
                 else if (years >= 3) noHouseScore = 8;
                 else if (years >= 2) noHouseScore = 6;
                 else if (years >= 1) noHouseScore = 2;
+                // 0년: 0점 (기본값)
 
                 // 부양가족 수 점수 (최대 35점)
                 let dependentScore = 5; // 0명도 5점
@@ -4234,8 +4524,8 @@
                 else if (deps === 2) dependentScore = 15;
                 else if (deps === 1) dependentScore = 10;
 
-                // 청약통장 가입기간 점수 (최대 17점)
-                let accountScore = 1;
+                // 청약통장 가입기간 점수 (최대 17점) - 0년 포함
+                let accountScore = 1; // 6개월 이상 1년 미만: 1점, 6개월 미만: 0점
                 if (accYears >= 15) accountScore = 17;
                 else if (accYears >= 14) accountScore = 16;
                 else if (accYears >= 13) accountScore = 15;
@@ -4251,6 +4541,8 @@
                 else if (accYears >= 3) accountScore = 5;
                 else if (accYears >= 2) accountScore = 4;
                 else if (accYears >= 1) accountScore = 3;
+                else if (accYears > 0) accountScore = 2; // 6개월~1년
+                else accountScore = 1; // 6개월 이상
 
                 const totalScore = noHouseScore + dependentScore + accountScore;
                 const maxScore = 84;
@@ -4337,7 +4629,8 @@
                 const repay = parseNumber(annualRepayment);
                 if (!income) return null;
 
-                const dti = (repay / income) * 100;
+                // safeDivide로 0원 소득 시 안전 처리
+                const dti = safeDivide(repay, income, 0) * 100;
 
                 let status = '여유';
                 let colorClass = 'bg-emerald-50 border-emerald-200 text-emerald-900';
@@ -4389,19 +4682,41 @@
                 const income = parseNumber(annualIncome);
                 if (!dep) return null;
 
-                // 버팀목전세대출 (최대 2억)
-                const buteomokLimit = Math.min(dep * 0.8, 200000000);
+                // DSR/DTI 기반 최대 상환액 계산 (소득 입력 시)
+                // 전세대출은 만기일시상환이 일반적이므로 해당 기준으로 계산
+                let maxLoanByIncome = Infinity;
+                if (income > 0) {
+                    // DSR 40% 기준, 월 상환액 = 연소득 * 0.4 / 12
+                    const maxMonthlyPayment = (income * 0.4) / 12;
+                    // 만기일시상환: 월 이자만 납부, 원금은 만기 상환
+                    const yearlyRate = 0.04; // 연 4% 기준
+                    if (yearlyRate > 0) {
+                        // 월 이자 = 대출금 * 연금리 / 12 => 대출금 = 월이자 * 12 / 연금리
+                        maxLoanByIncome = (maxMonthlyPayment * 12) / yearlyRate;
+                    } else {
+                        maxLoanByIncome = Infinity; // 무이자시 무한대
+                    }
+                }
+
+                // 버팀목전세대출 (최대 2억, 소득 제한 적용)
+                const buteomokBase = Math.min(dep * 0.8, 200000000);
+                const buteomokLimit = income > 0 ? Math.min(buteomokBase, maxLoanByIncome) : buteomokBase;
                 const buteomokRate = 2.1; // 저소득층 기준
 
                 // 카카오뱅크 전세대출 (최대 5억)
-                const kakaoLimit = Math.min(dep * 0.8, 500000000);
+                const kakaoBase = Math.min(dep * 0.8, 500000000);
+                const kakaoLimit = income > 0 ? Math.min(kakaoBase, maxLoanByIncome) : kakaoBase;
                 const kakaoRate = creditGrade === 'excellent' ? 3.8 : creditGrade === 'good' ? 4.2 : 4.8;
 
                 // 은행권 일반 전세대출 (최대 4억)
-                const bankLimit = Math.min(dep * 0.8, 400000000);
+                const bankBase = Math.min(dep * 0.8, 400000000);
+                const bankLimit = income > 0 ? Math.min(bankBase, maxLoanByIncome) : bankBase;
                 const bankRate = creditGrade === 'excellent' ? 4.0 : creditGrade === 'good' ? 4.5 : 5.0;
 
-                return { buteomokLimit, buteomokRate, kakaoLimit, kakaoRate, bankLimit, bankRate };
+                // 소득 기반 제한 여부
+                const isIncomeLimited = income > 0 && (buteomokLimit < buteomokBase || kakaoLimit < kakaoBase || bankLimit < bankBase);
+
+                return { buteomokLimit, buteomokRate, kakaoLimit, kakaoRate, bankLimit, bankRate, isIncomeLimited, maxLoanByIncome: income > 0 ? maxLoanByIncome : null };
             }, [deposit, annualIncome, creditGrade]);
 
             return (
@@ -5830,7 +6145,7 @@
 
             return (
                 <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 mt-2">
-                    <h4 className="text-sm font-bold text-slate-800 mb-4">📅 2026년 세금 캘린더</h4>
+                    <h4 className="text-sm font-bold text-slate-800 mb-4">📅 {new Date().getFullYear()}년 세금 캘린더</h4>
                     <div className="space-y-3">
                         {taxEvents.map((event, idx) => {
                             const isPast = event.month < currentMonth;
@@ -6172,16 +6487,38 @@
         };
 
         // NEW: 프리셋 관리 (Phase 5)
-        const PresetManager = () => {
+        const PresetManager = ({ onLoadPreset, showToast }) => {
             const [presets, setPresets] = usePersistedState('userPresets', []);
             const [name, setName] = useState('');
 
             const savePreset = () => {
                 if (!name) return;
-                const newPreset = { id: Date.now(), name, date: new Date().toLocaleDateString() };
-                const updated = [newPreset, ...presets];
+                // 현재 상태를 포함하여 저장
+                const currentData = {
+                    jDeposit: getSafeLocalStorage('jDeposit'),
+                    jRate: getSafeLocalStorage('jRate'),
+                    wDeposit: getSafeLocalStorage('wDeposit'),
+                    wMonthly: getSafeLocalStorage('wMonthly'),
+                };
+                const newPreset = { id: Date.now(), name, date: new Date().toLocaleDateString(), data: currentData };
+                const updated = [newPreset, ...presets.slice(0, 9)]; // 최대 10개
                 setPresets(updated);
                 setName('');
+                if (showToast) showToast(`'${name}' 프리셋이 저장되었습니다.`);
+            };
+
+            const loadPreset = (preset) => {
+                if (preset.data) {
+                    // localStorage에 데이터 복원
+                    Object.entries(preset.data).forEach(([key, value]) => {
+                        if (value) setSafeLocalStorage(key, value);
+                    });
+                    // 콜백 호출 (페이지 새로고침 대신)
+                    if (onLoadPreset) onLoadPreset(preset);
+                    if (showToast) showToast(`'${preset.name}' 프리셋이 불러와졌습니다.`);
+                } else {
+                    if (showToast) showToast('이 프리셋에는 저장된 데이터가 없습니다.');
+                }
             };
 
             const deletePreset = (id) => {
@@ -6219,7 +6556,12 @@
                                         <p className="text-[10px] text-slate-400">{p.date}</p>
                                     </div>
                                     <div className="flex gap-2">
-                                        <button className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">불러오기</button>
+                                        <button
+                                            onClick={() => loadPreset(p)}
+                                            className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition-colors"
+                                        >
+                                            불러오기
+                                        </button>
                                         <button onClick={() => deletePreset(p.id)} className="text-slate-300 hover:text-red-500"><X size={14} /></button>
                                     </div>
                                 </div>
@@ -8805,7 +9147,9 @@
 
                     {/* Main Content */}
                     <main className="p-4">
-                        <ActiveComponent />
+                        <ErrorBoundary key={`${activeCategory}-${currentSubTabIdx}`}>
+                            <ActiveComponent />
+                        </ErrorBoundary>
                     </main>
 
                     {/* Bottom Navigation (Categories) - Enhanced Premium Design */}
