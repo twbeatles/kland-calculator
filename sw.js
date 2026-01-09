@@ -3,8 +3,8 @@
 
 // Cache version: Use BUILD_TIMESTAMP for automatic cache busting
 // This will be replaced by build tools or manually updated on deployment
-const BUILD_VERSION = '4.1.0';
-const BUILD_TIMESTAMP = '20260109204000'; // Format: YYYYMMDDHHMMSS
+const BUILD_VERSION = '4.1.1';
+const BUILD_TIMESTAMP = '20260109210000'; // Updated timestamp
 
 const CACHE_NAME = `kland-calculator-v${BUILD_VERSION}-${BUILD_TIMESTAMP}`;
 const STATIC_CACHE = `kland-static-v${BUILD_VERSION}-${BUILD_TIMESTAMP}`;
@@ -84,19 +84,25 @@ self.addEventListener('fetch', (event) => {
     }
 });
 
-// Check if request is for static asset
+// Check if request is for static asset (Strictly Local Only)
 function isStaticAsset(request) {
-    const url = request.url;
+    const url = new URL(request.url);
+
+    // Must be same origin
+    if (url.origin !== self.location.origin) return false;
+
+    // Check extensions
     return (
-        url.includes('.js') ||
-        url.includes('.css') ||
-        url.includes('.woff') ||
-        url.includes('.woff2') ||
-        url.includes('.ttf') ||
-        url.includes('.png') ||
-        url.includes('.jpg') ||
-        url.includes('.svg') ||
-        url.includes('.ico')
+        url.pathname.endsWith('.js') ||
+        url.pathname.endsWith('.css') ||
+        url.pathname.endsWith('.woff') ||
+        url.pathname.endsWith('.woff2') ||
+        url.pathname.endsWith('.ttf') ||
+        url.pathname.endsWith('.png') ||
+        url.pathname.endsWith('.jpg') ||
+        url.pathname.endsWith('.svg') ||
+        url.pathname.endsWith('.ico') ||
+        url.pathname.endsWith('.json')
     );
 }
 
