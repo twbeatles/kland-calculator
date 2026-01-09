@@ -260,7 +260,8 @@
             pointer-events: none;
             opacity: 0.8;
         }
-/* Hide scrollbar but keep functionality */
+
+        /* Hide scrollbar but keep functionality */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -282,7 +283,8 @@
             background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
             background-size: 200% 100%;
         }
-/* ========== UI/UX ENHANCEMENTS ========== */
+
+        /* ========== UI/UX ENHANCEMENTS ========== */
 
         /* Tab Indicator Animation - renamed to avoid conflict */
         .tab-indicator-line {
@@ -476,7 +478,8 @@
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
             transition: box-shadow 0.2s ease;
         }
-/* Error Input State */
+
+        /* Error Input State */
         .input-error {
             border-color: #ef4444 !important;
             box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
@@ -496,7 +499,8 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
         }
-/* Result Number Pop Animation */
+
+        /* Result Number Pop Animation */
         .result-number {
             animation: resultPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
@@ -505,7 +509,8 @@
         .header-shadow {
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
-/* Tab Indicator Animation */
+
+        /* Tab Indicator Animation */
         .tab-indicator {
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -588,7 +593,8 @@
             animation: shimmer 1.5s infinite;
             border-radius: 0.5rem;
         }
-/* Improved Transition for Theme Toggle */
+
+        /* Improved Transition for Theme Toggle */
         .theme-transition {
             transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
         }
@@ -599,7 +605,7 @@
         }
 
         /* Enhanced Dark Mode Depth */
-.card-depth {
+        .card-depth {
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
 
@@ -625,7 +631,8 @@
             outline: none;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
         }
-/* Sub-tab scrollable area gradient */
+
+        /* Sub-tab scrollable area gradient */
         .subtab-scroll {
             position: relative;
             overflow-x: auto;
@@ -757,6 +764,15 @@
         const BarChart3 = memo((props) => <IconBase {...props}><path d="M3 3v18h18" /><path d="M18 17V9" /><path d="M13 17V5" /><path d="M8 17v-3" /></IconBase>);
         const FileText = memo((props) => <IconBase {...props}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><line x1="16" x2="8" y1="13" y2="13" /><line x1="16" x2="8" y1="17" y2="17" /><line x1="10" x2="8" y1="9" y2="9" /></IconBase>);
         const Calendar = memo((props) => <IconBase {...props}><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" /></IconBase>);
+
+        // New icons for v4.0 features
+        const MapPin = memo((props) => <IconBase {...props}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></IconBase>);
+        const Plus = memo((props) => <IconBase {...props}><path d="M5 12h14" /><path d="M12 5v14" /></IconBase>);
+        const Edit3 = memo((props) => <IconBase {...props}><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></IconBase>);
+        const Briefcase = memo((props) => <IconBase {...props}><rect width="20" height="14" x="2" y="7" rx="2" ry="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></IconBase>);
+        const Wifi = memo((props) => <IconBase {...props}><path d="M5 13a10 10 0 0 1 14 0" /><path d="M8.5 16.5a5 5 0 0 1 7 0" /><path d="M2 8.82a15 15 0 0 1 20 0" /><line x1="12" x2="12.01" y1="20" y2="20" /></IconBase>);
+        const WifiOff = memo((props) => <IconBase {...props}><line x1="2" x2="22" y1="2" y2="22" /><path d="M8.5 16.5a5 5 0 0 1 7 0" /><path d="M2 8.82a15 15 0 0 1 5.17-3.89" /><path d="M13.93 4.22A15 15 0 0 1 22 8.82" /><path d="M6.73 11.12A10 10 0 0 1 11 9.64" /><path d="M15.4 10.32A10 10 0 0 1 19 13" /><line x1="12" x2="12.01" y1="20" y2="20" /></IconBase>);
+        const Globe = memo((props) => <IconBase {...props}><circle cx="12" cy="12" r="10" /><line x1="2" x2="22" y1="12" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></IconBase>);
 
         // --- Constants ---
         // 한국은행 기준금리 (2026.01.01 기준, 변동 시 업데이트 필요)
@@ -2292,9 +2308,9 @@
                             placeholder={placeholder}
                             aria-label={label}
                             aria-invalid={hasError}
-                            className={`w-full pl-5 pr-14 py-4 text-right border-0 bg-slate-50 rounded-2xl shadow-sm ring-1 ring-slate-200 ${focusColors[color]} focus:ring-2 focus:bg-white outline-none transition-all font-bold text-slate-800 text-lg group-hover:ring-slate-300 ${errorClasses}`}
+                            className={`w-full pl-5 pr-14 py-4 text-right border-2 border-transparent bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl shadow-sm ${focusColors[color]} focus:ring-2 focus:bg-white focus:border-indigo-400 focus:scale-[1.01] outline-none transition-premium font-bold text-slate-800 text-lg group-hover:border-slate-200 group-hover:shadow-md ${hasError ? 'input-error-shake border-red-400 bg-red-50' : ''}`}
                         />
-                        <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 text-sm font-medium pointer-events-none">
+                        <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 text-sm font-semibold pointer-events-none transition-colors group-focus-within:text-indigo-500">
                             {enableUnitToggle ? unitMode : unit}
                         </span>
                     </div>
@@ -2548,48 +2564,53 @@
                         </div>
                     </div>
 
-                    <div className="bg-slate-900 text-white p-8 rounded-[2.5rem] shadow-2xl shadow-blue-900/20 relative overflow-hidden animate-result-pop">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
-                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-orange-500/20 rounded-full blur-3xl -ml-16 -mb-16 pointer-events-none"></div>
+                    <div className="result-card-premium text-white p-8 shadow-2xl relative overflow-hidden animate-result-pop">
+                        <div className="absolute top-0 right-0 w-72 h-72 bg-blue-500/25 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none animate-pulse-slow"></div>
+                        <div className="absolute bottom-0 left-0 w-56 h-56 bg-orange-500/20 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none animate-pulse-slow"></div>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-purple-500/10 rounded-full blur-2xl pointer-events-none"></div>
 
                         <div className="relative z-10">
                             {/* Share Button */}
                             <button
                                 onClick={handleShare}
-                                className={`absolute top-0 right-0 p-2.5 rounded-xl transition-all no-print ${copied ? 'bg-green-500 text-white' : 'bg-white/10 text-white/60 hover:bg-white/20 hover:text-white'}`}
+                                className={`absolute top-0 right-0 p-3 rounded-xl transition-bounce no-print result-badge ${copied ? 'bg-green-500 text-white' : 'hover:bg-white/20 hover:scale-105'}`}
                                 title="결과 공유"
                                 aria-label="결과 공유하기"
                             >
-                                {copied ? <CheckCircle size={18} /> : <Share2 size={18} />}
+                                {copied ? <CheckCircle size={18} className="check-animated" /> : <Share2 size={18} />}
                             </button>
 
                             <div className="text-center mb-10">
-                                <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] mb-3">Recommendation</p>
-                                <div className={`text-4xl md:text-5xl font-black flex justify-center items-center gap-4 mb-4 ${result.winner === '전세' ? 'text-blue-400' : 'text-orange-400'}`}>
-                                    {result.winner === '전세' ? <Home size={40} strokeWidth={2.5} /> : <CheckCircle size={40} strokeWidth={2.5} />}
+                                <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.25em] mb-4">Recommendation</p>
+                                <div className={`text-4xl md:text-5xl font-black flex justify-center items-center gap-4 mb-5 result-number-counter ${result.winner === '전세' ? 'text-blue-400' : 'text-orange-400'}`}>
+                                    {result.winner === '전세' ? <Home size={44} strokeWidth={2.5} className="animate-float" /> : <CheckCircle size={44} strokeWidth={2.5} className="animate-float" />}
                                     <span>{result.winner} 유리</span>
                                 </div>
-                                <p className="text-slate-300 font-medium">
-                                    매월 약 <span className="text-white font-extrabold text-xl mx-1 bg-white/10 px-2 py-1 rounded-lg animate-number-pop">{formatNumber(parseInt(result.diff))}원</span> 더 저렴해요
+                                <p className="text-slate-300 font-medium text-lg">
+                                    매월 약 <span className="text-white font-black text-2xl mx-2 glass-inner-card px-4 py-2 rounded-xl result-number-counter">{formatNumber(parseInt(result.diff))}원</span> 더 저렴해요
                                 </p>
                             </div>
 
-                            <div className="flex items-end justify-center h-40 gap-8 md:gap-16 px-4 relative z-10">
-                                <div className="flex flex-col items-center w-24 group">
-                                    <span className="mb-3 text-sm font-bold text-blue-300 transition-opacity duration-300">{formatNumber(parseInt(result.jMonthlyCost))}</span>
+                            <div className="flex items-end justify-center h-44 gap-10 md:gap-20 px-4 relative z-10">
+                                <div className="flex flex-col items-center w-28 group cursor-pointer">
+                                    <span className="mb-3 text-sm font-bold text-blue-300 transition-all duration-300 group-hover:scale-110 group-hover:text-blue-200">{formatNumber(parseInt(result.jMonthlyCost))}</span>
                                     <div
-                                        className="w-16 bg-gradient-to-t from-blue-600 to-blue-400 rounded-t-2xl transition-all duration-700 relative shadow-lg shadow-blue-500/30 group-hover:w-20"
-                                        style={{ height: `${Math.max(Math.round((result.jMonthlyCost / maxVal) * 120), 16)}px` }}
-                                    ></div>
-                                    <span className="mt-4 text-sm font-bold text-slate-400 uppercase tracking-wider">전세</span>
+                                        className="w-18 bg-gradient-to-t from-blue-600 via-blue-500 to-blue-400 rounded-t-2xl transition-all duration-700 relative shadow-xl shadow-blue-500/40 group-hover:w-22 group-hover:shadow-blue-400/50"
+                                        style={{ height: `${Math.max(Math.round((result.jMonthlyCost / maxVal) * 130), 20)}px`, width: '72px' }}
+                                    >
+                                        <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white/20 rounded-t-2xl"></div>
+                                    </div>
+                                    <span className="mt-4 text-sm font-bold text-slate-400 uppercase tracking-wider group-hover:text-blue-300 transition-colors">전세</span>
                                 </div>
-                                <div className="flex flex-col items-center w-24 group">
-                                    <span className="mb-3 text-sm font-bold text-orange-300 transition-opacity duration-300">{formatNumber(parseInt(result.wTotalCost))}</span>
+                                <div className="flex flex-col items-center w-28 group cursor-pointer">
+                                    <span className="mb-3 text-sm font-bold text-orange-300 transition-all duration-300 group-hover:scale-110 group-hover:text-orange-200">{formatNumber(parseInt(result.wTotalCost))}</span>
                                     <div
-                                        className="w-16 bg-gradient-to-t from-orange-600 to-orange-400 rounded-t-2xl transition-all duration-700 relative shadow-lg shadow-orange-500/30 group-hover:w-20"
-                                        style={{ height: `${Math.max(Math.round((result.wTotalCost / maxVal) * 120), 16)}px` }}
-                                    ></div>
-                                    <span className="mt-4 text-sm font-bold text-slate-400 uppercase tracking-wider">월세</span>
+                                        className="w-18 bg-gradient-to-t from-orange-600 via-orange-500 to-orange-400 rounded-t-2xl transition-all duration-700 relative shadow-xl shadow-orange-500/40 group-hover:w-22 group-hover:shadow-orange-400/50"
+                                        style={{ height: `${Math.max(Math.round((result.wTotalCost / maxVal) * 130), 20)}px`, width: '72px' }}
+                                    >
+                                        <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white/20 rounded-t-2xl"></div>
+                                    </div>
+                                    <span className="mt-4 text-sm font-bold text-slate-400 uppercase tracking-wider group-hover:text-orange-300 transition-colors">월세</span>
                                 </div>
                                 <div className="absolute bottom-9 w-full border-b border-white/10 -z-10 bg-gradient-to-r from-transparent via-white/20 to-transparent h-[1px]"></div>
                             </div>
@@ -7686,6 +7707,560 @@
             );
         };
 
+        // ========== NEW FEATURES v4.0 ==========
+
+        // 1. AI 시세 예측 분석 (MarketAnalysisTab)
+        const MarketAnalysisTab = () => {
+            const [selectedRegion, setSelectedRegion] = useState('강남구');
+            const chartRef = React.useRef(null);
+            const chartInstance = React.useRef(null);
+
+            const regions = [
+                '강남구', '서초구', '송파구', '강동구', '강서구', '양천구', '영등포구',
+                '구로구', '마포구', '용산구', '성동구', '광진구', '동대문구', '중랑구',
+                '노원구', '도봉구', '강북구', '성북구', '종로구', '중구', '서대문구',
+                '은평구', '금천구', '관악구', '동작구'
+            ];
+
+            // 시세 시뮬레이션 데이터 (실제로는 API에서 가져옴)
+            const getMarketData = useCallback((region) => {
+                const basePrice = {
+                    '강남구': 180000, '서초구': 165000, '송파구': 145000, '용산구': 155000,
+                    '마포구': 120000, '성동구': 125000, '영등포구': 95000, '강동구': 115000,
+                    '광진구': 110000, '강서구': 85000, '양천구': 90000, '동작구': 100000,
+                }[region] || 80000; // 만원/㎡ 기준
+
+                // 12개월 트렌드 시뮬레이션
+                const months = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
+                const prices = months.map((_, i) => {
+                    const variation = Math.sin(i / 2) * 3 + Math.random() * 2;
+                    return Math.round(basePrice * (1 + variation / 100));
+                });
+
+                const currentPrice = prices[prices.length - 1];
+                const lastYearPrice = prices[0];
+                const priceChange = ((currentPrice - lastYearPrice) / lastYearPrice * 100).toFixed(1);
+
+                // 전세가율 (시뮬레이션)
+                const jeonseRatio = 50 + Math.random() * 25;
+
+                // 거래량 변화율
+                const volumeChange = (Math.random() * 30 - 10).toFixed(1);
+
+                // 투자 점수 계산
+                let investScore = 50;
+                if (priceChange > 5) investScore -= 10; // 고점 위험
+                if (priceChange < 0) investScore += 15; // 저점 매수 기회
+                if (jeonseRatio < 60) investScore += 10; // 안전한 전세가율
+                if (volumeChange > 10) investScore += 10; // 거래 활성화
+                investScore = Math.max(0, Math.min(100, investScore));
+
+                return { months, prices, currentPrice, priceChange, jeonseRatio, volumeChange, investScore };
+            }, []);
+
+            const [marketData, setMarketData] = useState(() => getMarketData('강남구'));
+
+            useEffect(() => {
+                setMarketData(getMarketData(selectedRegion));
+            }, [selectedRegion, getMarketData]);
+
+            // Chart.js 렌더링
+            useEffect(() => {
+                if (!chartRef.current || typeof Chart === 'undefined') return;
+
+                if (chartInstance.current) {
+                    chartInstance.current.destroy();
+                }
+
+                const ctx = chartRef.current.getContext('2d');
+                chartInstance.current = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: marketData.months,
+                        datasets: [{
+                            label: '평균 시세 (만원/㎡)',
+                            data: marketData.prices,
+                            borderColor: '#6366f1',
+                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: { beginAtZero: false }
+                        }
+                    }
+                });
+
+                return () => {
+                    if (chartInstance.current) chartInstance.current.destroy();
+                };
+            }, [marketData]);
+
+            const getScoreColor = (score) => {
+                if (score >= 70) return 'text-green-600 bg-green-50';
+                if (score >= 40) return 'text-yellow-600 bg-yellow-50';
+                return 'text-red-600 bg-red-50';
+            };
+
+            const getRecommendation = (score) => {
+                if (score >= 70) return { text: '매수 적기', icon: '🟢', desc: '시장 조건이 유리합니다' };
+                if (score >= 40) return { text: '관망 추천', icon: '🟡', desc: '신중한 검토가 필요합니다' };
+                return { text: '매수 주의', icon: '🔴', desc: '고점 위험이 있습니다' };
+            };
+
+            const recommendation = getRecommendation(marketData.investScore);
+
+            return (
+                <div className="space-y-6 pb-32 animate-slide-up px-1">
+                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                        <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                            <BarChart3 className="w-5 h-5 mr-3 text-indigo-600" /> AI 시세 분석
+                        </h3>
+
+                        <div className="mb-6">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2">지역 선택</label>
+                            <select
+                                value={selectedRegion}
+                                onChange={(e) => setSelectedRegion(e.target.value)}
+                                className="w-full p-4 bg-slate-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-700"
+                            >
+                                {regions.map(r => <option key={r} value={r}>서울특별시 {r}</option>)}
+                            </select>
+                        </div>
+
+                        {/* 시세 차트 */}
+                        <div className="h-64 mb-6 bg-slate-50 rounded-2xl p-4">
+                            <canvas ref={chartRef}></canvas>
+                        </div>
+
+                        {/* 지표 카드 */}
+                        <div className="grid grid-cols-3 gap-3 mb-6">
+                            <div className="p-4 bg-indigo-50 rounded-2xl text-center">
+                                <p className="text-xs text-indigo-600 font-bold mb-1">현재 시세</p>
+                                <p className="text-lg font-black text-indigo-700">{formatNumber(marketData.currentPrice)}만</p>
+                            </div>
+                            <div className={`p-4 rounded-2xl text-center ${parseFloat(marketData.priceChange) >= 0 ? 'bg-red-50' : 'bg-blue-50'}`}>
+                                <p className={`text-xs font-bold mb-1 ${parseFloat(marketData.priceChange) >= 0 ? 'text-red-600' : 'text-blue-600'}`}>연간 변동</p>
+                                <p className={`text-lg font-black ${parseFloat(marketData.priceChange) >= 0 ? 'text-red-700' : 'text-blue-700'}`}>
+                                    {parseFloat(marketData.priceChange) >= 0 ? '+' : ''}{marketData.priceChange}%
+                                </p>
+                            </div>
+                            <div className="p-4 bg-emerald-50 rounded-2xl text-center">
+                                <p className="text-xs text-emerald-600 font-bold mb-1">전세가율</p>
+                                <p className="text-lg font-black text-emerald-700">{marketData.jeonseRatio.toFixed(0)}%</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 투자 점수 */}
+                    <div className={`p-6 rounded-[2rem] ${getScoreColor(marketData.investScore)} border shadow-sm`}>
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                                <span className="text-3xl">{recommendation.icon}</span>
+                                <div>
+                                    <h4 className="text-xl font-black">{recommendation.text}</h4>
+                                    <p className="text-sm opacity-70">{recommendation.desc}</p>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-xs font-bold opacity-60 mb-1">투자 점수</p>
+                                <p className="text-4xl font-black">{marketData.investScore}</p>
+                            </div>
+                        </div>
+                        <div className="w-full bg-white/50 rounded-full h-3 overflow-hidden">
+                            <div
+                                className={`h-full rounded-full transition-all duration-700 ${marketData.investScore >= 70 ? 'bg-green-500' :
+                                    marketData.investScore >= 40 ? 'bg-yellow-500' : 'bg-red-500'
+                                    }`}
+                                style={{ width: `${marketData.investScore}%` }}
+                            />
+                        </div>
+                    </div>
+
+                    <p className="text-xs text-center text-slate-400">
+                        ※ AI 분석은 참고용이며, 실제 투자는 전문가 상담을 권장합니다
+                    </p>
+                </div>
+            );
+        };
+
+        // 2. 비교 포트폴리오 관리 (PortfolioManager)
+        const PortfolioManager = () => {
+            const [properties, setProperties] = usePersistedState('portfolio', []);
+            const [isAdding, setIsAdding] = useState(false);
+            const [editId, setEditId] = useState(null);
+            const [form, setForm] = useState({
+                name: '', type: '아파트', price: '', deposit: '', monthlyRent: '',
+                location: '', area: '', floor: '', memo: ''
+            });
+
+            const handleSubmit = () => {
+                if (!form.name || !form.price) {
+                    alert('매물명과 가격은 필수입니다');
+                    return;
+                }
+
+                const newProperty = {
+                    ...form,
+                    id: editId || Date.now().toString(),
+                    price: parseNumber(form.price),
+                    deposit: parseNumber(form.deposit),
+                    monthlyRent: parseNumber(form.monthlyRent),
+                    area: parseFloat(form.area) || 0,
+                    createdAt: editId ? properties.find(p => p.id === editId)?.createdAt : new Date().toISOString(),
+                    expectedYield: calculateYield(form)
+                };
+
+                if (editId) {
+                    setProperties(properties.map(p => p.id === editId ? newProperty : p));
+                } else {
+                    if (properties.length >= 10) {
+                        alert('최대 10개 매물까지 저장 가능합니다');
+                        return;
+                    }
+                    setProperties([...properties, newProperty]);
+                }
+
+                setForm({ name: '', type: '아파트', price: '', deposit: '', monthlyRent: '', location: '', area: '', floor: '', memo: '' });
+                setIsAdding(false);
+                setEditId(null);
+            };
+
+            const calculateYield = (p) => {
+                const price = parseNumber(p.price);
+                const monthlyRent = parseNumber(p.monthlyRent);
+                if (price <= 0 || monthlyRent <= 0) return 0;
+                return ((monthlyRent * 12) / price * 100).toFixed(2);
+            };
+
+            const handleEdit = (property) => {
+                setForm({
+                    ...property,
+                    price: String(property.price),
+                    deposit: String(property.deposit || ''),
+                    monthlyRent: String(property.monthlyRent || ''),
+                    area: String(property.area || '')
+                });
+                setEditId(property.id);
+                setIsAdding(true);
+            };
+
+            const handleDelete = (id) => {
+                if (confirm('정말 삭제하시겠습니까?')) {
+                    setProperties(properties.filter(p => p.id !== id));
+                }
+            };
+
+            const totalValue = properties.reduce((sum, p) => sum + (p.price || 0), 0);
+
+            return (
+                <div className="space-y-6 pb-32 animate-slide-up px-1">
+                    {/* 대시보드 */}
+                    <div className="bg-gradient-to-br from-indigo-600 to-purple-700 text-white p-6 rounded-3xl shadow-lg">
+                        <div className="flex justify-between items-start mb-4">
+                            <div>
+                                <p className="text-indigo-200 text-xs font-bold uppercase tracking-wider mb-1">포트폴리오 총 가치</p>
+                                <p className="text-3xl font-black">{formatKoreanNumber(totalValue)}</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-indigo-200 text-xs font-bold mb-1">등록 매물</p>
+                                <p className="text-2xl font-black">{properties.length}<span className="text-lg">/10</span></p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => { setIsAdding(true); setEditId(null); setForm({ name: '', type: '아파트', price: '', deposit: '', monthlyRent: '', location: '', area: '', floor: '', memo: '' }); }}
+                            className="w-full py-3 bg-white/20 hover:bg-white/30 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2"
+                        >
+                            <Plus size={18} /> 새 매물 추가
+                        </button>
+                    </div>
+
+                    {/* 매물 추가/수정 폼 */}
+                    {isAdding && (
+                        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                            <h4 className="text-sm font-bold text-slate-800 mb-4">{editId ? '매물 수정' : '새 매물 등록'}</h4>
+                            <div className="space-y-4">
+                                <input placeholder="매물명 *" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full p-4 bg-slate-50 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500" />
+                                <select value={form.type} onChange={e => setForm({ ...form, type: e.target.value })} className="w-full p-4 bg-slate-50 rounded-2xl outline-none">
+                                    <option>아파트</option><option>빌라</option><option>오피스텔</option><option>상가</option>
+                                </select>
+                                <NumberInput label="매매가 *" value={form.price} onChange={v => setForm({ ...form, price: v })} color="blue" />
+                                <NumberInput label="전세보증금" value={form.deposit} onChange={v => setForm({ ...form, deposit: v })} color="green" />
+                                <NumberInput label="월세" value={form.monthlyRent} onChange={v => setForm({ ...form, monthlyRent: v })} color="orange" />
+                                <input placeholder="위치 (예: 서울 강남구)" value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} className="w-full p-4 bg-slate-50 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500" />
+                                <div className="flex gap-3">
+                                    <input placeholder="면적 (㎡)" value={form.area} onChange={e => setForm({ ...form, area: e.target.value })} className="flex-1 p-4 bg-slate-50 rounded-2xl outline-none" />
+                                    <input placeholder="층수" value={form.floor} onChange={e => setForm({ ...form, floor: e.target.value })} className="flex-1 p-4 bg-slate-50 rounded-2xl outline-none" />
+                                </div>
+                                <textarea placeholder="메모" value={form.memo} onChange={e => setForm({ ...form, memo: e.target.value })} className="w-full p-4 bg-slate-50 rounded-2xl outline-none h-24 resize-none" />
+                                <div className="flex gap-3">
+                                    <button onClick={() => { setIsAdding(false); setEditId(null); }} className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 rounded-2xl font-bold text-slate-600 transition-all">취소</button>
+                                    <button onClick={handleSubmit} className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold transition-all">{editId ? '수정' : '저장'}</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 매물 목록 */}
+                    {properties.length > 0 ? (
+                        <div className="space-y-3">
+                            {properties.map(p => (
+                                <div key={p.id} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:border-indigo-200 transition-all">
+                                    <div className="flex justify-between items-start mb-3">
+                                        <div>
+                                            <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg mr-2">{p.type}</span>
+                                            <h5 className="text-lg font-bold text-slate-800 inline">{p.name}</h5>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button onClick={() => handleEdit(p)} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"><Edit3 size={16} /></button>
+                                            <button onClick={() => handleDelete(p.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={16} /></button>
+                                        </div>
+                                    </div>
+                                    <p className="text-xl font-black text-slate-800 mb-2">{formatKoreanNumber(p.price)}</p>
+                                    {p.location && <p className="text-sm text-slate-500 mb-1">📍 {p.location}</p>}
+                                    {p.area > 0 && <p className="text-sm text-slate-500">📐 {p.area}㎡ ({(p.area * 0.3025).toFixed(1)}평) {p.floor && `/ ${p.floor}`}</p>}
+                                    {p.expectedYield > 0 && (
+                                        <div className="mt-3 pt-3 border-t border-slate-100 flex justify-between items-center">
+                                            <span className="text-xs text-slate-400">예상 수익률</span>
+                                            <span className="text-sm font-bold text-emerald-600">{p.expectedYield}%</span>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    ) : !isAdding && (
+                        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
+                            <Briefcase className="w-16 h-16 mb-4 text-slate-200" />
+                            <p className="text-sm font-bold text-slate-400 mb-2">등록된 매물이 없습니다</p>
+                            <p className="text-xs text-slate-300">관심 매물을 추가하여 비교 분석하세요</p>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // 3. 지역별 규제 자동 조회 (RegulationChecker)
+        const RegulationChecker = () => {
+            const [selectedCity, setSelectedCity] = useState('서울');
+            const [selectedDistrict, setSelectedDistrict] = useState('강남구');
+
+            // 규제 데이터 (2026년 1월 기준)
+            const regulationData = {
+                서울: {
+                    강남구: { type: '투기과열', ltvLimit: 40, dtiLimit: 40, dsrLimit: 40 },
+                    서초구: { type: '투기과열', ltvLimit: 40, dtiLimit: 40, dsrLimit: 40 },
+                    송파구: { type: '조정대상', ltvLimit: 50, dtiLimit: 50, dsrLimit: 40 },
+                    용산구: { type: '투기과열', ltvLimit: 40, dtiLimit: 40, dsrLimit: 40 },
+                    성동구: { type: '조정대상', ltvLimit: 50, dtiLimit: 50, dsrLimit: 40 },
+                    광진구: { type: '비규제', ltvLimit: 70, dtiLimit: 60, dsrLimit: 40 },
+                    동대문구: { type: '비규제', ltvLimit: 70, dtiLimit: 60, dsrLimit: 40 },
+                    중랑구: { type: '비규제', ltvLimit: 70, dtiLimit: 60, dsrLimit: 40 },
+                    성북구: { type: '비규제', ltvLimit: 70, dtiLimit: 60, dsrLimit: 40 },
+                    강북구: { type: '비규제', ltvLimit: 70, dtiLimit: 60, dsrLimit: 40 },
+                    도봉구: { type: '비규제', ltvLimit: 70, dtiLimit: 60, dsrLimit: 40 },
+                    노원구: { type: '비규제', ltvLimit: 70, dtiLimit: 60, dsrLimit: 40 },
+                    은평구: { type: '비규제', ltvLimit: 70, dtiLimit: 60, dsrLimit: 40 },
+                    서대문구: { type: '비규제', ltvLimit: 70, dtiLimit: 60, dsrLimit: 40 },
+                    마포구: { type: '조정대상', ltvLimit: 50, dtiLimit: 50, dsrLimit: 40 },
+                    양천구: { type: '비규제', ltvLimit: 70, dtiLimit: 60, dsrLimit: 40 },
+                    강서구: { type: '비규제', ltvLimit: 70, dtiLimit: 60, dsrLimit: 40 },
+                    구로구: { type: '비규제', ltvLimit: 70, dtiLimit: 60, dsrLimit: 40 },
+                    금천구: { type: '비규제', ltvLimit: 70, dtiLimit: 60, dsrLimit: 40 },
+                    영등포구: { type: '조정대상', ltvLimit: 50, dtiLimit: 50, dsrLimit: 40 },
+                    동작구: { type: '비규제', ltvLimit: 70, dtiLimit: 60, dsrLimit: 40 },
+                    관악구: { type: '비규제', ltvLimit: 70, dtiLimit: 60, dsrLimit: 40 },
+                    종로구: { type: '비규제', ltvLimit: 70, dtiLimit: 60, dsrLimit: 40 },
+                    중구: { type: '비규제', ltvLimit: 70, dtiLimit: 60, dsrLimit: 40 },
+                    강동구: { type: '조정대상', ltvLimit: 50, dtiLimit: 50, dsrLimit: 40 },
+                },
+                경기: {
+                    과천시: { type: '투기과열', ltvLimit: 40, dtiLimit: 40, dsrLimit: 40 },
+                    성남시분당구: { type: '투기과열', ltvLimit: 40, dtiLimit: 40, dsrLimit: 40 },
+                    하남시: { type: '조정대상', ltvLimit: 50, dtiLimit: 50, dsrLimit: 40 },
+                    광명시: { type: '조정대상', ltvLimit: 50, dtiLimit: 50, dsrLimit: 40 },
+                    수원시: { type: '비규제', ltvLimit: 70, dtiLimit: 60, dsrLimit: 40 },
+                    용인시: { type: '비규제', ltvLimit: 70, dtiLimit: 60, dsrLimit: 40 },
+                    고양시: { type: '비규제', ltvLimit: 70, dtiLimit: 60, dsrLimit: 40 },
+                },
+                인천: {
+                    연수구: { type: '비규제', ltvLimit: 70, dtiLimit: 60, dsrLimit: 40 },
+                    남동구: { type: '비규제', ltvLimit: 70, dtiLimit: 60, dsrLimit: 40 },
+                    부평구: { type: '비규제', ltvLimit: 70, dtiLimit: 60, dsrLimit: 40 },
+                }
+            };
+
+            const cities = Object.keys(regulationData);
+            const districts = Object.keys(regulationData[selectedCity] || {});
+            const currentRegulation = regulationData[selectedCity]?.[selectedDistrict];
+
+            useEffect(() => {
+                const firstDistrict = Object.keys(regulationData[selectedCity] || {})[0];
+                if (firstDistrict) setSelectedDistrict(firstDistrict);
+            }, [selectedCity]);
+
+            const getRegulationStyle = (type) => {
+                switch (type) {
+                    case '투기과열': return { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', icon: '🔴' };
+                    case '조정대상': return { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700', icon: '🟠' };
+                    default: return { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', icon: '🟢' };
+                }
+            };
+
+            const style = currentRegulation ? getRegulationStyle(currentRegulation.type) : getRegulationStyle('비규제');
+
+            return (
+                <div className="space-y-6 pb-32 animate-slide-up px-1">
+                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                        <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                            <MapPin className="w-5 h-5 mr-3 text-indigo-600" /> 규제지역 조회
+                        </h3>
+
+                        <div className="grid grid-cols-2 gap-3 mb-6">
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2">시/도</label>
+                                <select
+                                    value={selectedCity}
+                                    onChange={(e) => setSelectedCity(e.target.value)}
+                                    className="w-full p-4 bg-slate-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-700"
+                                >
+                                    {cities.map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2">시/군/구</label>
+                                <select
+                                    value={selectedDistrict}
+                                    onChange={(e) => setSelectedDistrict(e.target.value)}
+                                    className="w-full p-4 bg-slate-50 border-0 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-700"
+                                >
+                                    {districts.map(d => <option key={d} value={d}>{d}</option>)}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    {currentRegulation && (
+                        <div className={`${style.bg} ${style.border} border p-6 rounded-[2rem] shadow-sm`}>
+                            <div className="flex items-center gap-4 mb-6">
+                                <span className="text-4xl">{style.icon}</span>
+                                <div>
+                                    <h4 className={`text-2xl font-black ${style.text}`}>{currentRegulation.type}</h4>
+                                    <p className="text-sm text-slate-600">{selectedCity} {selectedDistrict}</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-3">
+                                <div className="bg-white p-4 rounded-2xl text-center shadow-sm">
+                                    <p className="text-xs text-slate-500 font-bold mb-1">LTV 한도</p>
+                                    <p className="text-2xl font-black text-indigo-600">{currentRegulation.ltvLimit}%</p>
+                                </div>
+                                <div className="bg-white p-4 rounded-2xl text-center shadow-sm">
+                                    <p className="text-xs text-slate-500 font-bold mb-1">DTI 한도</p>
+                                    <p className="text-2xl font-black text-purple-600">{currentRegulation.dtiLimit}%</p>
+                                </div>
+                                <div className="bg-white p-4 rounded-2xl text-center shadow-sm">
+                                    <p className="text-xs text-slate-500 font-bold mb-1">DSR 한도</p>
+                                    <p className="text-2xl font-black text-pink-600">{currentRegulation.dsrLimit}%</p>
+                                </div>
+                            </div>
+
+                            <div className="mt-6 p-4 bg-white/60 rounded-2xl">
+                                <h5 className="text-sm font-bold text-slate-700 mb-2">📋 규제 내용</h5>
+                                <ul className="text-sm text-slate-600 space-y-1">
+                                    {currentRegulation.type === '투기과열' && (
+                                        <>
+                                            <li>• 주택담보대출 LTV 40% 제한</li>
+                                            <li>• 다주택자 주담대 금지</li>
+                                            <li>• 취득세 중과 (2주택 8%, 3주택+ 12%)</li>
+                                            <li>• 양도세 중과 적용</li>
+                                        </>
+                                    )}
+                                    {currentRegulation.type === '조정대상' && (
+                                        <>
+                                            <li>• 주택담보대출 LTV 50% 제한</li>
+                                            <li>• 다주택자 취득세 중과</li>
+                                            <li>• 전매제한 기간 적용</li>
+                                        </>
+                                    )}
+                                    {currentRegulation.type === '비규제' && (
+                                        <>
+                                            <li>• LTV 70% 적용 (1주택자)</li>
+                                            <li>• 취득세 일반세율 적용</li>
+                                            <li>• 전매제한 미적용</li>
+                                        </>
+                                    )}
+                                </ul>
+                            </div>
+                        </div>
+                    )}
+
+                    <p className="text-xs text-center text-slate-400">
+                        ※ 규제 정보는 2026년 1월 기준이며, 변동될 수 있습니다
+                    </p>
+                </div>
+            );
+        };
+
+        // 4. 오프라인 상태 인디케이터
+        const OfflineIndicator = () => {
+            const [isOnline, setIsOnline] = useState(navigator.onLine);
+            const [showBanner, setShowBanner] = useState(false);
+
+            useEffect(() => {
+                const handleOnline = () => {
+                    setIsOnline(true);
+                    setShowBanner(true);
+                    setTimeout(() => setShowBanner(false), 3000);
+                };
+                const handleOffline = () => {
+                    setIsOnline(false);
+                    setShowBanner(true);
+                };
+
+                window.addEventListener('online', handleOnline);
+                window.addEventListener('offline', handleOffline);
+
+                return () => {
+                    window.removeEventListener('online', handleOnline);
+                    window.removeEventListener('offline', handleOffline);
+                };
+            }, []);
+
+            if (!showBanner && isOnline) return null;
+
+            return (
+                <div className={`fixed top-16 left-0 right-0 z-50 flex justify-center pointer-events-none animate-slide-up`}>
+                    <div className={`mx-4 px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-sm font-bold ${isOnline
+                        ? 'bg-green-500 text-white'
+                        : 'bg-slate-800 text-white'
+                        }`}>
+                        {isOnline ? (
+                            <>
+                                <Wifi size={16} />
+                                온라인 연결됨
+                            </>
+                        ) : (
+                            <>
+                                <WifiOff size={16} />
+                                오프라인 모드 - 저장된 데이터로 작동 중
+                            </>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        // ========== END NEW FEATURES v4.0 ==========
+
         const ToolsTab = () => {
             const [activeTool, setActiveTool] = usePersistedState('lastTool', 'pyung');
             const [activeToolCategory, setActiveToolCategory] = useState('all');
@@ -8009,6 +8584,7 @@
                 bank: 0,
                 tax: 0,
                 subscription: 0,
+                analysis: 0,
                 tools: 0
             });
             const [toastMessage, setToastMessage] = useState('');
@@ -8022,7 +8598,7 @@
                 { id: 'buy', label: '매매', icon: TrendingUp },
                 { id: 'bank', label: '대출', icon: DollarSign },
                 { id: 'tax', label: '세금', icon: Calculator },
-                { id: 'subscription', label: '청약', icon: Award },
+                { id: 'analysis', label: '분석', icon: BarChart3 },
                 { id: 'tools', label: '도구', icon: PenTool },
             ];
 
@@ -8062,6 +8638,11 @@
                 ],
                 subscription: [
                     { id: 0, label: '청약점수', component: SubscriptionScoreTab },
+                ],
+                analysis: [
+                    { id: 0, label: 'AI시세', component: MarketAnalysisTab },
+                    { id: 1, label: '포트폴리오', component: PortfolioManager },
+                    { id: 2, label: '규제조회', component: RegulationChecker },
                 ],
                 tools: [
                     { id: 0, label: '도구모음', component: ToolsTab }
@@ -8128,13 +8709,16 @@
                     {/* Toast */}
                     {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage('')} />}
 
+                    {/* Offline Status Indicator */}
+                    <OfflineIndicator />
+
                     {/* Header with enhanced glassmorphism */}
-                    <div className={`bg-white/90 backdrop-blur-xl sticky top-0 z-30 border-b border-slate-200/50 ${isScrolled ? 'shadow-lg shadow-slate-200/50' : ''}`}>
+                    <div className={`header-premium sticky top-0 z-30 transition-all duration-300 ${isScrolled ? 'shadow-lg shadow-slate-200/50' : ''}`}>
                         <div className="h-16 px-5 flex items-center justify-between">
                             <h1 className="text-lg font-black text-slate-900 flex items-center gap-3 tracking-tight">
-                                <div className="relative">
+                                <div className="relative logo-animated">
                                     <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl blur-lg opacity-40 animate-pulse-slow" />
-                                    <div className="relative bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-2.5 rounded-xl text-white shadow-lg shadow-indigo-500/40">
+                                    <div className="relative bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-2.5 rounded-xl text-white shadow-lg shadow-indigo-500/40 transition-bounce">
                                         <Home size={18} fill="white" />
                                     </div>
                                 </div>
@@ -8147,7 +8731,7 @@
                                 <QuickHistory />
                                 <button
                                     onClick={handlePrint}
-                                    className="p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all no-print touch-target"
+                                    className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-premium no-print touch-target icon-bounce"
                                     title="PDF 저장 / 인쇄"
                                     aria-label="인쇄하기"
                                 >
@@ -8160,14 +8744,14 @@
                     {/* Sub Navigation (Top) - with arrow buttons - only show if more than 1 tab */}
                     {currentTabs.length > 1 && (
                         <div className="px-4 mt-4 sticky top-16 z-20">
-                            <div className="relative bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden group">
+                            <div className="relative bg-gradient-to-br from-white to-slate-50 rounded-2xl shadow-md border border-slate-100/80 overflow-hidden group">
 
                                 {/* Left Arrow */}
                                 <div className={`absolute left-0 top-0 bottom-0 z-10 flex items-center transition-opacity duration-300 ${showLeftArrow ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-                                    <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-transparent" />
+                                    <div className="absolute inset-0 bg-gradient-to-r from-white via-white/95 to-transparent" />
                                     <button
                                         onClick={() => scrollSubTabs('left')}
-                                        className="relative z-10 p-1.5 ml-1 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-full transition-colors shadow-sm ring-1 ring-slate-900/5"
+                                        className="relative z-10 p-2 ml-1 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-premium shadow-sm ring-1 ring-slate-900/5"
                                         aria-label="이전 메뉴"
                                     >
                                         <ChevronLeft size={18} />
@@ -8178,7 +8762,7 @@
                                 <div
                                     ref={subTabScrollRef}
                                     onScroll={checkScrollButtons}
-                                    className="flex gap-1 overflow-x-auto scrollbar-hide snap-x snap-mandatory p-1.5 mx-0 scroll-smooth"
+                                    className="flex gap-1.5 overflow-x-auto scrollbar-hide scroll-snap-x p-2 mx-0 scroll-smooth"
                                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                                 >
                                     {/* Spacer for left arrow */}
@@ -8192,7 +8776,7 @@
                                                 // Optional: Center the clicked tab
                                                 setTimeout(checkScrollButtons, 300);
                                             }}
-                                            className={`flex-shrink-0 min-w-[72px] min-h-[40px] px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap snap-start ${currentSubTabIdx === idx ? 'bg-gradient-to-r from-slate-900 to-slate-800 text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'}`}
+                                            className={`flex-shrink-0 min-w-[76px] min-h-[44px] px-5 py-2.5 rounded-xl text-sm font-bold transition-bounce whitespace-nowrap scroll-snap-item focus-ring-premium ${currentSubTabIdx === idx ? 'bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 text-white shadow-lg shadow-indigo-500/25' : 'text-slate-500 hover:bg-slate-100 hover:text-indigo-600'}`}
                                             aria-selected={currentSubTabIdx === idx}
                                             role="tab"
                                         >
@@ -8225,8 +8809,8 @@
                     </main>
 
                     {/* Bottom Navigation (Categories) - Enhanced Premium Design */}
-                    <nav className="fixed bottom-0 max-w-md w-full bg-white/95 backdrop-blur-xl border-t border-slate-200/60 pb-safe z-40 rounded-t-[1.5rem] shadow-[0_-4px_30px_rgba(0,0,0,0.1)]" aria-label="주요 카테고리">
-                        <div className="relative flex justify-around items-center px-2 py-2">
+                    <nav className="fixed bottom-0 max-w-md w-full bottom-nav-enhanced pb-safe z-40 rounded-t-[1.75rem]" aria-label="주요 카테고리">
+                        <div className="relative flex justify-around items-center px-2 py-2.5">
                             {categories.map((cat) => {
                                 const Icon = cat.icon;
                                 const isActive = activeCategory === cat.id;
@@ -8234,43 +8818,48 @@
                                     <button
                                         key={cat.id}
                                         onClick={() => setActiveCategory(cat.id)}
-                                        className={`relative flex flex-col items-center justify-center min-w-[60px] min-h-[56px] p-2 rounded-2xl transition-all duration-300 active:scale-90 touch-target group
+                                        className={`relative flex flex-col items-center justify-center min-w-[64px] min-h-[60px] p-2 rounded-2xl transition-bounce active:scale-90 touch-target-xl group btn-ripple-premium
                                             ${isActive
-                                                ? 'text-white'
-                                                : 'text-slate-400 hover:text-slate-600'
+                                                ? 'text-white nav-item-active'
+                                                : 'text-slate-400 hover:text-indigo-600'
                                             }`}
                                         aria-label={cat.label}
                                         aria-current={isActive ? 'page' : undefined}
                                     >
-                                        {/* Active Pill Background */}
-                                        <div className={`absolute inset-1 rounded-2xl transition-all duration-300 ease-out
+                                        {/* Active Pill Background with Enhanced Glow */}
+                                        <div className={`absolute inset-0.5 rounded-2xl transition-all duration-400 ease-out
                                             ${isActive
-                                                ? 'bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-lg shadow-indigo-500/30 scale-100 opacity-100'
+                                                ? 'bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-xl shadow-indigo-500/40 scale-100 opacity-100'
                                                 : 'scale-75 opacity-0 bg-slate-100'
                                             }`}
                                         />
 
-                                        {/* Icon with animation */}
-                                        <div className={`relative z-10 transition-all duration-300 ${isActive ? 'transform -translate-y-0.5' : 'group-hover:scale-110'}`}>
+                                        {/* Glow Effect for Active */}
+                                        {isActive && (
+                                            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-indigo-400/20 via-purple-400/20 to-pink-400/20 blur-xl scale-150 animate-pulse-slow" />
+                                        )}
+
+                                        {/* Icon with Enhanced Animation */}
+                                        <div className={`relative z-10 transition-all duration-300 nav-icon-enhanced ${isActive ? 'transform -translate-y-0.5' : 'group-hover:scale-110 icon-bounce'}`}>
                                             <Icon
-                                                size={isActive ? 22 : 20}
+                                                size={isActive ? 24 : 22}
                                                 strokeWidth={isActive ? 2.5 : 1.8}
                                                 fill={isActive ? "currentColor" : "none"}
                                                 className="transition-all duration-300"
                                             />
                                         </div>
 
-                                        {/* Label */}
-                                        <span className={`relative z-10 text-[10px] font-bold mt-1 transition-all duration-300
+                                        {/* Label with Better Visibility */}
+                                        <span className={`relative z-10 text-[11px] font-bold mt-1.5 tracking-tight transition-all duration-300
                                             ${isActive
                                                 ? 'opacity-100 transform translate-y-0'
-                                                : 'opacity-50 group-hover:opacity-80'
+                                                : 'opacity-60 group-hover:opacity-100'
                                             }`}>
                                             {cat.label}
                                         </span>
 
-                                        {/* Active dot indicator */}
-                                        <div className={`absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white transition-all duration-300 ${isActive ? 'opacity-100 scale-100' : 'opacity-0 scale-0'}`} />
+                                        {/* Active Top Indicator Line */}
+                                        <div className={`absolute -top-1 left-1/2 -translate-x-1/2 h-1 rounded-full bg-gradient-to-r from-indigo-400 to-purple-400 transition-all duration-300 ${isActive ? 'w-8 opacity-100' : 'w-0 opacity-0'}`} />
                                     </button>
                                 );
                             })}
@@ -8291,4 +8880,3 @@
 </body>
 
 </html>
-

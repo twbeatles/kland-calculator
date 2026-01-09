@@ -1,75 +1,177 @@
-// Service Worker for 부동산 마스터 Pro
-const CACHE_NAME = 'kland-calculator-v3.1.0';
-const urlsToCache = [
+// Service Worker for 부동산 마스터 Pro v4.0.0
+// Enhanced Offline Mode with improved caching strategies
+
+const CACHE_NAME = 'kland-calculator-v4.0.0';
+const STATIC_CACHE = 'kland-static-v4.0.0';
+const DYNAMIC_CACHE = 'kland-dynamic-v4.0.0';
+
+// Debug mode flag - set to true for development logging
+const DEBUG_MODE = false;
+const debugLog = (...args) => DEBUG_MODE && console.log(...args);
+
+// Static assets to cache immediately
+const STATIC_ASSETS = [
     './',
     './index.html',
     './styles.css',
     './manifest.json',
     'https://unpkg.com/react@18/umd/react.production.min.js',
     'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
+    'https://unpkg.com/@babel/standalone/babel.min.js',
     'https://cdn.tailwindcss.com',
-    'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css'
+    'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css',
+    'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+    'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js',
+    'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js'
 ];
 
-// Install event - cache static assets
+// Install event - precache static assets
 self.addEventListener('install', (event) => {
+    debugLog('[SW v4] Installing...');
     event.waitUntil(
-        caches.open(CACHE_NAME)
+        caches.open(STATIC_CACHE)
             .then((cache) => {
-                console.log('[SW] Caching app shell');
-                return cache.addAll(urlsToCache);
+                debugLog('[SW v4] Precaching static assets');
+                return cache.addAll(STATIC_ASSETS);
             })
+            .then(() => self.skipWaiting())
             .catch((err) => {
-                console.warn('[SW] Cache failed:', err);
+                console.warn('[SW v4] Precache failed:', err);
+                self.skipWaiting();
             })
     );
-    self.skipWaiting();
 });
 
 // Activate event - cleanup old caches
 self.addEventListener('activate', (event) => {
+    debugLog('[SW v4] Activating...');
     event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cacheName) => {
-                    if (cacheName !== CACHE_NAME) {
-                        console.log('[SW] Deleting old cache:', cacheName);
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
-        })
+        caches.keys()
+            .then((cacheNames) => {
+                return Promise.all(
+                    cacheNames
+                        .filter((name) => name !== STATIC_CACHE && name !== DYNAMIC_CACHE)
+                        .map((name) => {
+                            debugLog('[SW v4] Deleting old cache:', name);
+                            return caches.delete(name);
+                        })
+                );
+            })
+            .then(() => self.clients.claim())
     );
-    self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch strategy: Network First with Cache Fallback
 self.addEventListener('fetch', (event) => {
-    event.respondWith(
-        caches.match(event.request)
-            .then((response) => {
-                // Return cached version or fetch from network
-                if (response) {
-                    return response;
-                }
-                return fetch(event.request)
-                    .then((response) => {
-                        // Don't cache non-successful responses
-                        if (!response || response.status !== 200 || response.type !== 'basic') {
-                            return response;
-                        }
-                        // Clone and cache for future use
-                        const responseToCache = response.clone();
-                        caches.open(CACHE_NAME)
-                            .then((cache) => {
-                                cache.put(event.request, responseToCache);
-                            });
-                        return response;
-                    });
-            })
-            .catch(() => {
-                // Offline fallback
-                return caches.match('./index.html');
-            })
+    const { request } = event;
+    const url = new URL(request.url);
+
+    // Skip non-GET requests
+    if (request.method !== 'GET') return;
+
+    // Skip chrome-extension and other non-http requests
+    if (!request.url.startsWith('http')) return;
+
+    // Strategy based on request type
+    if (isStaticAsset(request)) {
+        // Cache First for static assets
+        event.respondWith(cacheFirst(request));
+    } else {
+        // Network First for dynamic content
+        event.respondWith(networkFirst(request));
+    }
+});
+
+// Check if request is for static asset
+function isStaticAsset(request) {
+    const url = request.url;
+    return (
+        url.includes('.js') ||
+        url.includes('.css') ||
+        url.includes('.woff') ||
+        url.includes('.woff2') ||
+        url.includes('.ttf') ||
+        url.includes('.png') ||
+        url.includes('.jpg') ||
+        url.includes('.svg') ||
+        url.includes('.ico')
     );
+}
+
+// Cache First Strategy
+async function cacheFirst(request) {
+    const cached = await caches.match(request);
+    if (cached) {
+        return cached;
+    }
+    try {
+        const response = await fetch(request);
+        if (response.ok) {
+            const cache = await caches.open(STATIC_CACHE);
+            cache.put(request, response.clone());
+        }
+        return response;
+    } catch (error) {
+        console.warn('[SW v4] Cache first failed:', error);
+        return new Response('Offline', { status: 503 });
+    }
+}
+
+// Network First Strategy
+async function networkFirst(request) {
+    try {
+        const response = await fetch(request);
+        if (response.ok) {
+            const cache = await caches.open(DYNAMIC_CACHE);
+            cache.put(request, response.clone());
+        }
+        return response;
+    } catch (error) {
+        const cached = await caches.match(request);
+        if (cached) {
+            return cached;
+        }
+        // Return offline fallback for HTML requests
+        if (request.headers.get('accept')?.includes('text/html')) {
+            return caches.match('./index.html');
+        }
+        return new Response('Offline', { status: 503 });
+    }
+}
+
+// Background Sync for offline data
+self.addEventListener('sync', (event) => {
+    if (event.tag === 'sync-portfolio') {
+        debugLog('[SW v4] Syncing portfolio data...');
+        event.waitUntil(syncPortfolioData());
+    }
+});
+
+async function syncPortfolioData() {
+    // Placeholder for future sync implementation
+    debugLog('[SW v4] Portfolio sync completed');
+}
+
+// Push notification support (placeholder)
+self.addEventListener('push', (event) => {
+    if (event.data) {
+        const data = event.data.json();
+        self.registration.showNotification(data.title, {
+            body: data.body,
+            icon: './icon-192.png',
+            badge: './icon-192.png'
+        });
+    }
+});
+
+// Message handler for cache management
+self.addEventListener('message', (event) => {
+    if (event.data === 'skipWaiting') {
+        self.skipWaiting();
+    }
+    if (event.data === 'clearCache') {
+        caches.keys().then((names) => {
+            names.forEach((name) => caches.delete(name));
+        });
+    }
 });

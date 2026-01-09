@@ -1032,14 +1032,14 @@ const CostCompareTab = () => {
 };
 
 // 2. Safety Tab
-const SafetyTab = () => {
+const SafetyTab = React.memo(() => {
     const [price, setPrice] = useState(() => getSafeLocalStorage('sPrice'));
     const [bond, setBond] = useState(() => getSafeLocalStorage('sBond'));
     const [deposit, setDeposit] = useState(() => getSafeLocalStorage('sDeposit'));
 
-    useEffect(() => { localStorage.setItem('sPrice', price); }, [price]);
-    useEffect(() => { localStorage.setItem('sBond', bond); }, [bond]);
-    useEffect(() => { localStorage.setItem('sDeposit', deposit); }, [deposit]);
+    useEffect(() => { debouncedSetStorage('sPrice', price); }, [price]);
+    useEffect(() => { debouncedSetStorage('sBond', bond); }, [bond]);
+    useEffect(() => { debouncedSetStorage('sDeposit', deposit); }, [deposit]);
 
     const analysis = useMemo(() => {
         const priceVal = parseNumber(price);
@@ -1132,10 +1132,10 @@ const SafetyTab = () => {
             )}
         </div>
     );
-};
+});
 
 // 3. Fee Tab
-const FeeTab = () => {
+const FeeTab = React.memo(() => {
     const [propType, setPropType] = useState('주택');
     const [dealType, setDealType] = useState('임대차');
     const [amount, setAmount] = useState('');
@@ -1231,10 +1231,10 @@ const FeeTab = () => {
             )}
         </div>
     );
-};
+});
 
 // 4. Loan Tab
-const LoanTab = () => {
+const LoanTab = React.memo(() => {
     const [loanAmount, setLoanAmount] = useState('');
     const [rate, setRate] = useState('4.0');
     const [period, setPeriod] = useState('24');
@@ -1331,11 +1331,11 @@ const LoanTab = () => {
             )}
         </div>
     );
-};
+});
 
 
 // 6. Buying Tab (NEW)
-const BuyingTab = () => {
+const BuyingTab = React.memo(() => {
     const [price, setPrice] = useState('');
     const [region, setRegion] = useState('non-adj'); // adj (jojeong), non-adj
     const [count, setCount] = useState('1'); // 1, 2, 3+
@@ -1451,10 +1451,10 @@ const BuyingTab = () => {
             )}
         </div>
     );
-};
+});
 
 // 7. DSR Calculator Tab (NEW)
-const DSRTab = () => {
+const DSRTab = React.memo(() => {
     const [income, setIncome] = useState('');
     const [debt, setDebt] = useState(''); // Annual Principle + Interest
     const [newDebt, setNewDebt] = useState(''); // New Loan Annual P+I
@@ -1520,11 +1520,11 @@ const DSRTab = () => {
             )}
         </div>
     );
-};
+});
 
 
 // 8. LTV Tab (Restored)
-const LTVTab = () => {
+const LTVTab = React.memo(() => {
     const [value, setValue] = useState('');
     const [loan, setLoan] = useState('');
 
@@ -1594,7 +1594,7 @@ const LTVTab = () => {
             )}
         </div>
     );
-}
+});
 
 // 9. Capital Gains Tax Calculator (양도소득세 계산기)
 const CapitalGainsTaxTab = () => {
@@ -1759,7 +1759,6 @@ const CapitalGainsTaxTab = () => {
 const PropertyTaxTab = () => {
     const [publicPrice, setPublicPrice] = useState('');
     const [isOneHouse, setIsOneHouse] = useState(true);
-    const [houseCount, setHouseCount] = useState('1');
 
     const result = useMemo(() => {
         const price = parseNumber(publicPrice);
@@ -1817,7 +1816,7 @@ const PropertyTaxTab = () => {
         const totalTax = totalPropertyTax + totalJongbuTax;
 
         return { propertyTax: Math.floor(propertyTax), cityTax: Math.floor(cityTax), eduTax: Math.floor(eduTax), totalPropertyTax, jongbuTax: Math.floor(jongbuTax), jongbuEduTax: Math.floor(jongbuEduTax), totalJongbuTax, totalTax };
-    }, [publicPrice, isOneHouse, houseCount]);
+    }, [publicPrice, isOneHouse]);
 
     return (
         <div className="space-y-6 pb-32 animate-slide-up px-1">
