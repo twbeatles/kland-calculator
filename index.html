@@ -28,12 +28,12 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 
     <!-- Babel -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <!-- html2canvas -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- Chart.js for visualizations -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
     <!-- Kakao SDK for sharing -->
     <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.6.0/kakao.min.js"
@@ -41,10 +41,10 @@
         crossorigin="anonymous"></script>
 
     <!-- SheetJS for Excel export -->
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script crossorigin src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://cdn.tailwindcss.com"></script>
 
     <!-- Tailwind Config -->
     <script>
@@ -702,6 +702,29 @@
 
     <script type="text/babel">
         const { useState, useMemo, useEffect, useCallback, useId, memo } = React;
+
+        // Custom Hook: usePersistedState
+        const usePersistedState = (key, defaultValue) => {
+            const [state, setState] = useState(() => {
+                try {
+                    const item = window.localStorage.getItem(key);
+                    return item ? JSON.parse(item) : defaultValue;
+                } catch (error) {
+                    console.warn(`Error reading localStorage key "${key}":`, error);
+                    return defaultValue;
+                }
+            });
+
+            useEffect(() => {
+                try {
+                    window.localStorage.setItem(key, JSON.stringify(state));
+                } catch (error) {
+                    console.warn(`Error writing localStorage key "${key}":`, error);
+                }
+            }, [key, state]);
+
+            return [state, setState];
+        };
 
         // --- Icons (Inline SVGs with React.memo for performance) ---
         const IconBase = memo(({ children, size = 24, className = "", ...props }) => (

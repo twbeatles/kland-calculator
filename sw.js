@@ -4,7 +4,7 @@
 // Cache version: Use BUILD_TIMESTAMP for automatic cache busting
 // This will be replaced by build tools or manually updated on deployment
 const BUILD_VERSION = '4.1.0';
-const BUILD_TIMESTAMP = '20260109190100'; // Format: YYYYMMDDHHMMSS
+const BUILD_TIMESTAMP = '20260109204000'; // Format: YYYYMMDDHHMMSS
 
 const CACHE_NAME = `kland-calculator-v${BUILD_VERSION}-${BUILD_TIMESTAMP}`;
 const STATIC_CACHE = `kland-static-v${BUILD_VERSION}-${BUILD_TIMESTAMP}`;
