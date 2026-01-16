@@ -1,0 +1,1 @@
+import{r as s,g as u,d as n}from"./index-B6wU84sq.js";const S=(e,a)=>{const[t,o]=s.useState(()=>{const r=u(e,"");if(r==="")return a;try{return JSON.parse(r)}catch{return r}});return s.useEffect(()=>{n(e,typeof t=="string"?t:JSON.stringify(t))},[e,t]),[t,o]};export{S as u};
