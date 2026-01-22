@@ -466,6 +466,13 @@ git push origin feature/new-calculator
 - **기본값 설정**: 자주 사용하는 값 저장
 - **순서 커스터마이징**: 탭 순서 변경 및 숨기기
 
+#### 🚀 성능 및 빌드 최적화 (v4.3.0+)
+- **Tailwind CSS v4 마이그레이션**: CDN 제거 및 로컬 빌드 전환 (초기 로딩 개선)
+- **빌드 시스템 최적화**: ManualChunks 적용 (번들 사이즈 최적화)
+- **압축 적용**: Gzip/Brotli 압축으로 전송 크기 최소화
+- **렌더링 최적화**: 100+ 계산기 목록 가상화(Virtualization) 적용
+- **캐싱 전략 강화**: Service Worker Stale-While-Revalidate 전략 도입
+
 #### 🔧 기술 개선
 - **Icons.js**: 9개 신규 아이콘 추가 (Grip, Mail, ChevronUp, ChevronDown, Gift, Edit, Eye, EyeOff, Settings)
 - **ToolsTab.js**: 16개 신규 도구 통합
@@ -640,7 +647,7 @@ MIT License © 2026
 - [Vite](https://vitejs.dev/) - 빌드 도구
 - [Lucide](https://lucide.dev/) - 아이콘 라이브러리
 - [Chart.js](https://www.chartjs.org/) - 차트 라이브러리
-- [Tailwind CSS](https://tailwindcss.com/) - CSS 프레임워크
+- [Tailwind CSS v4](https://tailwindcss.com/) - CSS 프레임워크 (Local Build)
 
 ---
 
